@@ -114,7 +114,7 @@ export default function ContactPage() {
                                     <MapPin className="h-6 w-6 text-primary" />
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-stone-900">Taller</h3>
+                                    <h3 className="font-semibold text-stone-900">Showroom</h3>
                                     <p className="text-stone-600">
                                         Villa Allende, Córdoba
                                     </p>
