@@ -117,10 +117,18 @@ export function Footer() {
                     </div>
 
                 </div>
-                <div className="mt-8 border-t border-stone-100 pt-6 text-center">
+                <div className="mt-8 border-t border-stone-100 pt-6 flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-4">
                     <p className="text-xs text-stone-400">
                         &copy; {new Date().getFullYear()} Waykú. Todos los derechos reservados.
                     </p>
+                    <div className="flex gap-4">
+                        <Link href="/terms" className="text-xs text-stone-400 hover:text-primary transition-colors">
+                            Términos y Condiciones
+                        </Link>
+                        <Link href="/privacy" className="text-xs text-stone-400 hover:text-primary transition-colors">
+                            Política de Privacidad
+                        </Link>
+                    </div>
                 </div>
             </div>
         </footer>
