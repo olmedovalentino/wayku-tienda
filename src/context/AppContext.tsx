@@ -207,9 +207,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
             addReview,
             addOrder,
             addQuery: async (q) => {
-                const newQuery = { ...q, id: Date.now(), date: 'Recién', read: false };
+                const tempId = Date.now();
+                const newQuery = { ...q, id: tempId, date: 'Recién', read: false };
                 setQueries(prev => [newQuery, ...prev]);
-                if (supabase) await supabase.from('queries').insert(newQuery);
+                if (supabase) {
+                    const { id, ...insertData } = newQuery;
+                    const { data, error } = await supabase.from('queries').insert(insertData).select().single();
+                    if (data) {
+                        setQueries(prev => prev.map(qry => qry.id === tempId ? { ...qry, id: data.id } : qry));
+                    }
+                }
             },
             markQueryAsRead: async (id) => {
                 setQueries(prev => prev.map(q => q.id === id ? { ...q, read: true } : q));
