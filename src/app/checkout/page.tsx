@@ -26,7 +26,8 @@ export default function CheckoutPage() {
         phone: '',
         address: '',
         city: '',
-        postalCode: ''
+        postalCode: '',
+        notes: ''
     });
 
     const [shippingMethod, setShippingMethod] = useState<'shipping' | 'pickup'>('shipping');
@@ -92,7 +93,7 @@ export default function CheckoutPage() {
             shippingMethod,
             paymentMethod,
             phone: formData.phone,
-            address: shippingMethod === 'shipping' ? formData.address : undefined,
+            address: shippingMethod === 'shipping' ? (formData.notes ? `${formData.address} | Notas: ${formData.notes}` : formData.address) : undefined,
             city: shippingMethod === 'shipping' ? formData.city : undefined,
             postalCode: shippingMethod === 'shipping' ? formData.postalCode : undefined,
             details: items.map(item => ({
@@ -277,6 +278,17 @@ export default function CheckoutPage() {
                                                 className="mt-1 block w-full rounded-md border-stone-200 shadow-sm focus:border-primary focus:ring-primary py-2 px-3 border transition-colors"
                                                 value={formData.postalCode}
                                                 onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="sm:col-span-2">
+                                            <label htmlFor="notes" className="block text-sm font-medium text-stone-700">Notas para el envío (Opcional)</label>
+                                            <textarea
+                                                id="notes"
+                                                rows={2}
+                                                placeholder="Instrucciones especiales, entre calles, timbre..."
+                                                className="mt-1 block w-full rounded-md border-stone-200 shadow-sm focus:border-primary focus:ring-primary py-2 px-3 border transition-colors resize-none"
+                                                value={formData.notes}
+                                                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                                             />
                                         </div>
                                     </div>
