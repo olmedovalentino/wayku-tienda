@@ -308,7 +308,7 @@ export default function CheckoutPage() {
                                                 <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
                                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="5" rx="2" /><line x1="2" x2="22" y1="10" y2="10" /></svg>
                                                 </div>
-                                                <span className="font-bold text-stone-900 text-sm">Pagar con Tarjeta</span>
+                                                <span className="font-bold text-stone-900 text-sm">Mercado Pago (Tarjeta o Dinero en cuenta)</span>
                                             </div>
                                             <div className={`h-4 w-4 rounded-full border flex items-center justify-center ${paymentMethod === 'card' ? 'border-primary' : 'border-stone-300'}`}>
                                                 {paymentMethod === 'card' && <div className="h-2 w-2 rounded-full bg-primary" />}
