@@ -38,13 +38,18 @@ export default function AdminQueriesPage() {
         if (!selectedQuery || !replyText.trim()) return;
 
         setIsSending(true);
-        // Simulate sending
-        setTimeout(() => {
-            replyToQuery(selectedQuery.id, replyText);
-            setIsSending(false);
-            setSelectedQuery(null);
-            alert('Respuesta enviada correctamente.');
-        }, 1000);
+        
+        // Update database as replied
+        replyToQuery(selectedQuery.id, replyText);
+
+        // Open default email client with prefilled data
+        const subject = encodeURIComponent(`Re: ${selectedQuery.subject} - Waykú Lámparas`);
+        const body = encodeURIComponent(`${replyText}\n\n---\nMensaje original de ${selectedQuery.name}:\n${selectedQuery.message}`);
+        
+        window.location.href = `mailto:${selectedQuery.email}?subject=${subject}&body=${body}`;
+
+        setIsSending(false);
+        setSelectedQuery(null);
     };
 
     return (
