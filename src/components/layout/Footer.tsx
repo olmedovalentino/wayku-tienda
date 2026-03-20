@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Facebook, Instagram, Twitter } from 'lucide-react';
+import { Instagram, MessageCircle } from 'lucide-react';
 import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 
@@ -19,16 +19,13 @@ export function Footer() {
                             Iluminación artesanal que conecta con la naturaleza. Diseños únicos
                             en madera sostenible.
                         </p>
-                        <div className="flex space-x-4">
-                            <Link href="#" className="text-stone-400 hover:text-primary">
-                                <Instagram size={20} />
-                            </Link>
-                            <Link href="#" className="text-stone-400 hover:text-primary">
-                                <Facebook size={20} />
-                            </Link>
-                            <Link href="#" className="text-stone-400 hover:text-primary">
-                                <Twitter size={20} />
-                            </Link>
+                        <div className="flex space-x-5 mt-4">
+                            <a href="https://instagram.com/waykuarg" target="_blank" rel="noopener noreferrer" className="text-stone-400 hover:text-[#E1306C] transition-colors">
+                                <Instagram size={22} />
+                            </a>
+                            <a href="https://wa.me/5493513844333" target="_blank" rel="noopener noreferrer" className="text-stone-400 hover:text-[#25D366] transition-colors">
+                                <MessageCircle size={22} />
+                            </a>
                         </div>
                     </div>
 
