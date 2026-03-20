@@ -42,11 +42,11 @@ export default function AdminQueriesPage() {
         // Update database as replied
         replyToQuery(selectedQuery.id, replyText);
 
-        // Open default email client with prefilled data
+        // Open Gmail Web correctly with prefilled data
         const subject = encodeURIComponent(`Re: ${selectedQuery.subject} - Waykú Lámparas`);
         const body = encodeURIComponent(`${replyText}\n\n---\nMensaje original de ${selectedQuery.name}:\n${selectedQuery.message}`);
         
-        window.location.href = `mailto:${selectedQuery.email}?subject=${subject}&body=${body}`;
+        window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${selectedQuery.email}&su=${subject}&body=${body}`, '_blank');
 
         setIsSending(false);
         setSelectedQuery(null);
