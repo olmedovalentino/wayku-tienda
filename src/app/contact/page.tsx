@@ -81,7 +81,7 @@ export default function ContactPage() {
                                 </div>
                                 <div>
                                     <h3 className="font-semibold text-stone-900">Email</h3>
-                                    <p className="text-stone-600">hola@wayku.com</p>
+                                    <p className="text-stone-600">waykuargentina@gmail.com</p>
                                 </div>
                             </div>
 
@@ -91,7 +91,7 @@ export default function ContactPage() {
                                 </div>
                                 <div>
                                     <h3 className="font-semibold text-stone-900">Teléfono</h3>
-                                    <p className="text-stone-600">+54 11 1234 5678</p>
+                                    <p className="text-stone-600">3513844333</p>
                                 </div>
                             </div>
 
@@ -102,8 +102,7 @@ export default function ContactPage() {
                                 <div>
                                     <h3 className="font-semibold text-stone-900">Taller</h3>
                                     <p className="text-stone-600">
-                                        Av. del Libertador 1000<br />
-                                        Buenos Aires, Argentina
+                                        Villa Allende, Córdoba
                                     </p>
                                 </div>
                             </div>
@@ -268,7 +267,7 @@ export default function ContactPage() {
                                             <p className="text-sm">
                                                 Para gestionar un cambio, escríbenos a:
                                                 <br />
-                                                <span className="font-semibold text-primary">hola@wayku.com</span>
+                                                <span className="font-semibold text-primary">waykuargentina@gmail.com</span>
                                             </p>
                                         </div>
                                     </div>
