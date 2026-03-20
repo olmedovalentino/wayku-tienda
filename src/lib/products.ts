@@ -59,7 +59,7 @@ export const products: Product[] = [
         id: 'new-3',
         name: 'Kirú',
         description: 'Aplique de pared en madera con foco direccional negro. Combina funcionalidad y diseño moderno.',
-        price: 1000,
+        price: 80000,
         category: 'wall',
         material: 'palo-santo',
         images: ['/products/wall-sconce.png'],
