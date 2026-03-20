@@ -1,0 +1,496 @@
+'use client';
+
+import { useState } from 'react';
+import { useApp } from '@/context/AppContext';
+import { Product, StockVariant } from '@/lib/products';
+import { Button } from '@/components/ui/Button';
+import {
+    Plus,
+    Search,
+    Filter,
+    MoreVertical,
+    Edit,
+    Trash2,
+    ExternalLink,
+    X,
+    Upload,
+    Check,
+    Eye,
+    EyeOff,
+    PlusCircle,
+    MinusCircle
+} from 'lucide-react';
+import Image from 'next/image';
+
+export default function AdminProductsPage() {
+    const { products, addProduct, updateProduct, deleteProduct } = useApp();
+
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+    // Form state
+    const [formData, setFormData] = useState<Omit<Product, 'id'>>({
+        name: '',
+        description: '',
+        price: 0,
+        category: 'pendant',
+        material: 'roble',
+        images: [''],
+        inStock: true,
+        isVisible: true,
+        stockCount: 0,
+        variants: []
+    });
+
+    const [showVariants, setShowVariants] = useState(false);
+
+    const filteredProducts = products.filter(product =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.category.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const openAddModal = () => {
+        setEditingProduct(null);
+        setFormData({
+            name: '',
+            description: '',
+            price: 0,
+            category: 'pendant',
+            material: 'roble',
+            images: [''],
+            inStock: true,
+            isVisible: true,
+            stockCount: 0,
+            variants: []
+        });
+        setShowVariants(false);
+        setIsModalOpen(true);
+    };
+
+    const openEditModal = (product: Product) => {
+        setEditingProduct(product);
+        setFormData({
+            name: product.name,
+            description: product.description,
+            price: product.price,
+            category: product.category,
+            material: product.material,
+            images: product.images,
+            inStock: product.inStock,
+            isVisible: product.isVisible ?? true,
+            stockCount: product.stockCount ?? 0,
+            variants: product.variants || []
+        });
+        setShowVariants(!!product.variants && product.variants.length > 0);
+        setIsModalOpen(true);
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (editingProduct) {
+            updateProduct(editingProduct.id, formData);
+        } else {
+            addProduct(formData);
+        }
+        setIsModalOpen(false);
+    };
+
+    const handleDelete = (id: string, name: string) => {
+        if (confirm(`¿Estás seguro de que quieres eliminar la lámpara "${name}"?`)) {
+            deleteProduct(id);
+        }
+    };
+
+    const addVariant = () => {
+        const isAmai = formData.name === 'Amaí';
+        setFormData({
+            ...formData,
+            variants: [
+                ...(formData.variants || []),
+                {
+                    material: 'roble',
+                    stock: 0,
+                    ...(isAmai ? {} : { size: '1m' })
+                }
+            ]
+        });
+    };
+
+    const removeVariant = (index: number) => {
+        const newVariants = [...(formData.variants || [])];
+        newVariants.splice(index, 1);
+        setFormData({ ...formData, variants: newVariants });
+    };
+
+    const updateVariant = (index: number, field: keyof StockVariant, value: any) => {
+        const newVariants = [...(formData.variants || [])];
+        newVariants[index] = { ...newVariants[index], [field]: value };
+        setFormData({ ...formData, variants: newVariants });
+    };
+
+    return (
+        <div className="space-y-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-stone-900">Productos</h1>
+                    <p className="text-stone-500">Gestiona el catálogo de lámparas de Waykú.</p>
+                </div>
+                <Button onClick={openAddModal} className="flex items-center gap-2">
+                    <Plus size={20} />
+                    Nuevo Producto
+                </Button>
+            </div>
+
+            {/* Filters and Search */}
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-stone-100 flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-stone-400">
+                        <Search size={18} />
+                    </div>
+                    <input
+                        type="text"
+                        placeholder="Buscar por nombre o categoría..."
+                        className="block w-full pl-10 pr-3 py-2 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary sm:text-sm"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+            </div>
+
+            {/* Products Table */}
+            <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead className="bg-stone-50 text-stone-500 text-xs uppercase tracking-wider">
+                            <tr>
+                                <th className="px-6 py-4 font-medium">Producto</th>
+                                <th className="px-6 py-4 font-medium">Categoría</th>
+                                <th className="px-6 py-4 font-medium">Precio</th>
+                                <th className="px-6 py-4 font-medium text-center">Stock (U)</th>
+                                <th className="px-6 py-4 font-medium">Estado</th>
+                                <th className="px-6 py-4 font-medium">Visibilidad</th>
+                                <th className="px-6 py-4 font-medium text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-stone-100 text-sm">
+                            {filteredProducts.map((product) => (
+                                <tr key={product.id} className="hover:bg-stone-50 transition-colors group">
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-4">
+                                            <div className="relative h-12 w-12 rounded-lg overflow-hidden flex-shrink-0 bg-stone-100">
+                                                <Image
+                                                    src={product.images[0] || 'https://via.placeholder.com/150'}
+                                                    alt={product.name}
+                                                    fill
+                                                    className="object-cover"
+                                                />
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-stone-900">{product.name}</p>
+                                                <p className="text-xs text-stone-500 truncate max-w-[200px]">{product.description.substring(0, 50)}...</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className="capitalize text-stone-600">{product.category}</span>
+                                    </td>
+                                    <td className="px-6 py-4 font-medium text-stone-900">
+                                        ${product.price.toLocaleString()}
+                                    </td>
+                                    <td className="px-6 py-4 text-center font-medium text-stone-600">
+                                        {product.stockCount ?? 0}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <button
+                                            onClick={() => updateProduct(product.id, { inStock: !product.inStock })}
+                                            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors ${product.inStock
+                                                ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                                                : 'bg-red-100 text-red-700 hover:bg-red-200'
+                                                }`}
+                                        >
+                                            <span className={`h-1.5 w-1.5 rounded-full ${product.inStock ? 'bg-green-600' : 'bg-red-600'
+                                                }`}></span>
+                                            {product.inStock ? 'En Stock' : 'Sin Stock'}
+                                        </button>
+                                    </td>
+
+                                    <td className="px-6 py-4">
+                                        <button
+                                            onClick={() => updateProduct(product.id, { isVisible: !(product.isVisible ?? true) })}
+                                            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors ${product.isVisible !== false
+                                                ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                                                }`}
+                                        >
+                                            {product.isVisible !== false ? <Eye size={12} /> : <EyeOff size={12} />}
+                                            {product.isVisible !== false ? 'Visible' : 'Oculto'}
+                                        </button>
+                                    </td>
+
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex items-center justify-end gap-2">
+                                            <button
+                                                onClick={() => openEditModal(product)}
+                                                className="p-1.5 text-stone-400 hover:text-stone-900 transition-colors"
+                                                title="Editar"
+                                            >
+                                                <Edit size={18} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(product.id, product.name)}
+                                                className="p-1.5 text-stone-400 hover:text-red-500 transition-colors"
+                                                title="Eliminar"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* Modal for Add/Edit */}
+            {isModalOpen && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-center justify-between p-6 border-b border-stone-100">
+                            <h2 className="text-xl font-bold text-stone-900">
+                                {editingProduct ? 'Editar Producto' : 'Nuevo Producto'}
+                            </h2>
+                            <button onClick={() => setIsModalOpen(false)} className="text-stone-400 hover:text-stone-900 transition-colors">
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-stone-700">Nombre del Producto</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="w-full px-4 py-2 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-stone-700">Categoría</label>
+                                    <select
+                                        className="w-full px-4 py-2 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary"
+                                        value={formData.category}
+                                        onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
+                                    >
+                                        <option value="pendant">Colgante</option>
+                                        <option value="table">De Mesa</option>
+                                        <option value="floor">De Pie</option>
+                                        <option value="wall">Aplique</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-stone-700">Precio ($)</label>
+                                    <input
+                                        type="number"
+                                        required
+                                        className="w-full px-4 py-2 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary"
+                                        value={formData.price}
+                                        onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-stone-700">Material Principal</label>
+                                    <select
+                                        className="w-full px-4 py-2 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary"
+                                        value={formData.material}
+                                        onChange={(e) => setFormData({ ...formData, material: e.target.value as any })}
+                                    >
+                                        <option value="roble">Roble</option>
+                                        <option value="guayubira">Guayubira</option>
+                                        <option value="palo-santo">Palo Santo</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-stone-700">Stock Global (Unidades)</label>
+                                    <input
+                                        type="number"
+                                        required
+                                        min="0"
+                                        className="w-full px-4 py-2 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary disabled:bg-stone-100 disabled:text-stone-400"
+                                        value={formData.stockCount}
+                                        onChange={(e) => setFormData({ ...formData, stockCount: Number(e.target.value) })}
+                                        disabled={showVariants}
+                                    />
+                                    {showVariants && <p className="text-xs text-stone-500">Gestionado por variantes</p>}
+                                </div>
+                            </div>
+
+                            {/* Variants Section */}
+                            <div className="space-y-4 border-t border-stone-100 pt-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            id="showVariants"
+                                            className="h-4 w-4 rounded border-stone-300 text-primary focus:ring-primary"
+                                            checked={showVariants}
+                                            onChange={(e) => {
+                                                setShowVariants(e.target.checked);
+                                                if (!e.target.checked) {
+                                                    // Clear variants if unchecked? Or just hide? 
+                                                    // Better to just hide but keep data, or maybe warn.
+                                                    // For now, let's keep it simple.
+                                                } else if ((formData.variants || []).length === 0) {
+                                                    addVariant();
+                                                }
+                                            }}
+                                        />
+                                        <label htmlFor="showVariants" className="text-sm font-medium text-stone-900">
+                                            Gestionar Stock por Variantes (Material/Tamaño)
+                                        </label>
+                                    </div>
+                                    {showVariants && (
+                                        <Button type="button" size="sm" variant="outline" onClick={addVariant} className="gap-2">
+                                            <PlusCircle size={16} /> Agregar Combinación
+                                        </Button>
+                                    )}
+                                </div>
+
+                                {showVariants && (
+                                    <div className="bg-stone-50 rounded-xl p-4 space-y-3">
+                                        {(formData.variants || []).length === 0 ? (
+                                            <p className="text-sm text-stone-500 text-center py-2">No hay variantes definidas.</p>
+                                        ) : (
+                                            <div className="space-y-3">
+                                                <div className="grid grid-cols-12 gap-2 text-xs font-medium text-stone-500 uppercase px-1">
+                                                    <div className="col-span-4">Material</div>
+                                                    {formData.name !== 'Amaí' && <div className="col-span-4">Tamaño</div>}
+                                                    <div className={formData.name !== 'Amaí' ? "col-span-3" : "col-span-7"}>Stock</div>
+                                                    <div className="col-span-1"></div>
+                                                </div>
+                                                {(formData.variants || []).map((variant, index) => (
+                                                    <div key={index} className="grid grid-cols-12 gap-2 items-center">
+                                                        <div className="col-span-4">
+                                                            <select
+                                                                className="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg focus:ring-primary focus:border-primary"
+                                                                value={variant.material}
+                                                                onChange={(e) => updateVariant(index, 'material', e.target.value)}
+                                                            >
+                                                                <option value="roble">Roble</option>
+                                                                <option value="guayubira">Guayubira</option>
+                                                                {formData.name !== 'Taini' && (
+                                                                    <option value="palo-santo">Palo Santo</option>
+                                                                )}
+                                                            </select>
+                                                        </div>
+                                                        {formData.name !== 'Amaí' && (
+                                                            <div className="col-span-4">
+                                                                <input
+                                                                    type="text"
+                                                                    placeholder="Ej: 1m"
+                                                                    className="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg focus:ring-primary focus:border-primary"
+                                                                    value={variant.size || ''}
+                                                                    onChange={(e) => updateVariant(index, 'size', e.target.value)}
+                                                                />
+                                                            </div>
+                                                        )}
+                                                        <div className={formData.name !== 'Amaí' ? "col-span-3" : "col-span-7"}>
+                                                            <input
+                                                                type="number"
+                                                                min="0"
+                                                                className="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg focus:ring-primary focus:border-primary"
+                                                                value={variant.stock}
+                                                                onChange={(e) => updateVariant(index, 'stock', Number(e.target.value))}
+                                                            />
+                                                        </div>
+                                                        <div className="col-span-1 flex justify-end">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => removeVariant(index)}
+                                                                className="text-stone-400 hover:text-red-500 transition-colors"
+                                                            >
+                                                                <MinusCircle size={18} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-stone-700">Descripción</label>
+
+                                <textarea
+                                    required
+                                    rows={4}
+                                    className="w-full px-4 py-2 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary"
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                ></textarea>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-stone-700">URL de la Imagen</label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="https://images.unsplash.com/..."
+                                        className="flex-1 px-4 py-2 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary"
+                                        value={formData.images[0]}
+                                        onChange={(e) => setFormData({ ...formData, images: [e.target.value] })}
+                                    />
+                                </div>
+                                <p className="text-xs text-stone-400">Pega el link de la imagen principal del producto.</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="flex items-center gap-2 py-2">
+                                    <input
+                                        type="checkbox"
+                                        id="inStock"
+                                        className="h-4 w-4 rounded border-stone-300 text-primary focus:ring-primary"
+                                        checked={formData.inStock}
+                                        onChange={(e) => setFormData({ ...formData, inStock: e.target.checked })}
+                                    />
+                                    <label htmlFor="inStock" className="text-sm font-medium text-stone-700">Disponible en Stock</label>
+                                </div>
+
+                                <div className="flex items-center gap-2 py-2">
+                                    <input
+                                        type="checkbox"
+                                        id="isVisible"
+                                        className="h-4 w-4 rounded border-stone-300 text-primary focus:ring-primary"
+                                        checked={formData.isVisible !== false}
+                                        onChange={(e) => setFormData({ ...formData, isVisible: e.target.checked })}
+                                    />
+                                    <label htmlFor="isVisible" className="text-sm font-medium text-stone-700">Mostrar en Catálogo</label>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-4 pt-4">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="flex-1"
+                                    onClick={() => setIsModalOpen(false)}
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button type="submit" className="flex-1">
+                                    {editingProduct ? 'Guardar Cambios' : 'Crear Producto'}
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
