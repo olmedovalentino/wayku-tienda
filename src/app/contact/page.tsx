@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/Button';
 import { useApp } from '@/context/AppContext';
-import { Mail, MapPin, Phone, Send, ChevronDown } from 'lucide-react';
+import { Mail, MapPin, MessageCircle, Send, ChevronDown, Instagram } from 'lucide-react';
 import { useState, FormEvent } from 'react';
 
 export default function ContactPage() {
@@ -86,17 +86,31 @@ export default function ContactPage() {
                             </div>
 
                             <div className="flex items-start gap-4">
-                                <div className="rounded-lg bg-white p-3 shadow-sm">
-                                    <Phone className="h-6 w-6 text-primary" />
+                                <div className="rounded-lg bg-white p-3 shadow-sm border border-stone-100">
+                                    <MessageCircle className="h-6 w-6 text-primary" />
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-stone-900">Teléfono</h3>
-                                    <p className="text-stone-600">3513844333</p>
+                                    <h3 className="font-semibold text-stone-900">WhatsApp</h3>
+                                    <a href="https://wa.me/5493513844333" target="_blank" rel="noopener noreferrer" className="text-stone-600 hover:text-[#25D366] transition-colors">
+                                        +54 9 351 3844333
+                                    </a>
                                 </div>
                             </div>
 
                             <div className="flex items-start gap-4">
-                                <div className="rounded-lg bg-white p-3 shadow-sm">
+                                <div className="rounded-lg bg-white p-3 shadow-sm border border-stone-100">
+                                    <Instagram className="h-6 w-6 text-primary" />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-stone-900">Instagram</h3>
+                                    <a href="https://instagram.com/waykuarg" target="_blank" rel="noopener noreferrer" className="text-stone-600 hover:text-[#E1306C] transition-colors">
+                                        @waykuarg
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start gap-4">
+                                <div className="rounded-lg bg-white p-3 shadow-sm border border-stone-100">
                                     <MapPin className="h-6 w-6 text-primary" />
                                 </div>
                                 <div>

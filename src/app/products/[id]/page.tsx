@@ -4,7 +4,7 @@ import { useApp } from '@/context/AppContext';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
-import { Check, Truck, Shield, ArrowLeft, Star, Heart } from 'lucide-react';
+import { Check, Truck, Shield, ArrowLeft, Star, Heart, Hammer } from 'lucide-react';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { useFavorites } from '@/context/FavoritesContext';
@@ -324,19 +324,26 @@ export default function ProductPage(props: PageProps) {
                             </div>
                         )}
 
-                        <div className="rounded-xl bg-stone-50 p-6 space-y-4">
-                            <div className="flex items-start gap-3">
-                                <Truck className="mt-0.5 h-5 w-5 text-primary" />
+                        <div className="rounded-xl bg-stone-50 p-6 space-y-5 border border-stone-100 shadow-sm">
+                            <div className="flex items-start gap-4">
+                                <Hammer className="mt-0.5 h-6 w-6 text-[#5E6F5E]" />
                                 <div>
-                                    <p className="font-medium text-stone-900">Envío Gratis</p>
-                                    <p className="text-sm text-stone-500">En pedidos superiores a $100.</p>
+                                    <p className="font-bold text-stone-900 text-sm">Hecho a mano en Argentina 🇦🇷</p>
+                                    <p className="text-xs text-stone-500 mt-1">Cada lámpara es ensamblada y probada artesanalmente en Córdoba.</p>
                                 </div>
                             </div>
-                            <div className="flex items-start gap-3">
-                                <Shield className="mt-0.5 h-5 w-5 text-primary" />
+                            <div className="flex items-start gap-4">
+                                <Truck className="mt-0.5 h-6 w-6 text-[#5E6F5E]" />
                                 <div>
-                                    <p className="font-medium text-stone-900">Garantía de 2 años</p>
-                                    <p className="text-sm text-stone-500">Calidad asegurada en cada pieza.</p>
+                                    <p className="font-bold text-stone-900 text-sm">Envíos a todo el país</p>
+                                    <p className="text-xs text-stone-500 mt-1">Gratis en pedidos superiores a $100.000.</p>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-4">
+                                <Shield className="mt-0.5 h-6 w-6 text-[#5E6F5E]" />
+                                <div>
+                                    <p className="font-bold text-stone-900 text-sm">1 Año de Garantía</p>
+                                    <p className="text-xs text-stone-500 mt-1">Calidad estructural y eléctrica asegurada en tu compra.</p>
                                 </div>
                             </div>
                         </div>
@@ -345,7 +352,7 @@ export default function ProductPage(props: PageProps) {
                     <div className="mt-10 flex gap-4">
                         <Button
                             size="lg"
-                            className="w-full flex-1"
+                            className="w-full flex-1 min-h-[56px] text-lg font-bold shadow-md hover:shadow-lg transition-all"
                             disabled={!product.inStock || (!!product.variants && !isSelectionInStock())}
                             onClick={handleAddToCart}
                         >
@@ -354,11 +361,11 @@ export default function ProductPage(props: PageProps) {
                         <Button
                             variant="outline"
                             size="lg"
-                            className="px-6"
+                            className="px-6 min-h-[56px] border-2 hover:border-red-500 hover:text-red-500 transition-colors"
                             onClick={() => toggleFavorite(product)}
                         >
                             <Heart
-                                size={20}
+                                size={24}
                                 className={isFavorite(product.id) ? 'fill-current text-red-500' : ''}
                             />
                         </Button>
