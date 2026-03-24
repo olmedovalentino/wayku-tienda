@@ -81,7 +81,7 @@ export default function ContactPage() {
                                 </div>
                                 <div>
                                     <h3 className="font-semibold text-stone-900">Email</h3>
-                                    <p className="text-stone-600">waykuargentina@gmail.com</p>
+                                    <a href="mailto:waykuargentina@gmail.com" className="text-stone-600 hover:text-primary transition-colors">waykuargentina@gmail.com</a>
                                 </div>
                             </div>
 
@@ -106,18 +106,6 @@ export default function ContactPage() {
                                     <a href="https://instagram.com/waykuarg" target="_blank" rel="noopener noreferrer" className="text-stone-600 hover:text-[#E1306C] transition-colors">
                                         @waykuarg
                                     </a>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start gap-4">
-                                <div className="rounded-lg bg-white p-3 shadow-sm border border-stone-100">
-                                    <MapPin className="h-6 w-6 text-primary" />
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-stone-900">Showroom</h3>
-                                    <p className="text-stone-600">
-                                        Villa Allende, Córdoba
-                                    </p>
                                 </div>
                             </div>
                         </div>

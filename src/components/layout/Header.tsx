@@ -46,11 +46,28 @@ export function Header() {
                         Inicio
                     </Link>
                     <Link
-                        href="/products"
+                        href="/"
                         className="text-sm font-medium text-stone-600 transition-colors hover:text-primary"
                     >
-                        Catálogo
+                        Inicio
                     </Link>
+                    <div className="group relative">
+                        <Link
+                            href="/products"
+                            className="text-sm font-medium text-stone-600 transition-colors hover:text-primary py-4 block"
+                        >
+                            Catálogo
+                        </Link>
+                        <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 hidden group-hover:block w-48">
+                            <div className="bg-white border border-stone-100 rounded-xl shadow-lg p-2 flex flex-col gap-1">
+                                <Link href="/products" className="px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 hover:text-primary rounded-lg transition-colors">Ver todo</Link>
+                                <Link href="/products?category=pendant" className="px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 hover:text-primary rounded-lg transition-colors">Colgantes</Link>
+                                <Link href="/products?category=table" className="px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 hover:text-primary rounded-lg transition-colors">De Mesa</Link>
+                                <Link href="/products?category=floor" className="px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 hover:text-primary rounded-lg transition-colors">De Pie</Link>
+                                <Link href="/products?category=wall" className="px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 hover:text-primary rounded-lg transition-colors">Apliques</Link>
+                            </div>
+                        </div>
+                    </div>
                     <Link
                         href="/story"
                         className="text-sm font-medium text-stone-600 transition-colors hover:text-primary"
@@ -120,13 +137,19 @@ export function Header() {
             {isMenuOpen && (
                 <div className="border-t border-stone-100 lg:hidden bg-white">
                     <nav className="flex flex-col space-y-4 p-4">
-                        <Link
-                            href="/products"
-                            onClick={() => setIsMenuOpen(false)}
-                            className="text-base font-medium text-stone-600 hover:text-primary"
-                        >
-                            Tienda
-                        </Link>
+                        <div className="flex flex-col space-y-3">
+                            <Link
+                                href="/products"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="text-base font-medium text-stone-600 hover:text-primary uppercase tracking-wide text-sm border-b border-stone-50 pb-2"
+                            >
+                                Catálogo (Ver todo)
+                            </Link>
+                            <Link href="/products?category=pendant" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary pl-4 text-sm font-medium">Colgantes</Link>
+                            <Link href="/products?category=table" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary pl-4 text-sm font-medium">De Mesa</Link>
+                            <Link href="/products?category=floor" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary pl-4 text-sm font-medium">De Pie</Link>
+                            <Link href="/products?category=wall" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary pl-4 text-sm font-medium">Apliques</Link>
+                        </div>
                         <Link
                             href="/story"
                             onClick={() => setIsMenuOpen(false)}

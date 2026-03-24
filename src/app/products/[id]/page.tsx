@@ -141,41 +141,80 @@ export default function ProductPage(props: PageProps) {
 
 
     return (
-        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-16">
+        <div className="mx-auto max-w-7xl px-0 lg:px-8 py-4 lg:py-16">
             <Link
                 href="/products"
-                className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-stone-500 hover:text-primary"
+                className="mb-6 px-4 lg:px-0 inline-flex items-center gap-2 text-sm font-medium text-stone-500 hover:text-primary"
             >
                 <ArrowLeft size={16} /> Volver a la tienda
             </Link>
 
-            <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-x-8 gap-y-8 lg:grid-cols-2">
                 {/* Product Gallery */}
                 <div className="space-y-4">
-                    <div className="relative aspect-square overflow-hidden rounded-2xl bg-stone-100">
+                    
+                    {/* --- MOBILE GALLERY --- */}
+                    <div className="lg:hidden relative w-full aspect-square bg-stone-100">
+                        <div 
+                            className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scroll-smooth hide-scrollbar" 
+                            id="mobile-gallery"
+                            onScroll={(e) => {
+                                const scrollLeft = e.currentTarget.scrollLeft;
+                                const width = e.currentTarget.offsetWidth;
+                                setSelectedImageIndex(Math.round(scrollLeft / width));
+                            }}
+                        >
+                            {product.images.map((img, idx) => (
+                                <div key={idx} className="w-full h-full shrink-0 snap-center relative">
+                                    <Image src={img} alt={`${product.name} ${idx + 1}`} fill className="object-cover" priority={idx === 0} sizes="100vw" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    {/* Mobile Dots */}
+                    {product.images.length > 1 && (
+                        <div className="flex lg:hidden justify-center gap-2 mt-3 mb-6">
+                            {product.images.map((_, idx) => (
+                                <button 
+                                    key={idx} 
+                                    onClick={() => {
+                                        const el = document.getElementById('mobile-gallery');
+                                        if (el) el.scrollTo({ left: idx * el.offsetWidth, behavior: 'smooth' });
+                                    }} 
+                                    aria-label={`Ir a foto ${idx + 1}`}
+                                    className={`h-2 rounded-full transition-all ${selectedImageIndex === idx ? 'w-6 bg-stone-800' : 'w-2 bg-stone-300'}`} 
+                                />
+                            ))}
+                        </div>
+                    )}
+
+
+                    {/* --- DESKTOP GALLERY --- */}
+                    <div className="relative aspect-square overflow-hidden rounded-2xl bg-stone-100 hidden lg:block">
                         <Image
                             src={product.images[selectedImageIndex]}
                             alt={product.name}
                             fill
-                            className="object-cover"
+                            className="object-cover transition-opacity duration-300"
                             priority
-                            sizes="(max-width: 768px) 100vw, 50vw"
+                            sizes="50vw"
                         />
                     </div>
+                    {/* Desktop Thumbnails */}
                     {product.images.length > 1 && (
-                        <div className="grid grid-cols-4 gap-4">
+                        <div className="hidden lg:grid grid-cols-4 gap-4">
                             {product.images.map((image, index) => (
                                 <button
                                     key={index}
                                     onClick={() => setSelectedImageIndex(index)}
-                                    className={`relative aspect-square overflow-hidden rounded-lg bg-stone-100 ${selectedImageIndex === index ? 'ring-2 ring-primary' : ''}`}
+                                    className={`relative aspect-square overflow-hidden rounded-xl bg-stone-100 transition-all ${selectedImageIndex === index ? 'ring-2 ring-primary opacity-100' : 'opacity-70 hover:opacity-100'}`}
                                 >
                                     <Image
                                         src={image}
                                         alt={`${product.name} ${index + 1}`}
                                         fill
                                         className="object-cover"
-                                        sizes="(max-width: 768px) 25vw, 12vw"
+                                        sizes="12vw"
                                     />
                                 </button>
                             ))}
@@ -184,7 +223,7 @@ export default function ProductPage(props: PageProps) {
                 </div>
 
                 {/* Product Info */}
-                <div className="flex flex-col">
+                <div className="flex flex-col px-4 lg:px-0">
                     <h1 className="text-3xl font-normal tracking-tight text-stone-900 sm:text-4xl">
                         {product.name}
                     </h1>
@@ -374,7 +413,7 @@ export default function ProductPage(props: PageProps) {
             </div>
 
             {/* Reviews Section */}
-            <div className="mt-20 border-t border-stone-200 pt-16">
+            <div className="mt-16 lg:mt-20 border-t border-stone-200 pt-16 px-4 lg:px-0">
                 <h2 className="text-2xl font-normal text-stone-900 mb-8">Reseñas y Comentarios</h2>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -454,7 +493,7 @@ export default function ProductPage(props: PageProps) {
 
             {/* Similar Products */}
             {similarProducts.length > 0 && (
-                <div className="mt-20 border-t border-stone-200 pt-16">
+                <div className="mt-20 border-t border-stone-200 pt-16 px-4 lg:px-0 mb-10">
                     <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16 items-start">
                         <div className="lg:col-span-8">
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
