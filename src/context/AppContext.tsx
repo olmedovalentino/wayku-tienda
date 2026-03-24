@@ -230,6 +230,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 if (!subscribers.includes(email)) {
                     setSubscribers(prev => [...prev, email]);
                     if (supabase) await supabase.from('subscribers').insert({ email });
+                    
+                    // Notificación en panel de admin
+                    const tempId = Date.now();
+                    const newQuery = { 
+                        id: tempId, 
+                        name: 'Sistema Newsletter', 
+                        email: email, 
+                        subject: '¡Nueva suscripción!', 
+                        message: `El usuario con email ${email} se acaba de suscribir al newsletter.`, 
+                        date: 'Recién', 
+                        read: false 
+                    };
+                    setQueries(prev => [newQuery, ...prev]);
+                    if (supabase) {
+                        const { id, ...insertData } = newQuery;
+                        const { data } = await supabase.from('queries').insert(insertData).select().single();
+                        if (data) {
+                            setQueries(prev => prev.map(qry => qry.id === tempId ? { ...qry, id: data.id } : qry));
+                        }
+                    }
                 }
             }
         }}>
