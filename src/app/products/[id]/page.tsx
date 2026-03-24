@@ -153,11 +153,11 @@ export default function ProductPage(props: PageProps) {
                 {/* Product Gallery */}
                 <div className="space-y-4">
                     
-                    {/* --- MOBILE GALLERY --- */}
-                    <div className="lg:hidden relative w-full aspect-square bg-stone-100">
+                    {/* --- SWIPEABLE GALLERY (ALL DEVICES) --- */}
+                    <div className="relative w-full aspect-square bg-stone-100 rounded-2xl overflow-hidden group">
                         <div 
-                            className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scroll-smooth hide-scrollbar" 
-                            id="mobile-gallery"
+                            className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scroll-smooth hide-scrollbar cursor-grab active:cursor-grabbing" 
+                            id="product-gallery"
                             onScroll={(e) => {
                                 const scrollLeft = e.currentTarget.scrollLeft;
                                 const width = e.currentTarget.offsetWidth;
@@ -166,19 +166,20 @@ export default function ProductPage(props: PageProps) {
                         >
                             {product.images.map((img, idx) => (
                                 <div key={idx} className="w-full h-full shrink-0 snap-center relative">
-                                    <Image src={img} alt={`${product.name} ${idx + 1}`} fill className="object-cover" priority={idx === 0} sizes="100vw" />
+                                    <Image src={img} alt={`${product.name} ${idx + 1}`} fill className="object-cover" priority={idx === 0} sizes="(max-width: 1024px) 100vw, 50vw" />
                                 </div>
                             ))}
                         </div>
                     </div>
-                    {/* Mobile Dots */}
+                    
+                    {/* Dots Indicator (Mobile mainly, but useful anywhere) */}
                     {product.images.length > 1 && (
-                        <div className="flex lg:hidden justify-center gap-2 mt-3 mb-6">
+                        <div className="flex justify-center gap-2 mt-3 mb-6 lg:hidden">
                             {product.images.map((_, idx) => (
                                 <button 
                                     key={idx} 
                                     onClick={() => {
-                                        const el = document.getElementById('mobile-gallery');
+                                        const el = document.getElementById('product-gallery');
                                         if (el) el.scrollTo({ left: idx * el.offsetWidth, behavior: 'smooth' });
                                     }} 
                                     aria-label={`Ir a foto ${idx + 1}`}
@@ -188,26 +189,17 @@ export default function ProductPage(props: PageProps) {
                         </div>
                     )}
 
-
-                    {/* --- DESKTOP GALLERY --- */}
-                    <div className="relative aspect-square overflow-hidden rounded-2xl bg-stone-100 hidden lg:block">
-                        <Image
-                            src={product.images[selectedImageIndex]}
-                            alt={product.name}
-                            fill
-                            className="object-cover transition-opacity duration-300"
-                            priority
-                            sizes="50vw"
-                        />
-                    </div>
                     {/* Desktop Thumbnails */}
                     {product.images.length > 1 && (
-                        <div className="hidden lg:grid grid-cols-4 gap-4">
+                        <div className="hidden lg:grid grid-cols-4 gap-4 mt-4">
                             {product.images.map((image, index) => (
                                 <button
                                     key={index}
-                                    onClick={() => setSelectedImageIndex(index)}
-                                    className={`relative aspect-square overflow-hidden rounded-xl bg-stone-100 transition-all ${selectedImageIndex === index ? 'ring-2 ring-primary opacity-100' : 'opacity-70 hover:opacity-100'}`}
+                                    onClick={() => {
+                                        const el = document.getElementById('product-gallery');
+                                        if (el) el.scrollTo({ left: index * el.offsetWidth, behavior: 'smooth' });
+                                    }}
+                                    className={`relative aspect-square overflow-hidden rounded-xl bg-stone-100 transition-all ${selectedImageIndex === index ? 'ring-2 ring-stone-900 border-2 border-white opacity-100 shadow-md transform scale-105' : 'opacity-70 hover:opacity-100'}`}
                                 >
                                     <Image
                                         src={image}

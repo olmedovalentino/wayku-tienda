@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ShoppingBag, Menu, X, Search, Heart } from 'lucide-react';
+import { ShoppingBag, Menu, X, Search, Heart, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useFavorites } from '@/context/FavoritesContext';
@@ -10,6 +10,7 @@ import { SearchModal } from './SearchModal';
 
 export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isCatalogOpen, setIsCatalogOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const { openCart, items } = useCart();
     const { openFavorites, favorites } = useFavorites();
@@ -38,23 +39,17 @@ export function Header() {
                 </Link>
 
                 {/* Desktop Navigation - Centered */}
-                <nav className="absolute left-1/2 top-1/2 -translate-x-1/2 hidden -translate-y-1/2 gap-8 lg:flex">
+                <nav className="absolute left-1/2 top-1/2 -translate-x-1/2 hidden -translate-y-1/2 gap-8 lg:flex items-center h-full">
                     <Link
                         href="/"
                         className="text-sm font-medium text-stone-600 transition-colors hover:text-primary"
                     >
                         Inicio
                     </Link>
-                    <Link
-                        href="/"
-                        className="text-sm font-medium text-stone-600 transition-colors hover:text-primary"
-                    >
-                        Inicio
-                    </Link>
-                    <div className="group relative">
+                    <div className="group relative flex items-center h-full">
                         <Link
                             href="/products"
-                            className="text-sm font-medium text-stone-600 transition-colors hover:text-primary py-4 block"
+                            className="text-sm font-medium text-stone-600 transition-colors group-hover:text-primary"
                         >
                             Catálogo
                         </Link>
@@ -137,18 +132,23 @@ export function Header() {
             {isMenuOpen && (
                 <div className="border-t border-stone-100 lg:hidden bg-white">
                     <nav className="flex flex-col space-y-4 p-4">
-                        <div className="flex flex-col space-y-3">
-                            <Link
-                                href="/products"
-                                onClick={() => setIsMenuOpen(false)}
-                                className="text-base font-medium text-stone-600 hover:text-primary uppercase tracking-wide text-sm border-b border-stone-50 pb-2"
+                        <div className="flex flex-col">
+                            <button
+                                onClick={() => setIsCatalogOpen(!isCatalogOpen)}
+                                className="flex justify-between items-center text-base font-medium text-stone-600 hover:text-primary w-full text-left"
                             >
-                                Catálogo (Ver todo)
-                            </Link>
-                            <Link href="/products?category=pendant" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary pl-4 text-sm font-medium">Colgantes</Link>
-                            <Link href="/products?category=table" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary pl-4 text-sm font-medium">De Mesa</Link>
-                            <Link href="/products?category=floor" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary pl-4 text-sm font-medium">De Pie</Link>
-                            <Link href="/products?category=wall" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary pl-4 text-sm font-medium">Apliques</Link>
+                                Catálogo
+                                <ChevronDown size={18} className={`transition-transform duration-200 ${isCatalogOpen ? 'rotate-180' : ''}`} />
+                            </button>
+                            {isCatalogOpen && (
+                                <div className="flex flex-col space-y-4 pl-4 pt-4 border-l-2 border-stone-100 ml-2 mt-2 mb-2">
+                                    <Link href="/products" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary text-sm font-medium">Ver Todo</Link>
+                                    <Link href="/products?category=pendant" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary text-sm font-medium">Colgantes</Link>
+                                    <Link href="/products?category=table" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary text-sm font-medium">De Mesa</Link>
+                                    <Link href="/products?category=floor" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary text-sm font-medium">De Pie</Link>
+                                    <Link href="/products?category=wall" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary text-sm font-medium">Apliques</Link>
+                                </div>
+                            )}
                         </div>
                         <Link
                             href="/story"
