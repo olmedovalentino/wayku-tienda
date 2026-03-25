@@ -487,10 +487,10 @@ export default function ProductPage(props: PageProps) {
             {similarProducts.length > 0 && (
                 <div className="mt-20 border-t border-stone-200 pt-16 px-4 lg:px-0 mb-10">
                     <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16 items-start">
-                        <div className="lg:col-span-8">
-                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+                        <div className="lg:col-span-8 w-full">
+                            <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-6 sm:grid sm:grid-cols-3 sm:gap-6 sm:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                                 {similarProducts.map((similarProduct) => (
-                                    <Link key={similarProduct.id} href={`/products/${similarProduct.id}`} className="group block">
+                                    <Link key={similarProduct.id} href={`/products/${similarProduct.id}`} className="group block min-w-[70vw] sm:min-w-0 snap-center shrink-0">
                                         <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#F9F5F0]">
                                             <Image
                                                 src={similarProduct.images[0]}
