@@ -20,7 +20,7 @@ export default function AdminLayout({
     children: React.ReactNode;
 }) {
     const [isAuthorized, setIsAuthorized] = useState(false);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const router = useRouter();
     const pathname = usePathname();
 
@@ -56,6 +56,14 @@ export default function AdminLayout({
 
     return (
         <div className="min-h-screen bg-stone-50 flex">
+            {/* Overlay */}
+            {isSidebarOpen && (
+                <div 
+                    className="fixed inset-0 z-40 bg-stone-900/50 backdrop-blur-sm lg:hidden transition-opacity"
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+            )}
+
             {/* Sidebar */}
             <aside
                 className={`fixed inset-y-0 left-0 z-50 w-64 bg-stone-900 text-white transition-transform duration-300 ease-in-out lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
@@ -73,6 +81,7 @@ export default function AdminLayout({
                                 <Link
                                     key={item.name}
                                     href={item.href}
+                                    onClick={() => setIsSidebarOpen(false)}
                                     className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
                                         ? 'bg-primary text-white'
                                         : 'text-stone-400 hover:text-white hover:bg-stone-800'
