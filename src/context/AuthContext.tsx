@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 
 export interface User {
     id: string;
@@ -31,46 +32,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const login = async (email: string, password: string) => {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // Simple mock login logic
-        const users = JSON.parse(localStorage.getItem('wayku_registered_users') || '[]');
-        const foundUser = users.find((u: any) => u.email === email && u.password === password);
-
-        if (foundUser) {
-            const userData = { id: foundUser.id, email: foundUser.email, name: foundUser.name };
-            setUser(userData);
-            localStorage.setItem('wayku_user', JSON.stringify(userData));
-        } else {
+        setIsLoading(true);
+        if (!supabase) throw new Error('Error de conexión con la base de datos');
+        try {
+            const { data: users, error } = await supabase.from('users').select('*').eq('email', email).eq('password', password);
+            
+            if (error) throw error;
+            
+            if (users && users.length > 0) {
+                const foundUser = users[0];
+                const userData = { id: foundUser.id, email: foundUser.email, name: foundUser.name };
+                setUser(userData);
+                localStorage.setItem('wayku_user', JSON.stringify(userData));
+            } else {
+                throw new Error('Email o contraseña incorrectos');
+            }
+        } catch (error: any) {
+            console.error(error);
             throw new Error('Email o contraseña incorrectos');
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const register = async (name: string, email: string, password: string) => {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        setIsLoading(true);
+        if (!supabase) throw new Error('Error de conexión con la base de datos');
+        try {
+            // Check if email exists
+            const { data: existingUsers } = await supabase.from('users').select('email').eq('email', email);
+            if (existingUsers && existingUsers.length > 0) {
+                throw new Error('El email ya está registrado');
+            }
 
-        const users = JSON.parse(localStorage.getItem('wayku_registered_users') || '[]');
-        if (users.find((u: any) => u.email === email)) {
-            throw new Error('El email ya está registrado');
+            const newUser = {
+                id: Math.random().toString(36).substr(2, 9),
+                name,
+                email,
+                password
+            };
+
+            const { error } = await supabase.from('users').insert(newUser);
+            if (error) throw error;
+
+            const userData = { id: newUser.id, name: newUser.name, email: newUser.email };
+            setUser(userData);
+            localStorage.setItem('wayku_user', JSON.stringify(userData));
+        } catch (error: any) {
+            console.error(error);
+            throw new Error(error.message || 'Error al registrar usuario');
+        } finally {
+            setIsLoading(false);
         }
-
-        const newUser = {
-            id: Math.random().toString(36).substr(2, 9),
-            name,
-            email,
-            password
-        };
-
-        const updatedUsers = [...users, newUser];
-        localStorage.setItem('wayku_registered_users', JSON.stringify(updatedUsers));
-
-        const userData = { id: newUser.id, name: newUser.name, email: newUser.email };
-        setUser(userData);
-        localStorage.setItem('wayku_user', JSON.stringify(userData));
-
-        // Add user to admin's list in AppContext (conceptually)
-        // This will be handled by AppContext if we link them
     };
 
     const logout = () => {

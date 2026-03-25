@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { User, Mail, Shield, Trash2, Search } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { supabase } from '@/lib/supabase';
 
 interface RegisteredUser {
     id: string;
@@ -16,22 +17,34 @@ export default function UsersAdminPage() {
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
-        const savedUsers = localStorage.getItem('wayku_registered_users');
-        if (savedUsers) {
-            setUsers(JSON.parse(savedUsers));
-        }
+        fetchUsers();
     }, []);
+
+    const fetchUsers = async () => {
+        if (!supabase) return;
+        const { data } = await supabase.from('users').select('*');
+        if (data) {
+            setUsers(data);
+        }
+    };
 
     const filteredUsers = users.filter(user =>
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const deleteUser = (id: string) => {
+    const deleteUser = async (id: string) => {
         if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
+            if (!supabase) return;
+            await supabase.from('users').delete().eq('id', id);
+            
             const updatedUsers = users.filter(u => u.id !== id);
             setUsers(updatedUsers);
-            localStorage.setItem('wayku_registered_users', JSON.stringify(updatedUsers));
+            
+            // Si también estaba guardado en localStorage localmente, lo borramos
+            const localUsers = JSON.parse(localStorage.getItem('wayku_registered_users') || '[]');
+            const updatedLocal = localUsers.filter((u: any) => u.id !== id);
+            localStorage.setItem('wayku_registered_users', JSON.stringify(updatedLocal));
         }
     };
 
