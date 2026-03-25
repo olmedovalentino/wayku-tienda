@@ -33,7 +33,9 @@ function SuccessContent() {
             
             // Marcar pedido como pagado/procesando si viene de MercadoPago (Card)
             if (status === 'approved' && orderId) {
-                updateOrderStatus(orderId, 'Procesando');
+                updateOrderStatus(orderId, 'Confirmado');
+            } else if (method === 'transfer' && orderId) {
+                updateOrderStatus(orderId, 'A Verificar');
             }
 
             // Descontar inventario

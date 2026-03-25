@@ -10,7 +10,7 @@ export interface Order {
     email: string;
     date: string;
     total: string;
-    status: 'Pendiente' | 'Procesando' | 'Enviado' | 'Entregado' | 'Cancelado';
+    status: 'Pendiente' | 'A Verificar' | 'Confirmado' | 'Procesando' | 'Enviado' | 'Entregado' | 'Cancelado';
     items: number;
     shippingMethod: 'shipping' | 'pickup';
     paymentMethod: 'card' | 'transfer';
@@ -65,7 +65,7 @@ interface AppContextType {
     replyToQuery: (id: number, response: string) => void;
     subscribeToNewsletter: (email: string) => void;
     addReview: (review: Omit<Review, 'id' | 'date'>) => void;
-    addOrder: (order: Omit<Order, 'id' | 'date' | 'status'>) => void;
+    addOrder: (order: Omit<Order, 'date' | 'status'> | Omit<Order, 'id' | 'date' | 'status'> & { id?: string }) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -232,10 +232,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (supabase) await supabase.from('reviews').insert(newReview);
     };
 
-    const addOrder = async (order: Omit<Order, 'id' | 'date' | 'status'>) => {
+    const addOrder = async (order: any) => {
         const newOrder: Order = {
             ...order,
-            id: `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
+            id: order.id || `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
             date: new Date().toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' }),
             status: 'Pendiente'
         };

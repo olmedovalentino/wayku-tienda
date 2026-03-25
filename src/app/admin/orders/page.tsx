@@ -30,8 +30,10 @@ export default function AdminOrdersPage() {
     const getStatusStyles = (status: string) => {
         switch (status) {
             case 'Entregado': return 'bg-green-100 text-green-700';
+            case 'Confirmado': return 'bg-emerald-100 text-emerald-700';
             case 'Procesando': return 'bg-blue-100 text-blue-700';
             case 'Enviado': return 'bg-purple-100 text-purple-700';
+            case 'A Verificar': return 'bg-orange-100 text-orange-700';
             case 'Pendiente': return 'bg-yellow-100 text-yellow-700';
             case 'Cancelado': return 'bg-red-100 text-red-700';
             default: return 'bg-stone-100 text-stone-700';
@@ -101,6 +103,8 @@ export default function AdminOrdersPage() {
                                             className={`px-2 py-0.5 rounded-full text-xs font-medium border-none focus:ring-0 cursor-pointer ${getStatusStyles(order.status)}`}
                                         >
                                             <option value="Pendiente">Pendiente</option>
+                                            <option value="A Verificar">A Verificar</option>
+                                            <option value="Confirmado">Confirmado</option>
                                             <option value="Procesando">Procesando</option>
                                             <option value="Enviado">Enviado</option>
                                             <option value="Entregado">Entregado</option>
@@ -170,6 +174,8 @@ export default function AdminOrdersPage() {
                                 className={`flex-1 flex justify-center items-center px-2 py-1.5 rounded-lg text-xs font-medium border-none focus:ring-0 text-center uppercase tracking-wider ${getStatusStyles(order.status)}`}
                             >
                                 <option value="Pendiente">Pendiente</option>
+                                <option value="A Verificar">A Verificar</option>
+                                <option value="Confirmado">Confirmado</option>
                                 <option value="Procesando">Procesando</option>
                                 <option value="Enviado">Enviado</option>
                                 <option value="Entregado">Entregado</option>
@@ -216,7 +222,7 @@ export default function AdminOrdersPage() {
                                                 }`}>
                                                 <step.icon size={20} />
                                             </div>
-                                            <span className={`text-xs font-medium ${isActive || isPast ? 'text-stone-900' : 'text-stone-400'}`}>
+                                            <span className={`text-xs font-medium text-center ${isActive || isPast ? 'text-stone-900' : 'text-stone-400'}`}>
                                                 {step.label}
                                             </span>
                                             {idx < arr.length - 1 && (
@@ -250,7 +256,7 @@ export default function AdminOrdersPage() {
                                     </h3>
                                     <div className="bg-stone-50 p-4 rounded-xl space-y-2">
                                         <p className="text-sm"><strong>Método:</strong> {selectedOrder.paymentMethod === 'card' ? 'Tarjeta (Mercado Pago)' : 'Transferencia Bancaria'}</p>
-                                        <p className="text-sm"><strong>Estado:</strong> {selectedOrder.status === 'Entregado' ? 'Pagado' : 'Pendiente'}</p>
+                                        <p className="text-sm"><strong>Estado:</strong> {selectedOrder.status === 'Confirmado' || selectedOrder.status === 'Procesando' || selectedOrder.status === 'Enviado' || selectedOrder.status === 'Entregado' ? 'Pagado' : (selectedOrder.status === 'A Verificar' ? 'Esperando Comprobante' : 'Pendiente')}</p>
                                         <div className="pt-2 border-t border-stone-200 mt-2">
                                             <p className="text-lg font-bold text-stone-900 flex justify-between">
                                                 <span>Total:</span>
