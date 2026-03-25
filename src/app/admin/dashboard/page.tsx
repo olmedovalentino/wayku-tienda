@@ -64,7 +64,7 @@ export default function AdminDashboardPage() {
 
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 {stats.map((stat) => (
                     <div key={stat.name} className="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
                         <div className="flex items-center justify-between mb-4">
@@ -86,12 +86,9 @@ export default function AdminDashboardPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Recent Orders Table */}
                 <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
-                    <div className="px-6 py-4 border-b border-stone-100 flex items-center justify-between">
-                        <h3 className="font-bold text-stone-900">Pedidos Recientes</h3>
-                        <button className="text-primary text-sm font-medium hover:underline">Ver todos</button>
-                    </div>
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left">
+                        {/* Desktop Table */}
+                        <table className="w-full text-left hidden lg:table">
                             <thead className="bg-stone-50 text-stone-500 text-xs uppercase tracking-wider">
                                 <tr>
                                     <th className="px-6 py-3 font-medium">Pedido</th>
@@ -121,6 +118,43 @@ export default function AdminDashboardPage() {
                                 ))}
                             </tbody>
                         </table>
+
+                        {/* Mobile Cards */}
+                        <div className="lg:hidden flex flex-col divide-y divide-stone-100">
+                            {recentOrders.length === 0 ? (
+                                <div className="p-8 text-center text-stone-500">
+                                    No hay pedidos recientes
+                                </div>
+                            ) : (
+                                recentOrders.map((order) => (
+                                    <div key={order.id} className="p-4 flex flex-col gap-3 bg-white hover:bg-stone-50 transition-colors">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <h3 className="font-bold text-stone-900 text-sm">{order.id}</h3>
+                                                <p className="text-xs text-stone-500 mt-1">{order.date}</p>
+                                            </div>
+                                            <span className={`px-2 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider ${order.status === 'Entregado' ? 'bg-green-100 text-green-700' :
+                                                order.status === 'Procesando' ? 'bg-blue-100 text-blue-700' :
+                                                    order.status === 'Pendiente' ? 'bg-yellow-100 text-yellow-700' :
+                                                        'bg-stone-100 text-stone-700'
+                                                }`}>
+                                                {order.status}
+                                            </span>
+                                        </div>
+                                        <div className="flex flex-col gap-1 border-t border-stone-50 pt-2">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-stone-500">Cliente:</span>
+                                                <span className="font-medium text-stone-900 line-clamp-1">{order.customer}</span>
+                                            </div>
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-stone-500">Total:</span>
+                                                <span className="font-bold text-primary">{order.total}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
                     </div>
                 </div>
 

@@ -69,7 +69,8 @@ export default function UsersAdminPage() {
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left">
+                    {/* Desktop Table */}
+                    <table className="w-full text-left hidden lg:table">
                         <thead>
                             <tr className="bg-stone-50 text-stone-500 text-xs font-medium uppercase tracking-wider">
                                 <th className="px-6 py-4">Usuario</th>
@@ -91,7 +92,7 @@ export default function UsersAdminPage() {
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                                                    {user.name.charAt(0)}
+                                                    {user.name.charAt(0).toUpperCase()}
                                                 </div>
                                                 <span className="font-medium text-stone-900">{user.name}</span>
                                             </div>
@@ -121,6 +122,43 @@ export default function UsersAdminPage() {
                             )}
                         </tbody>
                     </table>
+
+                    {/* Mobile Cards */}
+                    <div className="lg:hidden flex flex-col divide-y divide-stone-100">
+                        {filteredUsers.length === 0 ? (
+                            <div className="p-8 text-center text-stone-500">
+                                No se encontraron usuarios registrados
+                            </div>
+                        ) : (
+                            filteredUsers.map((user) => (
+                                <div key={user.id} className="p-4 flex flex-col gap-3 bg-white hover:bg-stone-50 transition-colors">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                                                {user.name.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div>
+                                                <h3 className="font-medium text-stone-900">{user.name}</h3>
+                                                <p className="text-xs text-stone-500 flex items-center gap-1 mt-0.5"><Mail size={12}/> {user.email}</p>
+                                            </div>
+                                        </div>
+                                        <span className="inline-flex items-center rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-medium text-stone-700">
+                                            {user.role || 'Cliente'}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-end pt-2 border-t border-stone-50">
+                                        <button
+                                            onClick={() => deleteUser(user.id)}
+                                            className="flex items-center gap-1 p-2 text-xs font-medium text-red-600 bg-red-50 rounded-lg transition-colors hover:bg-red-100"
+                                        >
+                                            <Trash2 size={14} />
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
