@@ -194,12 +194,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
             inStock: (product.stockCount ?? 0) > 0,
         };
         setProducts(prev => [newProduct as any, ...prev]);
-        if (supabase) await supabase.from('products').insert({ ...newProduct, details: undefined }); // Prevent JSON mismatch
+        if (supabase) {
+            const { variants, ...rest } = newProduct;
+            await supabase.from('products').insert({ ...rest, variations: variants || null, details: undefined });
+        }
     };
 
     const updateProduct = async (id: string, updatedFields: Partial<Product>) => {
         setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updatedFields } : p));
-        if (supabase) await supabase.from('products').update(updatedFields).eq('id', id);
+        if (supabase) {
+            const { variants, ...rest } = updatedFields;
+            const payload: any = { ...rest };
+            if (variants !== undefined) {
+                payload.variations = variants;
+            }
+            await supabase.from('products').update(payload).eq('id', id);
+        }
     };
 
     const deleteProduct = async (id: string) => {
