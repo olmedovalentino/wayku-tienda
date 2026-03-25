@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ShoppingBag, Menu, X, Search, Heart, ChevronDown, User as UserIcon } from 'lucide-react';
+import { ShoppingBag, Menu, X, Search, Heart, ChevronDown, User as UserIcon, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useFavorites } from '@/context/FavoritesContext';
@@ -110,16 +110,11 @@ export function Header() {
 
                     {user ? (
                         <button
-                            onClick={() => {
-                                if (window.confirm('¿Quieres cerrar sesión?')) {
-                                    logout();
-                                }
-                            }}
-                            className="p-1 sm:p-2 transition-colors hover:text-primary group relative flex items-center gap-1"
+                            onClick={logout}
+                            className="p-1 sm:p-2 transition-colors hover:text-red-500 group relative flex items-center justify-center"
                             title="Cerrar Sesión"
                         >
-                            <span className="text-xs font-bold text-primary hidden sm:block">{user.name.split(' ')[0]}</span>
-                            <UserIcon size={20} className="text-primary" />
+                            <LogOut size={20} className="text-primary group-hover:text-red-500 transition-colors" />
                         </button>
                     ) : (
                         <Link href="/login" className="p-1 sm:p-2 transition-colors hover:text-primary">
