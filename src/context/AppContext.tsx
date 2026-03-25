@@ -85,9 +85,48 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const loadInitialData = async () => {
             if (supabase) {
                 // Fetch from Supabase
-                const { data: pData } = await supabase.from('products').select('*');
-                if (pData && pData.length > 0) setProducts(pData);
-                else setProducts(initialProducts.map(p => ({ ...p, isVisible: true })));
+                const { data: pData, error: pError } = await supabase.from('products').select('*');
+                
+                if (pData && pData.length > 0) {
+                    setProducts(pData);
+                } else {
+                    const mappedInitial = initialProducts.map(p => ({ ...p, isVisible: true, stockCount: p.stockCount || 0 }));
+                    setProducts(mappedInitial);
+                    
+                    // Si la tabla existe (no hay error) pero está vacía, hacemos el sembrado automático
+                    if (pData && pData.length === 0 && !pError) {
+                        try {
+                            const insertable = mappedInitial.map(p => {
+                                const anyP = p as any;
+                                return {
+                                    id: anyP.id,
+                                    name: anyP.name,
+                                    description: anyP.description,
+                                    price: anyP.price,
+                                    category: anyP.category,
+                                    material: anyP.material,
+                                    color: anyP.color || null,
+                                    "inStock": anyP.inStock,
+                                    "isVisible": anyP.isVisible,
+                                    "stockCount": anyP.stockCount,
+                                    images: anyP.images,
+                                    features: anyP.features || null,
+                                    includes: anyP.includes || null,
+                                    dimensions: anyP.dimensions || null,
+                                    weight: anyP.weight || null,
+                                    "cordLength": anyP.cordLength || null,
+                                    "lightBulb": anyP.lightBulb || null,
+                                    variations: anyP.variants || null
+                                };
+                            });
+                            const { error: seedError } = await supabase.from('products').insert(insertable);
+                            if (seedError) console.error('Error seeding DB:', seedError);
+                            else console.log('¡Base de datos Supabase inicializada con éxito!');
+                        } catch (err) {
+                            console.error('Failed to seed db:', err);
+                        }
+                    }
+                }
 
                 const { data: oData } = await supabase.from('orders').select('*');
                 if (oData) setOrders(oData);
