@@ -33,7 +33,7 @@ export function Header() {
 
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2">
-                    <span className="font-serif text-3xl tracking-widest text-stone-800 uppercase">
+                    <span className="font-serif text-xl sm:text-3xl tracking-[0.2em] sm:tracking-widest text-stone-800 uppercase">
                         Waykú
                     </span>
                 </Link>
@@ -78,31 +78,31 @@ export function Header() {
                 </nav>
 
                 {/* Icons */}
-                <div className="flex items-center gap-4 text-stone-600">
+                <div className="flex items-center gap-1 sm:gap-4 text-stone-600">
                     <button
                         onClick={() => setIsSearchOpen(true)}
-                        className="p-2 transition-colors hover:text-primary"
+                        className="p-1 sm:p-2 transition-colors hover:text-primary"
                     >
                         <Search size={20} />
                     </button>
                     <button
                         onClick={openFavorites}
-                        className="relative p-2 transition-colors hover:text-primary"
+                        className="relative p-1 sm:p-2 transition-colors hover:text-primary"
                     >
                         <Heart size={20} />
                         {favorites.length > 0 && (
-                            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-white">
+                            <span className="absolute -right-0 -top-0 sm:-right-1 sm:-top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-white">
                                 {favorites.length}
                             </span>
                         )}
                     </button>
                     <button
                         onClick={openCart}
-                        className="relative p-2 transition-colors hover:text-primary"
+                        className="relative p-1 sm:p-2 transition-colors hover:text-primary"
                     >
                         <ShoppingBag size={20} />
                         {itemCount > 0 && (
-                            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-white">
+                            <span className="absolute -right-0 -top-0 sm:-right-1 sm:-top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-white">
                                 {itemCount}
                             </span>
                         )}
@@ -111,13 +111,13 @@ export function Header() {
                     {user ? (
                         <button
                             onClick={logout}
-                            className="p-2 transition-colors hover:text-primary group relative"
+                            className="p-1 sm:p-2 transition-colors hover:text-primary group relative"
                             title="Cerrar Sesión"
                         >
                             <UserIcon size={20} className="text-primary" />
                         </button>
                     ) : (
-                        <Link href="/login" className="p-2 transition-colors hover:text-primary">
+                        <Link href="/login" className="p-1 sm:p-2 transition-colors hover:text-primary">
                             <UserIcon size={20} />
                         </Link>
                     )}
@@ -155,7 +155,7 @@ export function Header() {
                             onClick={() => setIsMenuOpen(false)}
                             className="text-base font-medium text-stone-600 hover:text-primary"
                         >
-                            Nuestra Historia
+                            Sobre nosotros
                         </Link>
                         <Link
                             href="/contact"
@@ -176,22 +176,13 @@ export function Header() {
                                     Cerrar Sesión ({user.name})
                                 </button>
                             ) : (
-                                <div className="flex flex-col gap-4">
-                                    <Link
-                                        href="/login"
-                                        onClick={() => setIsMenuOpen(false)}
-                                        className="text-base font-medium text-primary"
-                                    >
-                                        Iniciar Sesión
-                                    </Link>
-                                    <Link
-                                        href="/register"
-                                        onClick={() => setIsMenuOpen(false)}
-                                        className="text-base font-medium text-stone-600 hover:text-primary"
-                                    >
-                                        Registrarse
-                                    </Link>
-                                </div>
+                                <Link
+                                    href="/login"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="text-base font-medium text-primary"
+                                >
+                                    Iniciar Sesión
+                                </Link>
                             )}
                         </div>
                     </nav>
