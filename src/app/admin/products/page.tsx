@@ -158,8 +158,8 @@ export default function AdminProductsPage() {
                 </div>
             </div>
 
-            {/* Products Table */}
-            <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
+            {/* Products Table (Desktop) */}
+            <div className="hidden lg:block bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead className="bg-stone-50 text-stone-500 text-xs uppercase tracking-wider">
@@ -251,6 +251,81 @@ export default function AdminProductsPage() {
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            {/* Products List (Mobile) */}
+            <div className="lg:hidden space-y-4">
+                {filteredProducts.map((product) => (
+                    <div key={product.id} className="bg-white p-4 rounded-xl shadow-sm border border-stone-100 flex flex-col gap-3">
+                        <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="relative h-12 w-12 rounded-lg overflow-hidden flex-shrink-0 bg-stone-100 border border-stone-200">
+                                    <Image
+                                        src={product.images[0] || 'https://via.placeholder.com/150'}
+                                        alt={product.name}
+                                        fill
+                                        className="object-cover"
+                                    />
+                                </div>
+                                <div>
+                                    <p className="font-bold text-stone-900">{product.name}</p>
+                                    <p className="text-xs text-stone-500 capitalize">{product.category}</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-1">
+                                <button
+                                    onClick={() => openEditModal(product)}
+                                    className="p-1.5 text-stone-400 active:bg-stone-100 rounded-lg transition-colors"
+                                    title="Editar"
+                                >
+                                    <Edit size={18} />
+                                </button>
+                                <button
+                                    onClick={() => handleDelete(product.id, product.name)}
+                                    className="p-1.5 text-stone-400 active:bg-red-50 text-red-500 rounded-lg transition-colors"
+                                    title="Eliminar"
+                                >
+                                    <Trash2 size={18} />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-between items-center text-sm py-2 border-y border-stone-100">
+                            <div>
+                                <span className="text-stone-500 block text-xs">Precio</span>
+                                <span className="font-bold text-stone-900">${product.price.toLocaleString()}</span>
+                            </div>
+                            <div className="text-right">
+                                <span className="text-stone-500 block text-xs">Stock Total</span>
+                                <span className="font-bold text-stone-900">{product.stockCount ?? 0} U</span>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-between gap-2">
+                            <button
+                                onClick={() => updateProduct(product.id, { inStock: !product.inStock })}
+                                className={`flex-1 flex justify-center items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${product.inStock
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'bg-red-100 text-red-700'
+                                    }`}
+                            >
+                                <span className={`h-1.5 w-1.5 rounded-full ${product.inStock ? 'bg-green-600' : 'bg-red-600'
+                                    }`}></span>
+                                {product.inStock ? 'En Stock' : 'Sin Stock'}
+                            </button>
+                            <button
+                                onClick={() => updateProduct(product.id, { isVisible: !(product.isVisible ?? true) })}
+                                className={`flex-1 flex justify-center items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${product.isVisible !== false
+                                    ? 'bg-blue-100 text-blue-700'
+                                    : 'bg-stone-100 text-stone-600'
+                                    }`}
+                            >
+                                {product.isVisible !== false ? <Eye size={14} /> : <EyeOff size={14} />}
+                                {product.isVisible !== false ? 'Visible' : 'Oculto'}
+                            </button>
+                        </div>
+                    </div>
+                ))}
             </div>
 
             {/* Modal for Add/Edit */}

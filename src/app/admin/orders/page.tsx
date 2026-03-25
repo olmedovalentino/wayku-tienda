@@ -61,8 +61,8 @@ export default function AdminOrdersPage() {
                 </div>
             </div>
 
-            {/* Orders Table */}
-            <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
+            {/* Orders Table (Desktop) */}
+            <div className="hidden lg:block bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead className="bg-stone-50 text-stone-500 text-xs uppercase tracking-wider">
@@ -120,6 +120,59 @@ export default function AdminOrdersPage() {
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            {/* Orders List (Mobile) */}
+            <div className="lg:hidden space-y-4">
+                {filteredOrders.map((order) => (
+                    <div key={order.id} className="bg-white p-4 rounded-xl shadow-sm border border-stone-100 flex flex-col gap-3 relative">
+                        <button
+                            onClick={() => setSelectedOrder(order)}
+                            className="absolute top-4 right-4 p-1.5 text-stone-400 active:bg-stone-100 rounded-lg transition-colors"
+                        >
+                            <MoreVertical size={18} />
+                        </button>
+                        
+                        <div>
+                            <p 
+                                onClick={() => setSelectedOrder(order)}
+                                className="font-medium text-stone-900 underline decoration-stone-200 underline-offset-4 cursor-pointer active:text-primary transition-colors inline-block"
+                            >
+                                {order.id}
+                            </p>
+                            <p className="text-xs text-stone-500 mt-1">{order.date}</p>
+                        </div>
+
+                        <div className="py-2 border-y border-stone-100 grid grid-cols-2 gap-2 text-sm">
+                            <div>
+                                <span className="text-stone-500 block text-xs">Cliente</span>
+                                <span className="font-medium text-stone-900 truncate block">{order.customer}</span>
+                            </div>
+                            <div>
+                                <span className="text-stone-500 block text-xs">Items</span>
+                                <span className="text-stone-900">{order.items} {order.items === 1 ? 'item' : 'items'}</span>
+                            </div>
+                            <div>
+                                <span className="text-stone-500 block text-xs">Total</span>
+                                <span className="font-bold text-stone-900">{order.total}</span>
+                            </div>
+                            <div>
+                                <span className="text-stone-500 block text-xs mb-1">Estado</span>
+                                <select
+                                    value={order.status}
+                                    onChange={(e) => updateOrderStatus(order.id, e.target.value as any)}
+                                    className={`px-2 py-0.5 rounded-full text-xs font-medium border-none focus:ring-0 cursor-pointer w-full text-center ${getStatusStyles(order.status)}`}
+                                >
+                                    <option value="Pendiente">Pendiente</option>
+                                    <option value="Procesando">Procesando</option>
+                                    <option value="Enviado">Enviado</option>
+                                    <option value="Entregado">Entregado</option>
+                                    <option value="Cancelado">Cancelado</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                ))}
             </div>
 
             {/* Order Detail Modal */}
