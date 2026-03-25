@@ -250,6 +250,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
                             setQueries(prev => prev.map(qry => qry.id === tempId ? { ...qry, id: data.id } : qry));
                         }
                     }
+
+                    // Enviar Email al Usuario via Nodemailer
+                    try {
+                        await fetch('/api/newsletter', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email })
+                        });
+                    } catch (error) {
+                        console.error('Error disparando el envío del email:', error);
+                    }
                 }
             }
         }}>
