@@ -378,7 +378,7 @@ export default function CheckoutPage() {
 
 
                     {/* Order Summary (Right on Desktop, Top on Mobile) */}
-                    <section className="order-1 lg:order-2 mb-8 lg:mb-0 lg:col-span-5 bg-white rounded-xl shadow-sm p-6 border border-stone-100 sticky top-24">
+                    <section className="order-1 lg:order-2 mb-8 lg:mb-0 lg:col-span-5 bg-white rounded-xl shadow-sm p-6 border border-stone-100 lg:sticky lg:top-24">
                         <h2 className="text-lg font-medium text-stone-900 border-b border-stone-100 pb-4">Resumen del pedido</h2>
                         <div className="mt-6 flow-root overflow-y-auto max-h-[400px] pr-2">
                             <ul className="-my-6 divide-y divide-stone-100">
