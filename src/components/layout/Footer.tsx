@@ -10,7 +10,7 @@ export function Footer() {
     return (
         <footer className="border-t border-stone-100 bg-stone-50">
             <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-                <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
+                <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
                     <div className="space-y-4">
                         <span className="text-2xl font-bold tracking-tight text-primary mb-3 block">
                             Waykú
@@ -27,32 +27,6 @@ export function Footer() {
                                 <MessageCircle size={22} />
                             </a>
                         </div>
-                    </div>
-
-                    <div>
-                        <h3 className="text-sm font-semibold text-stone-900">Tienda</h3>
-                        <ul className="mt-4 space-y-2">
-                            <li>
-                                <Link href="/products" className="text-sm text-stone-500 hover:text-primary">
-                                    Todas las Lámparas
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/products?category=pendant" className="text-sm text-stone-500 hover:text-primary">
-                                    Colgantes
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/products?category=table" className="text-sm text-stone-500 hover:text-primary">
-                                    De Mesa
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/products?category=floor" className="text-sm text-stone-500 hover:text-primary">
-                                    De Pie
-                                </Link>
-                            </li>
-                        </ul>
                     </div>
 
                     <div>

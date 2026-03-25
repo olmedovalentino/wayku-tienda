@@ -18,11 +18,11 @@ export function BestSellers() {
             <div className="mx-auto max-w-7xl">
                 <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16 items-center">
 
-                    {/* Products Grid - Left Side */}
-                    <div className="lg:col-span-8">
-                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+                    {/* Products Slider/Grid - Left Side */}
+                    <div className="lg:col-span-8 w-full">
+                        <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-6 sm:grid sm:grid-cols-3 sm:gap-6 sm:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                             {featured.map((product) => (
-                                <Link key={product.id} href={`/products/${product.id}`} className="group block">
+                                <Link key={product.id} href={`/products/${product.id}`} className="group block min-w-[70vw] sm:min-w-0 snap-center shrink-0">
                                     <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#F9F5F0]">
                                         <Image
                                             src={product.images[0]}
