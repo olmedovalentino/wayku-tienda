@@ -164,27 +164,6 @@ export function Header() {
                         >
                             Contacto
                         </Link>
-                        <div className="border-t border-stone-100 pt-4">
-                            {user ? (
-                                <button
-                                    onClick={() => {
-                                        logout();
-                                        setIsMenuOpen(false);
-                                    }}
-                                    className="flex items-center gap-2 text-red-600 font-medium"
-                                >
-                                    Cerrar Sesión ({user.name})
-                                </button>
-                            ) : (
-                                <Link
-                                    href="/login"
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className="text-base font-medium text-primary"
-                                >
-                                    Iniciar Sesión
-                                </Link>
-                            )}
-                        </div>
                     </nav>
                 </div>
             )}
