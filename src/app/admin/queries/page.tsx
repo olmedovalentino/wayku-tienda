@@ -19,13 +19,21 @@ export default function AdminQueriesPage() {
     const { queries, markQueryAsRead, replyToQuery } = useApp();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedQuery, setSelectedQuery] = useState<Query | null>(null);
+    const [statusFilter, setStatusFilter] = useState('todas');
     const [replyText, setReplyText] = useState('');
     const [isSending, setIsSending] = useState(false);
 
-    const filteredQueries = queries.filter(query =>
-        query.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        query.subject.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Sort by descending ID: Newest first.
+    const sortedQueries = [...queries].sort((a, b) => b.id - a.id);
+
+    const filteredQueries = sortedQueries.filter(query => {
+        const matchesSearch = query.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                              query.subject.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilter === 'todas' || 
+                              (statusFilter === 'pendientes' && !query.replied) || 
+                              (statusFilter === 'respondidas' && query.replied);
+        return matchesSearch && matchesStatus;
+    });
 
     const handleOpenQuery = (query: Query) => {
         setSelectedQuery(query);
@@ -59,8 +67,8 @@ export default function AdminQueriesPage() {
                 <p className="text-stone-500">Mensajes recibidos a través del formulario de contacto.</p>
             </div>
 
-            {/* Search */}
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-stone-100">
+            {/* Search and Filters */}
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-stone-100 flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
                     <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-stone-400">
                         <Search size={18} />
@@ -73,6 +81,15 @@ export default function AdminQueriesPage() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
+                <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="w-full sm:w-auto px-4 py-2 bg-stone-50 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary text-sm font-medium text-stone-700"
+                >
+                    <option value="todas">Todas las consultas</option>
+                    <option value="pendientes">Sin Responder</option>
+                    <option value="respondidas">Respondidas</option>
+                </select>
             </div>
 
             {/* Queries Grid */}

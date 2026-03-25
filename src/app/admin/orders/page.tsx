@@ -20,12 +20,21 @@ import {
 export default function AdminOrdersPage() {
     const { orders, updateOrderStatus } = useApp();
     const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('Todos');
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
-    const filteredOrders = orders.filter(order =>
-        order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.customer.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Filter and Sort: Newest first logic based on id strings descending 
+    // or just reversing the internal orders array since they are fetched oldest to newest from Supabase
+    // But we sort string comparing inverted assuming IDs are chronological ORD-XXXX or using creation order.
+    const sortedOrders = [...orders].reverse();
+
+    const filteredOrders = sortedOrders.filter(order => {
+        const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                              order.customer.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                              order.total.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilter === 'Todos' || order.status === statusFilter;
+        return matchesSearch && matchesStatus;
+    });
 
     const getStatusStyles = (status: string) => {
         switch (status) {
@@ -55,12 +64,26 @@ export default function AdminOrdersPage() {
                     </div>
                     <input
                         type="text"
-                        placeholder="Buscar por ID de pedido o cliente..."
+                        placeholder="Buscar por ID, cliente o total..."
                         className="block w-full pl-10 pr-3 py-2 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary sm:text-sm"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
+                <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="w-full sm:w-auto px-4 py-2 bg-stone-50 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary text-sm font-medium text-stone-700"
+                >
+                    <option value="Todos">Todos los Estados</option>
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="A Verificar">A Verificar</option>
+                    <option value="Confirmado">Confirmado</option>
+                    <option value="Procesando">Procesando</option>
+                    <option value="Enviado">Enviado</option>
+                    <option value="Entregado">Entregado</option>
+                    <option value="Cancelado">Cancelado</option>
+                </select>
             </div>
 
             {/* Orders Table (Desktop) */}

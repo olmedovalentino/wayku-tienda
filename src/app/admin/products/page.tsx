@@ -26,6 +26,7 @@ export default function AdminProductsPage() {
     const { products, addProduct, updateProduct, deleteProduct } = useApp();
 
     const [searchTerm, setSearchTerm] = useState('');
+    const [categoryFilter, setCategoryFilter] = useState('Todas');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
@@ -45,10 +46,12 @@ export default function AdminProductsPage() {
 
     const [showVariants, setShowVariants] = useState(false);
 
-    const filteredProducts = products.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.category.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredProducts = [...products].reverse().filter(product => {
+        const matchSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            product.category.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchCategory = categoryFilter === 'Todas' || product.category === categoryFilter;
+        return matchSearch && matchCategory;
+    });
 
     const openAddModal = () => {
         setEditingProduct(null);
@@ -156,6 +159,18 @@ export default function AdminProductsPage() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
+                
+                <select
+                    value={categoryFilter}
+                    onChange={(e) => setCategoryFilter(e.target.value)}
+                    className="w-full sm:w-auto px-4 py-2 bg-stone-50 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary text-sm font-medium text-stone-700"
+                >
+                    <option value="Todas">Todas las Categorías</option>
+                    <option value="pendant">Colgantes</option>
+                    <option value="table">Mesa</option>
+                    <option value="floor">Pie</option>
+                    <option value="wall">Aplique</option>
+                </select>
             </div>
 
             {/* Products Table (Desktop) */}
