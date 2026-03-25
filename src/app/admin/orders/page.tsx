@@ -126,50 +126,58 @@ export default function AdminOrdersPage() {
             <div className="lg:hidden space-y-4">
                 {filteredOrders.map((order) => (
                     <div key={order.id} className="bg-white p-4 rounded-xl shadow-sm border border-stone-100 flex flex-col gap-3 relative">
-                        <button
-                            onClick={() => setSelectedOrder(order)}
-                            className="absolute top-4 right-4 p-1.5 text-stone-400 active:bg-stone-100 rounded-lg transition-colors"
-                        >
-                            <MoreVertical size={18} />
-                        </button>
-                        
-                        <div>
-                            <p 
-                                onClick={() => setSelectedOrder(order)}
-                                className="font-medium text-stone-900 underline decoration-stone-200 underline-offset-4 cursor-pointer active:text-primary transition-colors inline-block"
-                            >
-                                {order.id}
-                            </p>
-                            <p className="text-xs text-stone-500 mt-1">{order.date}</p>
+                        <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="h-12 w-12 rounded-lg bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-500 flex-shrink-0">
+                                    <Package size={24} />
+                                </div>
+                                <div>
+                                    <p 
+                                        onClick={() => setSelectedOrder(order)}
+                                        className="font-bold text-stone-900 underline decoration-stone-200 underline-offset-4 cursor-pointer active:text-primary transition-colors"
+                                    >
+                                        {order.id}
+                                    </p>
+                                    <p className="text-xs text-stone-500 capitalize">{order.date}</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-1">
+                                <button
+                                    onClick={() => setSelectedOrder(order)}
+                                    className="p-1.5 text-stone-400 active:bg-stone-100 rounded-lg transition-colors"
+                                    title="Ver detalle"
+                                >
+                                    <MoreVertical size={18} />
+                                </button>
+                            </div>
                         </div>
 
-                        <div className="py-2 border-y border-stone-100 grid grid-cols-2 gap-2 text-sm">
-                            <div>
-                                <span className="text-stone-500 block text-xs">Cliente</span>
-                                <span className="font-medium text-stone-900 truncate block">{order.customer}</span>
-                            </div>
-                            <div>
-                                <span className="text-stone-500 block text-xs">Items</span>
-                                <span className="text-stone-900">{order.items} {order.items === 1 ? 'item' : 'items'}</span>
-                            </div>
+                        <div className="flex justify-between items-center text-sm py-2 border-y border-stone-100">
                             <div>
                                 <span className="text-stone-500 block text-xs">Total</span>
                                 <span className="font-bold text-stone-900">{order.total}</span>
                             </div>
-                            <div>
-                                <span className="text-stone-500 block text-xs mb-1">Estado</span>
-                                <select
-                                    value={order.status}
-                                    onChange={(e) => updateOrderStatus(order.id, e.target.value as any)}
-                                    className={`px-2 py-0.5 rounded-full text-xs font-medium border-none focus:ring-0 cursor-pointer w-full text-center ${getStatusStyles(order.status)}`}
-                                >
-                                    <option value="Pendiente">Pendiente</option>
-                                    <option value="Procesando">Procesando</option>
-                                    <option value="Enviado">Enviado</option>
-                                    <option value="Entregado">Entregado</option>
-                                    <option value="Cancelado">Cancelado</option>
-                                </select>
+                            <div className="text-right">
+                                <span className="text-stone-500 block text-xs">Cliente</span>
+                                <span className="font-bold text-stone-900">{order.customer}</span>
                             </div>
+                        </div>
+
+                        <div className="flex justify-between gap-2 items-center">
+                            <select
+                                value={order.status}
+                                onChange={(e) => updateOrderStatus(order.id, e.target.value as any)}
+                                className={`flex-1 flex justify-center items-center px-2 py-1.5 rounded-lg text-xs font-medium border-none focus:ring-0 text-center uppercase tracking-wider ${getStatusStyles(order.status)}`}
+                            >
+                                <option value="Pendiente">Pendiente</option>
+                                <option value="Procesando">Procesando</option>
+                                <option value="Enviado">Enviado</option>
+                                <option value="Entregado">Entregado</option>
+                                <option value="Cancelado">Cancelado</option>
+                            </select>
+                            <span className="flex-1 flex justify-center items-center bg-stone-50 rounded-lg border border-stone-100 py-1.5 text-xs font-medium text-stone-500">
+                                {order.items} {order.items === 1 ? 'item' : 'items'}
+                            </span>
                         </div>
                     </div>
                 ))}
@@ -321,6 +329,10 @@ export default function AdminOrdersPage() {
         <strong>Fecha:</strong> ${selectedOrder.date}<br>
         <strong>Cliente:</strong> ${selectedOrder.customer}<br>
         <strong>Email:</strong> ${selectedOrder.email}<br>
+        <strong>Teléfono:</strong> ${selectedOrder.phone || 'No provisto'}<br>
+        <strong>Método Entrega:</strong> ${selectedOrder.shippingMethod === 'pickup' ? 'Retiro en tienda' : 'Envío a Domicilio'}<br>
+        ${selectedOrder.shippingMethod === 'shipping' ? `<strong>Dirección:</strong> ${selectedOrder.address}, ${selectedOrder.city} (${selectedOrder.postalCode})<br>` : ''}
+        <strong>Método Pago:</strong> ${selectedOrder.paymentMethod === 'card' ? 'Mercado Pago / Tarjetas' : 'Transferencia Bancaria'}<br>
         <strong>Estado:</strong> ${selectedOrder.status}
     </div>
     
@@ -333,9 +345,18 @@ export default function AdminOrdersPage() {
             </tr>
         </thead>
         <tbody>
-            ${(selectedOrder.details || [{ name: 'Lámpara Taini', quantity: 1, price: 185000 }]).map(item => `
+            ${(selectedOrder.details || []).map(item => `
                 <tr>
-                    <td>${item.name}</td>
+                    <td>
+                        <div style="font-weight: bold;">${item.name}</div>
+                        <div style="font-size: 11px; color: #666; margin-top: 4px;">
+                            ${item.material ? `Madera: ${item.material} / ` : ''}
+                            ${item.size ? `Medida: ${item.size} / ` : ''}
+                            ${item.shade ? `Pantalla: ${item.shade} / ` : ''}
+                            ${item.cable ? `Cable: ${item.cable} / ` : ''}
+                            ${item.canopy ? `Florón: ${item.canopy}` : ''}
+                        </div>
+                    </td>
                     <td>${item.quantity}</td>
                     <td style="text-align: right;">$${item.price.toLocaleString()}</td>
                 </tr>

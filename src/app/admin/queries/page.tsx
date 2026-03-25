@@ -76,36 +76,38 @@ export default function AdminQueriesPage() {
             </div>
 
             {/* Queries Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 italic font-light not-italic">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 italic font-light not-italic">
                 {filteredQueries.map((query) => (
                     <div
                         key={query.id}
                         onClick={() => handleOpenQuery(query)}
-                        className={`group bg-white p-6 rounded-2xl shadow-sm border transition-all cursor-pointer hover:border-primary/50 hover:shadow-md ${query.read ? 'border-stone-100' : 'border-primary/20 bg-primary/5 shadow-sm ring-1 ring-primary/10'
+                        className={`group bg-white p-4 rounded-xl shadow-sm border transition-all cursor-pointer hover:border-primary/50 flex flex-col gap-3 ${query.read ? 'border-stone-100' : 'border-primary/20 bg-primary/5 ring-1 ring-primary/10'
                             }`}
                     >
                         <div className="flex items-start justify-between gap-4">
                             <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-full transition-colors ${query.read ? 'bg-stone-100 text-stone-500 group-hover:bg-primary group-hover:text-white' : 'bg-primary text-white '}`}>
+                                <div className={`h-10 w-10 flex items-center justify-center rounded-lg transition-colors flex-shrink-0 ${query.read ? 'bg-stone-100 text-stone-500 group-hover:bg-primary group-hover:text-white' : 'bg-primary text-white '}`}>
                                     <User size={20} />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-stone-900 line-clamp-1">{query.name}</h3>
+                                    <h3 className="font-bold text-stone-900 line-clamp-1 text-sm">{query.name}</h3>
                                     <p className="text-xs text-stone-500">{query.email}</p>
                                 </div>
                             </div>
-                            <div className="text-stone-400 text-[10px] flex items-center gap-1">
-                                <Clock size={12} />
-                                {query.date}
+                        </div>
+
+                        <div className="py-2 border-y border-stone-100">
+                            <div className="flex items-center justify-between mb-1">
+                                <p className="text-sm font-bold text-stone-900">{query.subject}</p>
+                                <div className="text-stone-400 text-[10px] flex items-center gap-1">
+                                    <Clock size={12} />
+                                    {query.date}
+                                </div>
                             </div>
+                            <p className="text-sm text-stone-600 line-clamp-2 italic">"{query.message}"</p>
                         </div>
 
-                        <div className="mt-4 pb-4 border-b border-stone-100">
-                            <p className="text-sm font-bold text-stone-900 mb-1">{query.subject}</p>
-                            <p className="text-sm text-stone-600 line-clamp-3 italic">"{query.message}"</p>
-                        </div>
-
-                        <div className="mt-4 flex items-center justify-between">
+                        <div className="flex justify-between items-center text-xs">
                             <div className="flex gap-2">
                                 {!query.read && (
                                     <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full font-medium">Nuevo</span>
@@ -116,7 +118,7 @@ export default function AdminQueriesPage() {
                                     </span>
                                 )}
                             </div>
-                            <button className="text-xs text-primary font-bold hover:underline">Ver mensaje</button>
+                            <button className="text-primary font-bold hover:underline">Ver mensaje</button>
                         </div>
                     </div>
                 ))}
