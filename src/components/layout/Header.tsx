@@ -108,11 +108,30 @@ export function Header() {
                         )}
                     </button>
 
-                    {/* User login hidden for guest-checkout MVP
                     {user ? (
-                        ... 
+                        <button
+                            onClick={logout}
+                            className="p-2 transition-colors hover:text-primary group relative"
+                            title="Cerrar Sesión"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+                        </button>
+                    ) : (
+                        <div className="flex items-center gap-3">
+                            <Link href="/login" className="text-sm font-medium text-stone-600 hover:text-primary transition-colors hidden sm:block">
+                                Iniciar sesión
+                            </Link>
+                            <span className="text-stone-300 hidden sm:block">|</span>
+                            <Link href="/register" className="text-sm font-medium text-stone-600 hover:text-primary transition-colors hidden sm:block">
+                                Registrarse
+                            </Link>
+
+                            {/* Mobile visual icon */}
+                            <Link href="/login" className="p-2 transition-colors hover:text-primary sm:hidden">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                            </Link>
+                        </div>
                     )}
-                    */}
 
                 </div>
             </div>
@@ -156,7 +175,36 @@ export function Header() {
                         >
                             Contacto
                         </Link>
-                        {/* Mobile Login hidden for guest-checkout MVP */}
+                        <div className="border-t border-stone-100 pt-4">
+                            {user ? (
+                                <button
+                                    onClick={() => {
+                                        logout();
+                                        setIsMenuOpen(false);
+                                    }}
+                                    className="flex items-center gap-2 text-red-600 font-medium"
+                                >
+                                    Cerrar Sesión ({user.name})
+                                </button>
+                            ) : (
+                                <div className="flex flex-col gap-4">
+                                    <Link
+                                        href="/login"
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="text-base font-medium text-primary"
+                                    >
+                                        Iniciar Sesión
+                                    </Link>
+                                    <Link
+                                        href="/register"
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="text-base font-medium text-stone-600 hover:text-primary"
+                                    >
+                                        Registrarse
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
                     </nav>
                 </div>
             )}
