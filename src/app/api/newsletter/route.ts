@@ -43,7 +43,7 @@ export async function POST(req: Request) {
             </p>
             
             <div style="text-align: center; margin-top: 40px; margin-bottom: 20px;">
-                <a href="${process.env.NEXT_PUBLIC_URL || 'https://wayku.store'}/products" style="background-color: #5E6F5E; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 500; font-size: 14px;">Visitar el Catálogo</a>
+                <a href="${process.env.NODE_ENV === 'production' ? 'https://wayku-tienda.vercel.app' : 'https://wayku-tienda.vercel.app'}/products" style="background-color: #5E6F5E; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 500; font-size: 14px;">Visitar el Catálogo</a>
             </div>
             
             <hr style="border: none; border-top: 1px solid #E5E5E5; margin-top: 40px; margin-bottom: 20px;">
