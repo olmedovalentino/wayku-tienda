@@ -110,10 +110,15 @@ export function Header() {
 
                     {user ? (
                         <button
-                            onClick={logout}
-                            className="p-1 sm:p-2 transition-colors hover:text-primary group relative"
+                            onClick={() => {
+                                if (window.confirm('¿Quieres cerrar sesión?')) {
+                                    logout();
+                                }
+                            }}
+                            className="p-1 sm:p-2 transition-colors hover:text-primary group relative flex items-center gap-1"
                             title="Cerrar Sesión"
                         >
+                            <span className="text-xs font-bold text-primary hidden sm:block">{user.name.split(' ')[0]}</span>
                             <UserIcon size={20} className="text-primary" />
                         </button>
                     ) : (

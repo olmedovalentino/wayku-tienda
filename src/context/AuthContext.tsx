@@ -34,8 +34,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const login = async (email: string, password: string) => {
         setIsLoading(true);
         if (!supabase) throw new Error('Error de conexión con la base de datos');
+        
+        const cleanEmail = email.trim().toLowerCase();
+
         try {
-            const { data: users, error } = await supabase.from('users').select('*').eq('email', email).eq('password', password);
+            const { data: users, error } = await supabase.from('users').select('*').eq('email', cleanEmail).eq('password', password);
             
             if (error) throw error;
             
@@ -58,9 +61,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const register = async (name: string, email: string, password: string) => {
         setIsLoading(true);
         if (!supabase) throw new Error('Error de conexión con la base de datos');
+        
+        const cleanEmail = email.trim().toLowerCase();
+
         try {
             // Check if email exists
-            const { data: existingUsers } = await supabase.from('users').select('email').eq('email', email);
+            const { data: existingUsers } = await supabase.from('users').select('email').eq('email', cleanEmail);
             if (existingUsers && existingUsers.length > 0) {
                 throw new Error('El email ya está registrado');
             }
@@ -68,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const newUser = {
                 id: Math.random().toString(36).substr(2, 9),
                 name,
-                email,
+                email: cleanEmail,
                 password
             };
 
