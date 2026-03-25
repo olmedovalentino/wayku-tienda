@@ -5,7 +5,7 @@ import { Preference } from 'mercadopago';
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { items, payer, couponDiscount } = body;
+        const { items, payer, couponDiscount, orderId } = body;
 
         // Apply discount if exists
         const totalItems = items.map((item: any) => ({
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
                 // Only use auto_return if on HTTPS, as Mercado Pago rejects HTTP domains
                 auto_return: baseUrl.startsWith('https://') ? 'approved' : undefined,
                 binary_mode: true,
-                external_reference: `ORDER-${Date.now()}`,
+                external_reference: orderId || `ORDER-${Date.now()}`,
             }
         });
 

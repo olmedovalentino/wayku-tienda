@@ -84,8 +84,11 @@ export default function CheckoutPage() {
     const handlePayment = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        const orderId = `ORD-${Date.now()}`;
+
         // Create the order object to be saved in state
         const orderData = {
+            id: orderId,
             customer: `${formData.firstName} ${formData.lastName}`,
             email: formData.email,
             total: `$${total.toLocaleString()}`,
@@ -112,7 +115,7 @@ export default function CheckoutPage() {
             addOrder(orderData);
 
             // For transfer, we just go to success page with a flag
-            router.push(`/checkout/success?method=transfer&name=${formData.firstName}&total=${total}`);
+            router.push(`/checkout/success?method=transfer&name=${formData.firstName}&total=${total}&order_id=${orderId}`);
             return;
         }
 
@@ -134,7 +137,8 @@ export default function CheckoutPage() {
                         quantity: item.quantity
                     })),
                     payer: formData,
-                    couponDiscount: appliedDiscount
+                    couponDiscount: appliedDiscount,
+                    orderId: orderId
                 })
             });
 

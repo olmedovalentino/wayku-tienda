@@ -11,19 +11,32 @@ import Link from 'next/link';
 
 function SuccessContent() {
     const { clearCart, items } = useCart();
-    const { updateProduct, products } = useApp();
+    const { updateProduct, products, updateOrderStatus } = useApp();
     const [isProcessed, setIsProcessed] = useState(false);
     const searchParams = useSearchParams();
-
-
 
     const method = searchParams.get('method');
     const name = searchParams.get('name') || '';
     const total = searchParams.get('total') || '';
+    
+    // Mercado Pago params
+    const status = searchParams.get('status');
+    const paymentId = searchParams.get('payment_id');
+    const externalReference = searchParams.get('external_reference');
+    const orderIdParam = searchParams.get('order_id');
 
     useEffect(() => {
-        if (!isProcessed && items.length > 0) {
-            // Discount stock
+        const orderId = externalReference || orderIdParam;
+        
+        // Solo procesamos si hay items en el carrito y hay evidencia de que fue un checkout real (MP aprobado o Transferencia iniciada)
+        if (!isProcessed && items.length > 0 && (status === 'approved' || method === 'transfer')) {
+            
+            // Marcar pedido como pagado/procesando si viene de MercadoPago (Card)
+            if (status === 'approved' && orderId) {
+                updateOrderStatus(orderId, 'Procesando');
+            }
+
+            // Descontar inventario
             items.forEach((item: any) => {
                 const currentProduct = products.find((p: any) => p.id === item.id);
                 if (currentProduct && currentProduct.stockCount !== undefined) {
@@ -37,8 +50,14 @@ function SuccessContent() {
 
             clearCart();
             setIsProcessed(true);
+            
+            // Notificar al admin si es necesario
+            console.log("Order checked out successfully:", orderId);
+        } else if (!isProcessed && items.length === 0) {
+            // Ya procesado o carrito vacio, evitamos re-ejecución
+            setIsProcessed(true);
         }
-    }, [items, products, updateProduct, clearCart, isProcessed]);
+    }, [items, products, updateProduct, updateOrderStatus, clearCart, isProcessed, status, method, externalReference, orderIdParam]);
 
     return (
         <div className="flex min-h-[80vh] flex-col items-center justify-center px-4 py-12 text-center max-w-4xl mx-auto">
