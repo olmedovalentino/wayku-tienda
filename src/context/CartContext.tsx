@@ -52,6 +52,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         const cartKey = user ? `cart_user_${user.id}` : 'cart_guest';
         
         const loadCart = async () => {
+            // Priority 1: Supabase
             if (user && supabase) {
                 try {
                     const { data, error } = await supabase.from('users').select('cart').eq('id', user.id).single();
@@ -61,13 +62,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
                         return;
                     }
                 } catch (e) {
-                    // Ignore if column doesn't exist
+                    console.error("Cart DB Error:", e);
                 }
             }
             
+            // Priority 2: LocalStorage
             const savedCart = localStorage.getItem(cartKey);
             if (savedCart) {
-                setItems(JSON.parse(savedCart));
+                try {
+                    setItems(JSON.parse(savedCart));
+                } catch (e) {
+                    setItems([]);
+                }
             } else {
                 setItems([]);
             }

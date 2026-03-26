@@ -87,10 +87,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 // Fetch from Supabase
                 const { data: pData, error: pError } = await supabase.from('products').select('*');
                 
+                const mappedInitial = initialProducts.map(p => ({ ...p, isVisible: true, stockCount: p.stockCount || 0 }));
+
                 if (pData && pData.length > 0) {
                     setProducts(pData);
                 } else {
-                    const mappedInitial = initialProducts.map(p => ({ ...p, isVisible: true, stockCount: p.stockCount || 0 }));
                     setProducts(mappedInitial);
                     
                     // Si la tabla existe (no hay error) pero está vacía, hacemos el sembrado automático
