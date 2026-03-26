@@ -83,88 +83,69 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         const loadInitialData = async () => {
+            const mappedInitial = initialProducts.map(p => ({ ...p, isVisible: true, stockCount: p.stockCount || 0 }));
+            
             if (supabase) {
-                // Fetch from Supabase
-                const { data: pData, error: pError } = await supabase.from('products').select('*');
-                
-                const mappedInitial = initialProducts.map(p => ({ ...p, isVisible: true, stockCount: p.stockCount || 0 }));
-
-                if (pData && pData.length > 0) {
-                    setProducts(pData);
-                } else {
-                    setProducts(mappedInitial);
+                try {
+                    // Fetch from Supabase with timeout/error safety
+                    const { data: pData, error: pError } = await supabase.from('products').select('*');
                     
-                    // Si la tabla existe (no hay error) pero está vacía, hacemos el sembrado automático
-                    if (pData && pData.length === 0 && !pError) {
-                        try {
-                            const insertable = mappedInitial.map(p => {
-                                const anyP = p as any;
-                                return {
-                                    id: anyP.id,
-                                    name: anyP.name,
-                                    description: anyP.description,
-                                    price: anyP.price,
-                                    category: anyP.category,
-                                    material: anyP.material,
-                                    color: anyP.color || null,
-                                    "inStock": anyP.inStock,
-                                    "isVisible": anyP.isVisible,
-                                    "stockCount": anyP.stockCount,
-                                    images: anyP.images,
-                                    features: anyP.features || null,
-                                    includes: anyP.includes || null,
-                                    dimensions: anyP.dimensions || null,
-                                    weight: anyP.weight || null,
-                                    "cordLength": anyP.cordLength || null,
-                                    "lightBulb": anyP.lightBulb || null,
-                                    variations: anyP.variants || null
-                                };
-                            });
-                            const { error: seedError } = await supabase.from('products').insert(insertable);
-                            if (seedError) console.error('Error seeding DB:', seedError);
-                            else console.log('¡Base de datos Supabase inicializada con éxito!');
-                        } catch (err) {
-                            console.error('Failed to seed db:', err);
+                    if (pData && pData.length > 0) {
+                        setProducts(pData);
+                    } else {
+                        // If empty or error, use local as fallback
+                        setProducts(mappedInitial);
+                        
+                        // Seed if empty and no error (first run)
+                        if (pData && pData.length === 0 && !pError) {
+                            try {
+                                const insertable = mappedInitial.map(p => ({
+                                    id: p.id,
+                                    name: p.name,
+                                    description: p.description,
+                                    price: p.price,
+                                    category: p.category,
+                                    material: p.material,
+                                    color: (p as any).color || null,
+                                    inStock: p.inStock,
+                                    isVisible: true,
+                                    stockCount: p.stockCount,
+                                    images: (p as any).images,
+                                    features: (p as any).features || null,
+                                    includes: (p as any).includes || null,
+                                    dimensions: (p as any).dimensions || null,
+                                    weight: (p as any).weight || null,
+                                    cordLength: (p as any).cordLength || null,
+                                    lightBulb: (p as any).lightBulb || null,
+                                    variations: (p as any).variants || null
+                                }));
+                                await supabase.from('products').insert(insertable);
+                            } catch (e) {
+                                console.error('Seed failure:', e);
+                            }
                         }
                     }
+
+                    const isAdmin = typeof window !== 'undefined' && localStorage.getItem('admin_session') === 'true';
+                    if (isAdmin) {
+                        const { data: oData } = await supabase.from('orders').select('*');
+                        if (oData) setOrders(oData);
+                        const { data: qData } = await supabase.from('queries').select('*');
+                        if (qData) setQueries(qData);
+                        const { data: sData } = await supabase.from('subscribers').select('*');
+                        if (sData) setSubscribers(sData.map(s => s.email));
+                    }
+
+                    const { data: rData } = await supabase.from('reviews').select('*');
+                    if (rData) setReviews(rData);
+                } catch (err) {
+                    console.error('Supabase connection error, falling back to local data:', err);
+                    setProducts(mappedInitial);
                 }
-
-                const isAdmin = typeof window !== 'undefined' && localStorage.getItem('admin_session') === 'true';
-                
-                if (isAdmin) {
-                    const { data: oData } = await supabase.from('orders').select('*');
-                    if (oData) setOrders(oData);
-
-                    const { data: qData } = await supabase.from('queries').select('*');
-                    if (qData) setQueries(qData);
-
-                    const { data: sData } = await supabase.from('subscribers').select('*');
-                    if (sData) setSubscribers(sData.map(s => s.email));
-                }
-
-                // Reviews are public, so they should always be fetched
-                const { data: rData } = await supabase.from('reviews').select('*');
-                if (rData) setReviews(rData);
             } else {
                 // LocalStorage Fallback
                 const savedProducts = localStorage.getItem('wayku_products');
-                if (savedProducts) {
-                    setProducts(JSON.parse(savedProducts));
-                } else {
-                    setProducts(initialProducts.map(p => ({ ...p, isVisible: true })));
-                }
-
-                const savedOrders = localStorage.getItem('wayku_orders');
-                if (savedOrders) setOrders(JSON.parse(savedOrders));
-
-                const savedQueries = localStorage.getItem('wayku_queries');
-                if (savedQueries) setQueries(JSON.parse(savedQueries));
-
-                const savedSubscribers = localStorage.getItem('wayku_subscribers');
-                if (savedSubscribers) setSubscribers(JSON.parse(savedSubscribers));
-
-                const savedReviews = localStorage.getItem('wayku_reviews');
-                if (savedReviews) setReviews(JSON.parse(savedReviews));
+                setProducts(savedProducts ? JSON.parse(savedProducts) : mappedInitial);
             }
         };
 
