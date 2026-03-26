@@ -104,7 +104,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
                     } catch (e) {}
                 } catch (err) {
                     console.error("Critical Admin Load error:", err);
-                }
                     setProducts(mappedInitial);
                 }
             } else {
@@ -150,7 +149,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
             },
             addQuery: async (q) => {
                 const newQ = { ...q, date: new Date().toLocaleDateString(), read: false };
-                if (supabase) await supabase.from('queries').insert(newQ);
+                if (supabase) {
+                    const { data } = await supabase.from('queries').insert(newQ).select().single();
+                    if (data) setQueries(prev => [data, ...prev]);
+                }
             },
             markQueryAsRead: (id) => {
                 setQueries(prev => prev.map(q => q.id === id ? { ...q, read: true } : q));
