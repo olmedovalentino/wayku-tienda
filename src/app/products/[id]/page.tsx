@@ -43,20 +43,10 @@ export default function ProductPage() {
         return reviews.filter(r => r.productId === decodedId);
     }, [reviews, decodedId]);
 
-    if (products.length === 0) {
-        return (
-            <div className="flex justify-center items-center min-h-[60vh]">
-                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-            </div>
-        );
-    }
 
-    if (!product || product.isVisible === false) {
-        console.error('NOT FOUND TRIGGERED. Products available:', products.map(p => p.id), 'Requested ID:', params.id, 'Product state:', product);
-        notFound();
-    }
 
     const handleAddToCart = () => {
+        if (!product) return;
         addItem(
             product,
             selectedMaterial,
@@ -86,14 +76,14 @@ export default function ProductPage() {
             { id: 'palo-santo' as const, name: 'Palo Santo' },
         ];
 
-        if (product && product.name === 'Taini') {
+        if (product?.name === 'Taini') {
             return allMaterials.filter(m => m.id !== 'palo-santo');
         }
         return allMaterials;
     }, [product]);
 
     const sizes = useMemo(() => {
-        if (product.variants && product.variants.some(v => !!v.size)) {
+        if (product?.variants && product.variants.some(v => !!v.size)) {
             // Get unique sizes from variants
             const uniqueSizes = Array.from(new Set(product.variants.map(v => v.size).filter(s => !!s)));
             // Map to the format needed for buttons. 
@@ -126,21 +116,33 @@ export default function ProductPage() {
     ];
 
     const getVariantStock = (material: string, size?: string) => {
-        if (!product.variants) return product.stockCount ?? 0;
+        if (!product?.variants) return product?.stockCount ?? 0;
         const variant = product.variants.find(v => v.material === material && v.size === size);
         return variant ? variant.stock : 0;
     };
 
     const hasSizeVariants = useMemo(() => {
-        return (product.variants?.some(v => !!v.size)) || product.id === 'new-1';
+        return (product?.variants?.some(v => !!v.size)) || product?.id === 'new-1';
     }, [product]);
 
     const isSelectionInStock = () => {
-        if (!product.variants) return product.inStock;
+        if (!product?.variants) return product?.inStock;
 
         const sizeToCheck = hasSizeVariants ? selectedSize : undefined;
         return getVariantStock(selectedMaterial, sizeToCheck) > 0;
     };
+
+    if (products.length === 0) {
+        return (
+            <div className="flex justify-center items-center min-h-[60vh]">
+                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        );
+    }
+
+    if (!product || product.isVisible === false) {
+        notFound();
+    }
 
 
     return (
