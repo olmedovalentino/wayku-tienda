@@ -25,15 +25,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         const checkSession = async () => {
-            if (!supabase) {
-                setIsLoading(false);
-                return;
-            }
+            if (!supabase) return;
             const { data: { session } } = await supabase.auth.getSession();
             if (session?.user) {
                 const { data: profile } = await supabase.from('users').select('*').eq('id', session.user.id).single();
                 if (profile) {
-                    setUser({ id: profile.id, email: profile.email, name: profile.name || profile.full_name || 'Usuario' });
+                    setUser({ id: profile.id, email: profile.email, name: profile.name });
                 }
             }
             setIsLoading(false);
@@ -45,15 +42,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 if (event === 'SIGNED_IN' && session?.user) {
                     const { data: profile } = await supabase!.from('users').select('*').eq('id', session.user.id).single();
                     if (profile) {
-                         setUser({ id: profile.id, email: profile.email, name: profile.name || profile.full_name || 'Usuario' });
+                         setUser({ id: profile.id, email: profile.email, name: profile.name });
                     }
                 } else if (event === 'SIGNED_OUT') {
                     setUser(null);
                 }
             });
             return () => subscription.unsubscribe();
-        } else {
-            setIsLoading(false);
         }
     }, []);
 
@@ -74,8 +69,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (data.user) {
                 const { data: profile } = await supabase.from('users').select('*').eq('id', data.user.id).single();
                 if (profile) {
-                    setUser({ id: profile.id, email: profile.email, name: profile.name || profile.full_name || 'Usuario' });
+                    setUser({ id: profile.id, email: profile.email, name: profile.name });
                 } else {
+                    // Fallback to auth data just in case
                     setUser({ id: data.user.id, email: cleanEmail, name: data.user.user_metadata?.name || 'Usuario' });
                 }
             }
@@ -108,14 +104,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 const newUser = {
                     id: data.user.id,
                     name,
-                    full_name: name,
                     email: cleanEmail,
                     cart: [],
                     favorites: []
                 };
 
+                // Upsert to ensure it doesn't fail if trigged twice
                 const { error: insertError } = await supabase.from('users').upsert(newUser, { onConflict: 'id' });
-                if (insertError) console.error("Sync error:", insertError);
+                if (insertError) console.error("Could not sync profile to users table:", insertError);
 
                 setUser({ id: newUser.id, name: newUser.name, email: newUser.email });
             }
