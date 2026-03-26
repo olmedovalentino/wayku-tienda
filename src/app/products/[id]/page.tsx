@@ -1,7 +1,7 @@
 'use client';
 
 import { useApp } from '@/context/AppContext';
-import { notFound } from 'next/navigation';
+import { useParams, notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { Check, Truck, Shield, ArrowLeft, Star, Heart, Hammer } from 'lucide-react';
@@ -9,18 +9,15 @@ import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { useFavorites } from '@/context/FavoritesContext';
 import { useAuth } from '@/context/AuthContext';
-import { use, useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
-interface PageProps {
-    params: Promise<{ id: string }>;
-}
-
-export default function ProductPage(props: PageProps) {
-    const params = use(props.params);
+export default function ProductPage() {
+    const params = useParams();
     const { products, reviews, addReview } = useApp();
     const { user } = useAuth();
 
-    const product = products.find((p) => p.id === params.id);
+    const decodedId = params?.id ? decodeURIComponent(params.id as string) : '';
+    const product = products.find((p) => p.id === decodedId);
     const [selectedMaterial, setSelectedMaterial] = useState<'guayubira' | 'roble' | 'palo-santo'>('roble');
     const [selectedSize, setSelectedSize] = useState<'1m' | '1.5m' | '2m'>('1m');
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -43,8 +40,8 @@ export default function ProductPage(props: PageProps) {
     }, [product, products]);
 
     const productReviews = useMemo(() => {
-        return reviews.filter(r => r.productId === params.id);
-    }, [reviews, params.id]);
+        return reviews.filter(r => r.productId === decodedId);
+    }, [reviews, decodedId]);
 
     if (products.length === 0) {
         return (
@@ -74,7 +71,7 @@ export default function ProductPage(props: PageProps) {
         e.preventDefault();
         if (!user) return;
         addReview({
-            productId: params.id,
+            productId: decodedId,
             userName: user.name,
             rating: reviewRating,
             comment: reviewComment

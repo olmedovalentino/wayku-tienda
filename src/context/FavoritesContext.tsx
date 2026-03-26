@@ -70,7 +70,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
             if (user && supabase) {
                 const syncData = async () => {
                     try {
-                        await supabase.from('users').update({ favorites: favorites }).eq('id', user.id);
+                        await supabase!.from('users').update({ favorites: favorites }).eq('id', user.id);
                     } catch (e) {}
                 };
                 syncData();

@@ -84,7 +84,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             if (user && supabase) {
                 const syncData = async () => {
                     try {
-                        await supabase.from('users').update({ cart: items }).eq('id', user.id);
+                        await supabase!.from('users').update({ cart: items }).eq('id', user.id);
                     } catch (e) {}
                 };
                 syncData();
