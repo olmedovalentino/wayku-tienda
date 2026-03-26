@@ -1,23 +1,17 @@
 [
   {
-    "cart": [
-      {
-        "id": "new-1",
-        "name": "Taini",
-        "price": 1000,
-        "images": [
-          "test.jpg"
-        ],
-        "inStock": true,
-        "category": "pendant",
-        "material": "roble",
-        "quantity": 1,
-        "stockCount": 5,
-        "description": "test",
-        "selectedMaterial": "roble"
-      }
-    ],
-    "favorites": null,
-    "email": "valentinomateoolmedo@gmail.com"
+    "id": "test_id_123",
+    "email": "test@test.com",
+    "cart": null
+  },
+  {
+    "id": "6hopbm2na",
+    "email": "valenolmedo839@gmail.com",
+    "cart": []
+  },
+  {
+    "id": "qbwkmqfrk",
+    "email": "valentinomateoolmedo@gmail.com",
+    "cart": []
   }
 ]

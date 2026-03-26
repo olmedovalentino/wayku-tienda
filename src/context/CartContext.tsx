@@ -77,20 +77,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
         loadCart();
     }, [user]);
 
-    // Save on change
+    // Save strictly to local storage on change
     useEffect(() => {
         if (isLoaded) {
             const cartKey = user ? `cart_user_${user.id}` : 'cart_guest';
             localStorage.setItem(cartKey, JSON.stringify(items));
-            
-            if (user && supabase) {
-                const syncData = async () => {
-                    try {
-                        await supabase!.from('users').update({ cart: items }).eq('id', user.id);
-                    } catch (e) {}
-                };
-                syncData();
-            }
         }
     }, [items, isLoaded, user]);
 
@@ -115,8 +106,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
                     item.cableColor === cableColor &&
                     item.canopyColor === canopyColor
             );
+
+            let newItems;
             if (existingItem) {
-                return currentItems.map((item) =>
+                newItems = currentItems.map((item) =>
                     item.id === product.id &&
                         item.selectedMaterial === selectedMaterial &&
                         item.selectedSize === selectedSize &&
@@ -126,8 +119,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
                         ? { ...item, quantity: item.quantity + 1 }
                         : item
                 );
+            } else {
+                newItems = [...currentItems, { ...product, quantity: 1, selectedMaterial, selectedSize, shadeType, cableColor, canopyColor }];
             }
-            return [...currentItems, { ...product, quantity: 1, selectedMaterial, selectedSize, shadeType, cableColor, canopyColor }];
+
+            if (user && supabase) {
+                // Must call .then() to execute properly and catch errors cleanly
+                // @ts-ignore (ignoring specific supabase return typing for catch logic here)
+                supabase.from('users').update({ cart: newItems }).eq('id', user.id).then().catch(() => {});
+            }
+            return newItems;
         });
         
         // Show Toast instead of forcing sidebar open
@@ -136,11 +137,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
     };
 
     const removeItem = (indexToRemove: number) => {
-        setItems((currentItems) => currentItems.filter((_, index) => index !== indexToRemove));
+        setItems((currentItems) => {
+            const newItems = currentItems.filter((_, index) => index !== indexToRemove);
+            if (user && supabase) {
+                // @ts-ignore
+                supabase.from('users').update({ cart: newItems }).eq('id', user.id).then().catch(() => {});
+            }
+            return newItems;
+        });
     };
 
     const clearCart = () => {
         setItems([]);
+        if (user && supabase) {
+             // @ts-ignore
+             supabase.from('users').update({ cart: [] }).eq('id', user.id).then().catch(() => {});
+        }
     };
 
     const subtotal = items.reduce(
