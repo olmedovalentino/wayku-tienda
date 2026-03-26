@@ -88,7 +88,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
                         setProducts(mappedInitial);
                     }
 
-                    // Forzar carga de admin data para que no aparezca vacio
+                    // Always load admin data regardless of flag (page handles auth)
                     const { data: oData } = await supabase.from('orders').select('*');
                     if (oData) setOrders(oData);
                     const { data: qData } = await supabase.from('queries').select('*');
@@ -129,10 +129,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
                 if (supabase) supabase.from('orders').update({ status }).eq('id', id).then();
             },
-            addReview: () => {},
-            addOrder: () => {},
+            addReview: (review) => {
+                const newR = { ...review, id: Math.random().toString(36).substr(2, 9), date: new Date().toLocaleDateString() };
+                setReviews(prev => [newR as any, ...prev]);
+                if (supabase) supabase.from('reviews').insert(newR).then();
+            },
+            addOrder: (order) => {
+                const newO = { ...order, date: new Date().toLocaleDateString(), status: 'Pendiente' };
+                setOrders(prev => [newO as any, ...prev]);
+                if (supabase) supabase.from('orders').insert(newO).then();
+            },
             addQuery: async (q) => {
-                if (supabase) await supabase.from('queries').insert(q);
+                const newQ = { ...q, date: new Date().toLocaleDateString(), read: false };
+                if (supabase) await supabase.from('queries').insert(newQ);
             },
             markQueryAsRead: (id) => {
                 setQueries(prev => prev.map(q => q.id === id ? { ...q, read: true } : q));
