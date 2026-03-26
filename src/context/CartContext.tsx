@@ -49,28 +49,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 return;
             }
 
-            // If user logged in, check cloud first
+            // User Logged In: CLOUD IS SOURCE OF TRUTH
             if (supabase) {
                 try {
-                    const { data } = await supabase.from('users').select('cart').eq('id', user.id).single();
-                    if (data && Array.isArray(data.cart) && data.cart.length > 0) {
+                    const { data, error } = await supabase.from('users').select('cart').eq('id', user.id).single();
+                    if (data && Array.isArray(data.cart)) {
                         setItems(data.cart);
-                    } else {
-                        // If cloud is empty, try to migrate local guest cart or load user-specific local
-                        const userLocal = localStorage.getItem(`cart_user_${user.id}`);
+                    } else if (!error) {
+                        // If no cloud data exists yet, check if there's a guest cart to migrate
                         const guestLocal = localStorage.getItem('cart_guest');
-                        if (userLocal) {
-                            setItems(JSON.parse(userLocal));
-                        } else if (guestLocal) {
+                        if (guestLocal) {
                             const guestItems = JSON.parse(guestLocal);
                             setItems(guestItems);
-                            // Cleanup guest cart after migration
                             localStorage.removeItem('cart_guest');
                         }
                     }
                 } catch (e) {
-                    const userLocal = localStorage.getItem(`cart_user_${user.id}`);
-                    if (userLocal) setItems(JSON.parse(userLocal));
+                    console.error("Critical Cloud Fetch error:", e);
                 }
             }
             setIsLoaded(true);

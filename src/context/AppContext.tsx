@@ -88,11 +88,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
                         setProducts(mappedInitial);
                     }
 
-                    const { data: oData } = await supabase.from('orders').select('*');
+                    const { data: oData } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
                     if (oData) setOrders(oData);
-                    const { data: qData } = await supabase.from('queries').select('*');
+                    const { data: qData } = await supabase.from('queries').select('*').order('created_at', { ascending: false });
                     if (qData) setQueries(qData);
-                    const { data: sData } = await supabase.from('subscribers').select('*');
+                    const { data: sData } = await supabase.from('subscribers').select('*').order('created_at', { ascending: false });
                     if (sData) setSubscribers(sData.map(s => s.email));
                 } catch (err) {
                     console.error("Data fetch error - potential stale session:", err);
