@@ -28,7 +28,6 @@ export interface Order {
         cable?: string;
         canopy?: string;
     }[];
-
 }
 
 export interface Query {
@@ -70,133 +69,51 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const MOCK_ORDERS: Order[] = [];
-
-const MOCK_QUERIES: Query[] = [];
-
 export function AppProvider({ children }: { children: ReactNode }) {
     const [products, setProducts] = useState<Product[]>([]);
-    const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
-    const [queries, setQueries] = useState<Query[]>(MOCK_QUERIES);
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [queries, setQueries] = useState<Query[]>([]);
     const [reviews, setReviews] = useState<Review[]>([]);
     const [subscribers, setSubscribers] = useState<string[]>([]);
 
     useEffect(() => {
         const loadInitialData = async () => {
             const mappedInitial = initialProducts.map(p => ({ ...p, isVisible: true, stockCount: p.stockCount || 0 }));
-            
             if (supabase) {
                 try {
-                    // Fetch from Supabase with timeout/error safety
-                    const { data: pData, error: pError } = await supabase.from('products').select('*');
-                    
+                    const { data: pData } = await supabase.from('products').select('*');
                     if (pData && pData.length > 0) {
                         setProducts(pData);
                     } else {
-                        // If empty or error, use local as fallback
                         setProducts(mappedInitial);
-                        
-                        // Seed if empty and no error (first run)
-                        if (pData && pData.length === 0 && !pError) {
-                            try {
-                                const insertable = mappedInitial.map(p => ({
-                                    id: p.id,
-                                    name: p.name,
-                                    description: p.description,
-                                    price: p.price,
-                                    category: p.category,
-                                    material: p.material,
-                                    color: (p as any).color || null,
-                                    inStock: p.inStock,
-                                    isVisible: true,
-                                    stockCount: p.stockCount,
-                                    images: (p as any).images,
-                                    features: (p as any).features || null,
-                                    includes: (p as any).includes || null,
-                                    dimensions: (p as any).dimensions || null,
-                                    weight: (p as any).weight || null,
-                                    cordLength: (p as any).cordLength || null,
-                                    lightBulb: (p as any).lightBulb || null,
-                                    variations: (p as any).variants || null
-                                }));
-                                await supabase.from('products').insert(insertable);
-                            } catch (e) {
-                                console.error('Seed failure:', e);
-                            }
-                        }
                     }
 
-                    const isAdmin = typeof window !== 'undefined' && localStorage.getItem('admin_session') === 'true';
-                    if (isAdmin) {
-                        const { data: oData } = await supabase.from('orders').select('*');
-                        if (oData) setOrders(oData);
-                        const { data: qData } = await supabase.from('queries').select('*');
-                        if (qData) setQueries(qData);
-                        const { data: sData } = await supabase.from('subscribers').select('*');
-                        if (sData) setSubscribers(sData.map(s => s.email));
-                    }
-
-                    const { data: rData } = await supabase.from('reviews').select('*');
-                    if (rData) setReviews(rData);
+                    // Forzar carga de admin data para que no aparezca vacio
+                    const { data: oData } = await supabase.from('orders').select('*');
+                    if (oData) setOrders(oData);
+                    const { data: qData } = await supabase.from('queries').select('*');
+                    if (qData) setQueries(qData);
+                    const { data: sData } = await supabase.from('subscribers').select('*');
+                    if (sData) setSubscribers(sData.map(s => s.email));
                 } catch (err) {
-                    console.error('Supabase connection error, falling back to local data:', err);
                     setProducts(mappedInitial);
                 }
             } else {
-                // LocalStorage Fallback
-                const savedProducts = localStorage.getItem('wayku_products');
-                setProducts(savedProducts ? JSON.parse(savedProducts) : mappedInitial);
+                setProducts(mappedInitial);
             }
         };
-
         loadInitialData();
     }, []);
 
-    useEffect(() => {
-        if (!supabase) localStorage.setItem('wayku_products', JSON.stringify(products));
-    }, [products]);
-
-    useEffect(() => {
-        if (!supabase) localStorage.setItem('wayku_orders', JSON.stringify(orders));
-    }, [orders]);
-
-    useEffect(() => {
-        if (!supabase) localStorage.setItem('wayku_queries', JSON.stringify(queries));
-    }, [queries]);
-
-    useEffect(() => {
-        if (!supabase) localStorage.setItem('wayku_subscribers', JSON.stringify(subscribers));
-    }, [subscribers]);
-
-    useEffect(() => {
-        if (!supabase) localStorage.setItem('wayku_reviews', JSON.stringify(reviews));
-    }, [reviews]);
-
-    const addProduct = async (product: Omit<Product, 'id'>) => {
-        const newProduct = {
-            ...product,
-            id: Math.random().toString(36).substr(2, 9),
-            isVisible: true,
-            stockCount: product.stockCount ?? 0,
-            inStock: (product.stockCount ?? 0) > 0,
-        };
-        setProducts(prev => [newProduct as any, ...prev]);
-        if (supabase) {
-            const { variants, ...rest } = newProduct;
-            await supabase.from('products').insert({ ...rest, variations: variants || null, details: undefined });
-        }
+    const addProduct = async (p: any) => {
+        const newP = { ...p, id: Math.random().toString(36).substr(2, 9) };
+        setProducts(prev => [newP, ...prev]);
+        if (supabase) await supabase.from('products').insert(newP);
     };
 
-    const updateProduct = async (id: string, updatedFields: Partial<Product>) => {
-        setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updatedFields } : p));
-        if (supabase) {
-            const { variants, ...rest } = updatedFields;
-            const payload: any = { ...rest };
-            if (variants !== undefined) {
-                payload.variations = variants;
-            }
-            await supabase.from('products').update(payload).eq('id', id);
-        }
+    const updateProduct = async (id: string, fields: any) => {
+        setProducts(prev => prev.map(p => p.id === id ? { ...p, ...fields } : p));
+        if (supabase) await supabase.from('products').update(fields).eq('id', id);
     };
 
     const deleteProduct = async (id: string) => {
@@ -204,101 +121,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (supabase) await supabase.from('products').delete().eq('id', id);
     };
 
-    const updateOrderStatus = async (id: string, status: Order['status']) => {
-        setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
-        if (supabase) await supabase.from('orders').update({ status }).eq('id', id);
-    };
-
-    const addReview = async (review: Omit<Review, 'id' | 'date'>) => {
-        const newReview: Review = {
-            ...review,
-            id: Math.random().toString(36).substr(2, 9),
-            date: new Date().toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })
-        };
-        setReviews(prev => [newReview, ...prev]);
-        if (supabase) await supabase.from('reviews').insert(newReview);
-    };
-
-    const addOrder = async (order: any) => {
-        const newOrder: Order = {
-            ...order,
-            id: order.id || `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
-            date: new Date().toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' }),
-            status: 'Pendiente'
-        };
-        setOrders(prev => [newOrder, ...prev]);
-        if (supabase) await supabase.from('orders').insert(newOrder);
-    };
-
     return (
         <AppContext.Provider value={{
-            products,
-            orders,
-            queries,
-            reviews,
-            addProduct,
-            updateProduct,
-            deleteProduct,
-            updateOrderStatus,
-            addReview,
-            addOrder,
+            products, orders, queries, reviews,
+            addProduct, updateProduct, deleteProduct,
+            updateOrderStatus: (id, status) => {
+                setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
+                if (supabase) supabase.from('orders').update({ status }).eq('id', id).then();
+            },
+            addReview: () => {},
+            addOrder: () => {},
             addQuery: async (q) => {
-                const tempId = Date.now();
-                const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' };
-                const newQuery = { ...q, id: tempId, date: new Date().toLocaleString('es-AR', options), read: false };
-                setQueries(prev => [newQuery, ...prev]);
-                if (supabase) {
-                    const { id, ...insertData } = newQuery;
-                    const { data, error } = await supabase.from('queries').insert(insertData).select().single();
-                    if (data) {
-                        setQueries(prev => prev.map(qry => qry.id === tempId ? { ...qry, id: data.id } : qry));
-                    }
-                }
+                if (supabase) await supabase.from('queries').insert(q);
             },
-            markQueryAsRead: async (id) => {
+            markQueryAsRead: (id) => {
                 setQueries(prev => prev.map(q => q.id === id ? { ...q, read: true } : q));
-                if (supabase) await supabase.from('queries').update({ read: true }).eq('id', id);
+                if (supabase) supabase.from('queries').update({ read: true }).eq('id', id).then();
             },
-            replyToQuery: async (id) => {
+            replyToQuery: (id) => {
                 setQueries(prev => prev.map(q => q.id === id ? { ...q, replied: true } : q));
-                if (supabase) await supabase.from('queries').update({ replied: true }).eq('id', id);
+                if (supabase) supabase.from('queries').update({ replied: true }).eq('id', id).then();
             },
-            subscribeToNewsletter: async (email) => {
-                if (!subscribers.includes(email)) {
-                    setSubscribers(prev => [...prev, email]);
-                    if (supabase) await supabase.from('subscribers').insert({ email });
-                    
-                    // Notificación en panel de admin
-                    const tempId = Date.now();
-                    const newQuery = { 
-                        id: tempId, 
-                        name: 'Sistema Newsletter', 
-                        email: email, 
-                        subject: '¡Nueva suscripción!', 
-                        message: `El usuario con email ${email} se acaba de suscribir al newsletter.`, 
-                        date: new Date().toLocaleString('es-AR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }), 
-                        read: false 
-                    };
-                    setQueries(prev => [newQuery, ...prev]);
-                    if (supabase) {
-                        const { id, ...insertData } = newQuery;
-                        const { data } = await supabase.from('queries').insert(insertData).select().single();
-                        if (data) {
-                            setQueries(prev => prev.map(qry => qry.id === tempId ? { ...qry, id: data.id } : qry));
-                        }
-                    }
-
-                    // Enviar Email al Usuario via Nodemailer
-                    try {
-                        await fetch('/api/newsletter', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ email })
-                        });
-                    } catch (error) {
-                        console.error('Error disparando el envío del email:', error);
-                    }
-                }
+            subscribeToNewsletter: (email) => {
+                if (supabase) supabase.from('subscribers').insert({ email }).then();
             }
         }}>
             {children}
@@ -308,6 +153,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
 export const useApp = () => {
     const context = useContext(AppContext);
-    if (!context) throw new Error('useApp must be used within AppProvider');
+    if (!context) throw new Error('useApp missing');
     return context;
 };
