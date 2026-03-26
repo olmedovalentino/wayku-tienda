@@ -31,17 +31,19 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
-    const { user } = useAuth();
+    const { user, isLoading: isAuthLoading } = useAuth();
     const [items, setItems] = useState<CartItem[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-    // Initial load logic
     useEffect(() => {
         setIsMounted(true);
         const loadInitial = async () => {
+            // Wait for auth to settle
+            if (isAuthLoading) return;
+
             if (!user) {
                 const savedGuest = localStorage.getItem('cart_guest');
                 if (savedGuest) setItems(JSON.parse(savedGuest));
@@ -49,61 +51,53 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 return;
             }
 
-            // User Logged In: CLOUD IS SOURCE OF TRUTH
+            // Forced delay for cloud sync stability on mobile
+            await new Promise(r => setTimeout(r, 800));
+
             if (supabase) {
                 try {
-                    const { data, error } = await supabase.from('users').select('cart').eq('id', user.id).single();
+                    const { data } = await supabase.from('users').select('cart').eq('id', user.id).single();
                     if (data && Array.isArray(data.cart)) {
                         setItems(data.cart);
-                    } else if (!error) {
-                        // If no cloud data exists yet, check if there's a guest cart to migrate
+                    } else {
                         const guestLocal = localStorage.getItem('cart_guest');
                         if (guestLocal) {
-                            const guestItems = JSON.parse(guestLocal);
-                            setItems(guestItems);
+                            setItems(JSON.parse(guestLocal));
                             localStorage.removeItem('cart_guest');
                         }
                     }
-                } catch (e) {
-                    console.error("Critical Cloud Fetch error:", e);
-                }
+                } catch (e) {}
             }
             setIsLoaded(true);
         };
         loadInitial();
-    }, [user]);
+    }, [user, isAuthLoading]);
 
-    // Background sync to cloud
     useEffect(() => {
-        if (isLoaded && user && supabase) {
-            void supabase.from('users').update({ cart: items }).eq('id', user.id);
-        }
-        if (isLoaded) {
+        if (isLoaded && isMounted) {
             const cartKey = user ? `cart_user_${user.id}` : 'cart_guest';
             localStorage.setItem(cartKey, JSON.stringify(items));
+            if (user && supabase) {
+                void supabase.from('users').update({ cart: items }).eq('id', user.id);
+            }
         }
-    }, [items, user, isLoaded]);
+    }, [items, user, isLoaded, isMounted]);
 
     const addItem = (p: any, m: any, s: any, shade: any, cable: any, canopy: any) => {
         setItems(prev => {
             const exists = prev.find(i => i.id === p.id && i.selectedMaterial === m && i.selectedSize === s && i.shadeType === shade && i.cableColor === cable && i.canopyColor === canopy);
-            if (exists) {
-                return prev.map(i => i === exists ? { ...i, quantity: i.quantity + 1 } : i);
-            }
+            if (exists) return prev.map(i => i === exists ? { ...i, quantity: i.quantity + 1 } : i);
             return [...prev, { ...p, quantity: 1, selectedMaterial: m, selectedSize: s, shadeType: shade, cableColor: cable, canopyColor: canopy }];
         });
         setToastMessage(`Agregado al carrito`);
         setTimeout(() => setToastMessage(null), 3000);
     };
 
-    const removeItem = (idx: number) => {
-        setItems(prev => prev.filter((_, i) => i !== idx));
-    };
-
     return (
         <CartContext.Provider value={{
             items, isOpen, openCart: () => setIsOpen(true), closeCart: () => setIsOpen(false),
-            addItem, removeItem, clearCart: () => setItems([]),
+            addItem, removeItem: (idx) => setItems(prev => prev.filter((_, i) => i !== idx)),
+            clearCart: () => setItems([]),
             subtotal: items.reduce((t, i) => t + (i.price * i.quantity), 0),
             isInitialized: isMounted, toastMessage, setToastMessage
         }}>
@@ -111,7 +105,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
         </CartContext.Provider>
     );
 }
-
 export function useCart() {
     const context = useContext(CartContext);
     if (!context) throw new Error('useCart missing');
