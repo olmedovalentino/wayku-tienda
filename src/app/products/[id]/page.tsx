@@ -49,6 +49,14 @@ export default function ProductPage(props: PageProps) {
         return reviews.filter(r => r.productId === params.id);
     }, [reviews, params.id]);
 
+    if (products.length === 0) {
+        return (
+            <div className="flex justify-center items-center min-h-[60vh]">
+                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        );
+    }
+
     if (!product || product.isVisible === false) {
         notFound();
     }
