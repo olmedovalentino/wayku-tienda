@@ -42,22 +42,37 @@ export function CartProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         setIsMounted(true);
         const loadInitial = async () => {
-            const cartKey = user ? `cart_user_${user.id}` : 'cart_guest';
-            const savedLocal = localStorage.getItem(cartKey);
-            let initialItems = savedLocal ? JSON.parse(savedLocal) : [];
+            if (!user) {
+                const savedGuest = localStorage.getItem('cart_guest');
+                if (savedGuest) setItems(JSON.parse(savedGuest));
+                setIsLoaded(true);
+                return;
+            }
 
-            if (user && supabase) {
+            // If user logged in, check cloud first
+            if (supabase) {
                 try {
                     const { data } = await supabase.from('users').select('cart').eq('id', user.id).single();
                     if (data && Array.isArray(data.cart) && data.cart.length > 0) {
-                        // Priority: Data from cloud always wins if exists
-                        initialItems = data.cart;
+                        setItems(data.cart);
+                    } else {
+                        // If cloud is empty, try to migrate local guest cart or load user-specific local
+                        const userLocal = localStorage.getItem(`cart_user_${user.id}`);
+                        const guestLocal = localStorage.getItem('cart_guest');
+                        if (userLocal) {
+                            setItems(JSON.parse(userLocal));
+                        } else if (guestLocal) {
+                            const guestItems = JSON.parse(guestLocal);
+                            setItems(guestItems);
+                            // Cleanup guest cart after migration
+                            localStorage.removeItem('cart_guest');
+                        }
                     }
                 } catch (e) {
-                    console.error("Supabase sync error: ", e);
+                    const userLocal = localStorage.getItem(`cart_user_${user.id}`);
+                    if (userLocal) setItems(JSON.parse(userLocal));
                 }
             }
-            setItems(initialItems);
             setIsLoaded(true);
         };
         loadInitial();
