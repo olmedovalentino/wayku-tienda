@@ -20,7 +20,7 @@ export default function ProductPage(props: PageProps) {
     const { products, reviews, addReview } = useApp();
     const { user } = useAuth();
 
-    const [product, setProduct] = useState(products.find((p) => p.id === params.id));
+    const product = products.find((p) => p.id === params.id);
     const [selectedMaterial, setSelectedMaterial] = useState<'guayubira' | 'roble' | 'palo-santo'>('roble');
     const [selectedSize, setSelectedSize] = useState<'1m' | '1.5m' | '2m'>('1m');
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -34,9 +34,6 @@ export default function ProductPage(props: PageProps) {
     const { addItem } = useCart();
     const { toggleFavorite, isFavorite } = useFavorites();
 
-    useEffect(() => {
-        setProduct(products.find((p) => p.id === params.id));
-    }, [params.id, products]);
 
     const similarProducts = useMemo(() => {
         if (!product) return [];
