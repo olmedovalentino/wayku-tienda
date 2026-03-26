@@ -31,6 +31,8 @@ interface CartContextType {
     clearCart: () => void;
     subtotal: number;
     isInitialized: boolean;
+    toastMessage: string | null;
+    setToastMessage: (msg: string | null) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -40,8 +42,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const [items, setItems] = useState<CartItem[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
-
     const [isLoaded, setIsLoaded] = useState(false);
+    const [toastMessage, setToastMessage] = useState<string | null>(null);
 
     // Initial load when user changes
     useEffect(() => {
@@ -127,7 +129,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
             }
             return [...currentItems, { ...product, quantity: 1, selectedMaterial, selectedSize, shadeType, cableColor, canopyColor }];
         });
-        openCart();
+        
+        // Show Toast instead of forcing sidebar open
+        setToastMessage(`Se agregó ${product.name} al carrito con éxito`);
+        setTimeout(() => setToastMessage(null), 3000);
     };
 
     const removeItem = (indexToRemove: number) => {
@@ -155,6 +160,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 clearCart,
                 subtotal,
                 isInitialized: isMounted,
+                toastMessage,
+                setToastMessage
             }}
         >
             {children}

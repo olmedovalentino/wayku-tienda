@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 
                 if (orderId && status === 'approved') {
                     // Update in our DB
-                    const { error } = await supabase
+                    const { error } = await supabase!
                         .from('orders')
                         .update({ status: 'Confirmado' })
                         .eq('id', orderId);
