@@ -128,17 +128,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
                     }
                 }
 
-                const { data: oData } = await supabase.from('orders').select('*');
-                if (oData) setOrders(oData);
+                const isAdmin = typeof window !== 'undefined' && localStorage.getItem('admin_session') === 'true';
+                
+                if (isAdmin) {
+                    const { data: oData } = await supabase.from('orders').select('*');
+                    if (oData) setOrders(oData);
 
-                const { data: qData } = await supabase.from('queries').select('*');
-                if (qData) setQueries(qData);
+                    const { data: qData } = await supabase.from('queries').select('*');
+                    if (qData) setQueries(qData);
 
+                    const { data: sData } = await supabase.from('subscribers').select('*');
+                    if (sData) setSubscribers(sData.map(s => s.email));
+                }
+
+                // Reviews are public, so they should always be fetched
                 const { data: rData } = await supabase.from('reviews').select('*');
                 if (rData) setReviews(rData);
-
-                const { data: sData } = await supabase.from('subscribers').select('*');
-                if (sData) setSubscribers(sData.map(s => s.email));
             } else {
                 // LocalStorage Fallback
                 const savedProducts = localStorage.getItem('wayku_products');

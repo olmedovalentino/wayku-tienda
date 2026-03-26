@@ -41,8 +41,13 @@ export default function CheckoutPage() {
                 ...prev,
                 email: user.email,
                 firstName: user.name.split(' ')[0],
-                lastName: user.name.split(' ')[1] || ''
+                lastName: user.name.split(' ')[1] || '' // Handle cases where there's no last name
             }));
+            
+            if (appliedDiscount === 0) {
+                setAppliedDiscount(5);
+                setCouponCode('USUARIO WAYKÚ (-5%)');
+            }
         }
     }, [user]);
 
