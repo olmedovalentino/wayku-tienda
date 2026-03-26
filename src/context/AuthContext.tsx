@@ -24,11 +24,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const savedUser = localStorage.getItem('wayku_user');
-        if (savedUser) {
-            setUser(JSON.parse(savedUser));
+        const checkSession = async () => {
+            if (!supabase) return;
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+                const { data: profile } = await supabase.from('users').select('*').eq('id', session.user.id).single();
+                if (profile) {
+                    setUser({ id: profile.id, email: profile.email, name: profile.name });
+                }
+            }
+            setIsLoading(false);
+        };
+        checkSession();
+
+        if (supabase) {
+            const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+                if (event === 'SIGNED_IN' && session?.user) {
+                    const { data: profile } = await supabase!.from('users').select('*').eq('id', session.user.id).single();
+                    if (profile) {
+                         setUser({ id: profile.id, email: profile.email, name: profile.name });
+                    }
+                } else if (event === 'SIGNED_OUT') {
+                    setUser(null);
+                }
+            });
+            return () => subscription.unsubscribe();
         }
-        setIsLoading(false);
     }, []);
 
     const login = async (email: string, password: string) => {
@@ -38,17 +59,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const cleanEmail = email.trim().toLowerCase();
 
         try {
-            const { data: users, error } = await supabase.from('users').select('*').eq('email', cleanEmail).eq('password', password);
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: cleanEmail,
+                password: password
+            });
             
-            if (error) throw error;
+            if (error) throw new Error('Email o contraseña incorrectos');
             
-            if (users && users.length > 0) {
-                const foundUser = users[0];
-                const userData = { id: foundUser.id, email: foundUser.email, name: foundUser.name };
-                setUser(userData);
-                localStorage.setItem('wayku_user', JSON.stringify(userData));
-            } else {
-                throw new Error('Email o contraseña incorrectos');
+            if (data.user) {
+                const { data: profile } = await supabase.from('users').select('*').eq('id', data.user.id).single();
+                if (profile) {
+                    setUser({ id: profile.id, email: profile.email, name: profile.name });
+                } else {
+                    // Fallback to auth data just in case
+                    setUser({ id: data.user.id, email: cleanEmail, name: data.user.user_metadata?.name || 'Usuario' });
+                }
             }
         } catch (error: any) {
             console.error(error);
@@ -65,25 +90,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const cleanEmail = email.trim().toLowerCase();
 
         try {
-            // Check if email exists
-            const { data: existingUsers } = await supabase.from('users').select('email').eq('email', cleanEmail);
-            if (existingUsers && existingUsers.length > 0) {
-                throw new Error('El email ya está registrado');
-            }
-
-            const newUser = {
-                id: Math.random().toString(36).substr(2, 9),
-                name,
+            const { data, error } = await supabase.auth.signUp({
                 email: cleanEmail,
-                password
-            };
+                password,
+                options: {
+                    data: { name }
+                }
+            });
+            
+            if (error) throw new Error(error.message);
 
-            const { error } = await supabase.from('users').insert(newUser);
-            if (error) throw error;
+            if (data.user) {
+                const newUser = {
+                    id: data.user.id,
+                    name,
+                    email: cleanEmail,
+                    cart: [],
+                    favorites: []
+                };
 
-            const userData = { id: newUser.id, name: newUser.name, email: newUser.email };
-            setUser(userData);
-            localStorage.setItem('wayku_user', JSON.stringify(userData));
+                // Upsert to ensure it doesn't fail if trigged twice
+                const { error: insertError } = await supabase.from('users').upsert(newUser, { onConflict: 'id' });
+                if (insertError) console.error("Could not sync profile to users table:", insertError);
+
+                setUser({ id: newUser.id, name: newUser.name, email: newUser.email });
+            }
         } catch (error: any) {
             console.error(error);
             throw new Error(error.message || 'Error al registrar usuario');
@@ -92,9 +123,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    const logout = () => {
+    const logout = async () => {
+        if (supabase) {
+            await supabase.auth.signOut();
+        }
         setUser(null);
-        localStorage.removeItem('wayku_user');
     };
 
     return (
