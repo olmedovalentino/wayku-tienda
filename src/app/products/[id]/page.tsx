@@ -57,7 +57,7 @@ export default function ProductPage(props: PageProps) {
         addItem(
             product,
             selectedMaterial,
-            product.id === 'new-1' ? selectedSize : undefined,
+            hasSizeVariants ? selectedSize : undefined,
             product.category === 'table' ? shadeType : undefined,
             (product.category === 'table' || (product.category === 'pendant' && product.id !== 'new-1' && product.id !== 'new-4')) ? cableColor : undefined,
             product.category === 'pendant' ? canopyColor : undefined

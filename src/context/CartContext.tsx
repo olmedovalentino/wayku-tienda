@@ -26,7 +26,7 @@ interface CartContextType {
         cableColor?: 'blanco' | 'negro',
         canopyColor?: 'blanco' | 'negro'
     ) => void;
-    removeItem: (productId: string) => void;
+    removeItem: (index: number) => void;
     clearCart: () => void;
     subtotal: number;
     isInitialized: boolean;
@@ -98,8 +98,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         openCart();
     };
 
-    const removeItem = (productId: string) => {
-        setItems((currentItems) => currentItems.filter((item) => item.id !== productId));
+    const removeItem = (indexToRemove: number) => {
+        setItems((currentItems) => currentItems.filter((_, index) => index !== indexToRemove));
     };
 
     const clearCart = () => {

@@ -60,8 +60,8 @@ export function CartDrawer() {
                             </div>
                         ) : (
                             <div className="space-y-8">
-                                {items.map((item) => (
-                                    <div key={item.id} className="flex gap-4">
+                                {items.map((item, idx) => (
+                                    <div key={`${item.id}-${idx}`} className="flex gap-4">
                                         <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-stone-200">
                                             <Image
                                                 src={item.images[0]}
@@ -97,7 +97,7 @@ export function CartDrawer() {
                                                 </div>
                                                 <button
                                                     type="button"
-                                                    onClick={() => removeItem(item.id)}
+                                                    onClick={() => removeItem(idx)}
                                                     className="flex items-center gap-1 font-medium text-red-600 hover:text-red-500"
                                                 >
                                                     <Trash2 size={14} /> Eliminar

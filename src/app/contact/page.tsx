@@ -269,7 +269,7 @@ export default function ContactPage() {
                                             <p className="text-sm">
                                                 Para gestionar un cambio, escríbenos a:
                                                 <br />
-                                                <span className="font-semibold text-primary">waykuargentina@gmail.com</span>
+                                                <a href="mailto:waykuargentina@gmail.com" className="font-semibold text-primary hover:underline">waykuargentina@gmail.com</a>
                                             </p>
                                         </div>
                                     </div>
