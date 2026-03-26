@@ -24,9 +24,22 @@ export default function UsersAdminPage() {
 
     const fetchUsers = async () => {
         if (!supabase) return;
-        const { data } = await supabase.from('users').select('*');
-        if (data) {
-            setUsers(data);
+        try {
+            const { data, error } = await supabase.from('users').select('*');
+            if (error) {
+                console.error("Error fetching users from Supabase:", error);
+                return;
+            }
+            if (data) {
+                // Map full_name to name if needed for component consistency
+                const mappedUsers = data.map(u => ({
+                    ...u,
+                    name: u.full_name || u.name || 'Usuario sin nombre'
+                }));
+                setUsers(mappedUsers);
+            }
+        } catch (e) {
+            console.error("Critical fetch error:", e);
         }
     };
 
@@ -142,7 +155,7 @@ export default function UsersAdminPage() {
                                         <div className="flex justify-between items-start">
                                             <div className="flex items-center gap-3">
                                                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm flex-shrink-0">
-                                                    {user.name.charAt(0).toUpperCase()}
+                                                    {(user.name || '?').charAt(0).toUpperCase()}
                                                 </div>
                                                 <div>
                                                     <h3 className="font-medium text-stone-900">{user.name}</h3>
