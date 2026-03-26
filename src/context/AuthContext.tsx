@@ -23,6 +23,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
+    const syncUser = async (supabaseUser: any) => {
+        if (!supabaseUser) return null;
+        try {
+            const { data: profile } = await supabase!.from('users').select('*').eq('id', supabaseUser.id).single();
+            const name = profile?.full_name || profile?.name || supabaseUser.user_metadata?.name || 'Usuario';
+            return { id: supabaseUser.id, email: supabaseUser.email || '', name };
+        } catch (e) {
+            // Fallback to auth data if profile fetch fails
+            return { id: supabaseUser.id, email: supabaseUser.email || '', name: supabaseUser.user_metadata?.name || 'Usuario' };
+        }
+    };
+
     useEffect(() => {
         const checkSession = async () => {
             if (!supabase) {
@@ -31,14 +43,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
             const { data: { session } } = await supabase.auth.getSession();
             if (session?.user) {
-                // Fetch from users table to get name/profile
-                const { data: profile } = await supabase.from('users').select('*').eq('id', session.user.id).single();
-                if (profile) {
-                    setUser({ id: profile.id, email: profile.email, name: profile.full_name || profile.name || 'Usuario' });
-                } else {
-                    // Fallback to metadata if no profile row
-                    setUser({ id: session.user.id, email: session.user.email || '', name: session.user.user_metadata?.name || 'Usuario' });
-                }
+                const u = await syncUser(session.user);
+                if (u) setUser(u);
             }
             setIsLoading(false);
         };
@@ -46,11 +52,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (supabase) {
             const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-                if (event === 'SIGNED_IN' && session?.user) {
-                    const { data: profile } = await supabase!.from('users').select('*').eq('id', session.user.id).single();
-                    if (profile) {
-                         setUser({ id: profile.id, email: profile.email, name: profile.full_name || profile.name || 'Usuario' });
-                    }
+                if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user) {
+                    const u = await syncUser(session.user);
+                    if (u) setUser(u);
                 } else if (event === 'SIGNED_OUT') {
                     setUser(null);
                 }
@@ -61,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const login = async (email: string, password: string) => {
         setIsLoading(true);
-        if (!supabase) throw new Error('Sin conexión a la base de datos');
+        if (!supabase) throw new Error('Error de conexión');
         try {
             const { data, error } = await supabase.auth.signInWithPassword({
                 email: email.trim().toLowerCase(),
@@ -69,12 +73,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
             if (error) throw new Error('Email o contraseña incorrectos');
             if (data.user) {
-                const { data: profile } = await supabase.from('users').select('*').eq('id', data.user.id).single();
-                setUser({ 
-                    id: data.user.id, 
-                    email: data.user.email || '', 
-                    name: profile?.full_name || profile?.name || data.user.user_metadata?.name || 'Usuario' 
-                });
+                const u = await syncUser(data.user);
+                if (u) setUser(u);
             }
         } finally {
             setIsLoading(false);
@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const register = async (name: string, email: string, password: string) => {
         setIsLoading(true);
-        if (!supabase) throw new Error('Sin conexión a la base de datos');
+        if (!supabase) throw new Error('Error de conexión');
         const cleanEmail = email.trim().toLowerCase();
         try {
             const { data, error } = await supabase.auth.signUp({
@@ -92,21 +92,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 options: { data: { name } }
             });
             if (error) throw new Error(error.message);
-
             if (data.user) {
-                // Sync to users table IMMEDIATELY
+                // Upsert to ensure user exists in public.users
                 await supabase.from('users').upsert({
                     id: data.user.id,
                     full_name: name,
                     email: cleanEmail,
-                    cart: [],
-                    favorites: []
                 }, { onConflict: 'id' });
-
                 setUser({ id: data.user.id, name, email: cleanEmail });
             }
-        } catch (err: any) {
-            throw new Error(err.message || 'Error al registrarse');
         } finally {
             setIsLoading(false);
         }
@@ -126,6 +120,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
     const context = useContext(AuthContext);
-    if (context === undefined) throw new Error('useAuth must be used within an AuthProvider');
+    if (context === undefined) throw new Error('useAuth missing');
     return context;
 }
