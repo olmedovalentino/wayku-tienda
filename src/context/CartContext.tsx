@@ -38,77 +38,62 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const [isMounted, setIsMounted] = useState(false);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-    // Initial load when user or mount status changes
+    // Initial load logic
     useEffect(() => {
         setIsMounted(true);
-        const cartKey = user ? `cart_user_${user.id}` : 'cart_guest';
-        
         const loadInitial = async () => {
+            const cartKey = user ? `cart_user_${user.id}` : 'cart_guest';
             const savedLocal = localStorage.getItem(cartKey);
-            if (savedLocal) {
-                setItems(JSON.parse(savedLocal));
-            }
+            let initialItems = savedLocal ? JSON.parse(savedLocal) : [];
 
             if (user && supabase) {
                 try {
                     const { data } = await supabase.from('users').select('cart').eq('id', user.id).single();
                     if (data && Array.isArray(data.cart) && data.cart.length > 0) {
-                        setItems(data.cart);
+                        // Priority: Data from cloud always wins if exists
+                        initialItems = data.cart;
                     }
                 } catch (e) {
-                    console.error("Supabase load error: ", e);
+                    console.error("Supabase sync error: ", e);
                 }
             }
+            setItems(initialItems);
             setIsLoaded(true);
         };
         loadInitial();
     }, [user]);
 
-    // Save to LocalStorage immediately on every change
+    // Background sync to cloud
     useEffect(() => {
+        if (isLoaded && user && supabase) {
+            void supabase.from('users').update({ cart: items }).eq('id', user.id);
+        }
         if (isLoaded) {
             const cartKey = user ? `cart_user_${user.id}` : 'cart_guest';
             localStorage.setItem(cartKey, JSON.stringify(items));
         }
     }, [items, user, isLoaded]);
 
-    const syncToCloud = async (newItems: CartItem[]) => {
-        if (user && supabase) {
-            void supabase.from('users').upsert({ id: user.id, email: user.email, cart: newItems }, { onConflict: 'id' });
-        }
-    };
-
     const addItem = (p: any, m: any, s: any, shade: any, cable: any, canopy: any) => {
         setItems(prev => {
             const exists = prev.find(i => i.id === p.id && i.selectedMaterial === m && i.selectedSize === s && i.shadeType === shade && i.cableColor === cable && i.canopyColor === canopy);
-            let next;
             if (exists) {
-                next = prev.map(i => i === exists ? { ...i, quantity: i.quantity + 1 } : i);
-            } else {
-                next = [...prev, { ...p, quantity: 1, selectedMaterial: m, selectedSize: s, shadeType: shade, cableColor: cable, canopyColor: canopy }];
+                return prev.map(i => i === exists ? { ...i, quantity: i.quantity + 1 } : i);
             }
-            syncToCloud(next);
-            return next;
+            return [...prev, { ...p, quantity: 1, selectedMaterial: m, selectedSize: s, shadeType: shade, cableColor: cable, canopyColor: canopy }];
         });
         setToastMessage(`Agregado al carrito`);
         setTimeout(() => setToastMessage(null), 3000);
     };
 
     const removeItem = (idx: number) => {
-        setItems(prev => {
-            const next = prev.filter((_, i) => i !== idx);
-            syncToCloud(next);
-            return next;
-        });
+        setItems(prev => prev.filter((_, i) => i !== idx));
     };
 
     return (
         <CartContext.Provider value={{
             items, isOpen, openCart: () => setIsOpen(true), closeCart: () => setIsOpen(false),
-            addItem, removeItem, clearCart: () => {
-                setItems([]);
-                syncToCloud([]);
-            },
+            addItem, removeItem, clearCart: () => setItems([]),
             subtotal: items.reduce((t, i) => t + (i.price * i.quantity), 0),
             isInitialized: isMounted, toastMessage, setToastMessage
         }}>
