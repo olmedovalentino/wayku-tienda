@@ -24,7 +24,10 @@ export default function AdminQueriesPage() {
     const [isSending, setIsSending] = useState(false);
 
     // Sort by descending ID: Newest first.
-    const sortedQueries = [...queries].sort((a, b) => b.id - a.id);
+    // Exclude Newsletter notifications from standard Queries page
+    const sortedQueries = [...queries]
+        .filter(q => q.name !== 'Sistema Newsletter')
+        .sort((a, b) => b.id - a.id);
 
     const filteredQueries = sortedQueries.filter(query => {
         const matchesSearch = query.name.toLowerCase().includes(searchTerm.toLowerCase()) || 

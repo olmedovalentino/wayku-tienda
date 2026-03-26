@@ -51,6 +51,7 @@ export default function AdminLayout({
         { name: 'Productos', href: '/admin/products', icon: Package },
         { name: 'Pedidos', href: '/admin/orders', icon: ShoppingBag },
         { name: 'Consultas', href: '/admin/queries', icon: MessageSquare },
+        { name: 'Suscriptores', href: '/admin/subscribers', icon: Users },
         { name: 'Usuarios', href: '/admin/users', icon: Users },
     ];
 
