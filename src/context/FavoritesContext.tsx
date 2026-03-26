@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Product } from '@/lib/products';
 import { useAuth } from './AuthContext';
+import { supabase } from '@/lib/supabase';
 
 type FavoritesContextType = {
     favorites: Product[];
@@ -22,30 +23,60 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
 
-    // Load from local storage on mount or when user changes
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    // Load from local storage or DB on mount or when user changes
     useEffect(() => {
         setIsMounted(true);
+        setIsLoaded(false);
         const favKey = user ? `wayku_favorites_user_${user.id}` : 'wayku_favorites_guest';
-        const saved = localStorage.getItem(favKey);
-        if (saved) {
-            try {
-                setFavorites(JSON.parse(saved));
-            } catch (e) {
-                console.error('Failed to parse favorites', e);
+        
+        const loadFavs = async () => {
+            if (user && supabase) {
+                try {
+                    const { data, error } = await supabase.from('users').select('favorites').eq('id', user.id).single();
+                    if (!error && data && data.favorites) {
+                        setFavorites(data.favorites);
+                        setIsLoaded(true);
+                        return;
+                    }
+                } catch (e) {
+                    // Ignore
+                }
+            }
+
+            const saved = localStorage.getItem(favKey);
+            if (saved) {
+                try {
+                    setFavorites(JSON.parse(saved));
+                } catch (e) {
+                    setFavorites([]);
+                }
+            } else {
                 setFavorites([]);
             }
-        } else {
-            setFavorites([]);
-        }
+            setIsLoaded(true);
+        };
+
+        loadFavs();
     }, [user]);
 
-    // Save to local storage on change
+    // Save to local storage and DB on change
     useEffect(() => {
-        if (isMounted) {
+        if (isLoaded) {
             const favKey = user ? `wayku_favorites_user_${user.id}` : 'wayku_favorites_guest';
             localStorage.setItem(favKey, JSON.stringify(favorites));
+            
+            if (user && supabase) {
+                const syncData = async () => {
+                    try {
+                        await supabase.from('users').update({ favorites: favorites }).eq('id', user.id);
+                    } catch (e) {}
+                };
+                syncData();
+            }
         }
-    }, [favorites, isMounted, user]);
+    }, [favorites, isLoaded, user]);
 
     const openFavorites = () => setIsOpen(true);
     const closeFavorites = () => setIsOpen(false);

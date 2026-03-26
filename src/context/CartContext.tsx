@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Product } from '@/lib/products';
 import { useAuth } from './AuthContext';
+import { supabase } from '@/lib/supabase';
 
 export interface CartItem extends Product {
     quantity: number;
@@ -40,25 +41,56 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
 
+    const [isLoaded, setIsLoaded] = useState(false);
+
     // Initial load when user changes
     useEffect(() => {
         setIsMounted(true);
+        setIsLoaded(false);
         const cartKey = user ? `cart_user_${user.id}` : 'cart_guest';
-        const savedCart = localStorage.getItem(cartKey);
-        if (savedCart) {
-            setItems(JSON.parse(savedCart));
-        } else {
-            setItems([]);
-        }
+        
+        const loadCart = async () => {
+            if (user && supabase) {
+                try {
+                    const { data, error } = await supabase.from('users').select('cart').eq('id', user.id).single();
+                    if (!error && data && data.cart) {
+                        setItems(data.cart);
+                        setIsLoaded(true);
+                        return;
+                    }
+                } catch (e) {
+                    // Ignore if column doesn't exist
+                }
+            }
+            
+            const savedCart = localStorage.getItem(cartKey);
+            if (savedCart) {
+                setItems(JSON.parse(savedCart));
+            } else {
+                setItems([]);
+            }
+            setIsLoaded(true);
+        };
+
+        loadCart();
     }, [user]);
 
     // Save on change
     useEffect(() => {
-        if (isMounted) {
+        if (isLoaded) {
             const cartKey = user ? `cart_user_${user.id}` : 'cart_guest';
             localStorage.setItem(cartKey, JSON.stringify(items));
+            
+            if (user && supabase) {
+                const syncData = async () => {
+                    try {
+                        await supabase.from('users').update({ cart: items }).eq('id', user.id);
+                    } catch (e) {}
+                };
+                syncData();
+            }
         }
-    }, [items, isMounted, user]);
+    }, [items, isLoaded, user]);
 
     const openCart = () => setIsOpen(true);
     const closeCart = () => setIsOpen(false);
