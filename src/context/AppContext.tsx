@@ -88,7 +88,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
                         setProducts(mappedInitial);
                     }
 
-                    // Always load admin data regardless of flag (page handles auth)
                     const { data: oData } = await supabase.from('orders').select('*');
                     if (oData) setOrders(oData);
                     const { data: qData } = await supabase.from('queries').select('*');
@@ -96,6 +95,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
                     const { data: sData } = await supabase.from('subscribers').select('*');
                     if (sData) setSubscribers(sData.map(s => s.email));
                 } catch (err) {
+                    console.error("Data fetch error - potential stale session:", err);
                     setProducts(mappedInitial);
                 }
             } else {
