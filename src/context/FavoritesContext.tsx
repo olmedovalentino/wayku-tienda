@@ -13,6 +13,8 @@ type FavoritesContextType = {
     toggleFavorite: (product: Product) => void;
     isFavorite: (productId: string) => boolean;
     removeFavorite: (productId: string) => void;
+    toastMessage: string | null;
+    setToastMessage: (msg: string | null) => void;
 };
 
 const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined);
@@ -22,8 +24,8 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     const [favorites, setFavorites] = useState<Product[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
-
     const [isLoaded, setIsLoaded] = useState(false);
+    const [toastMessage, setToastMessage] = useState<string | null>(null);
 
     // Load from local storage or DB on mount or when user changes
     useEffect(() => {
@@ -61,20 +63,11 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
         loadFavs();
     }, [user]);
 
-    // Save to local storage and DB on change
+    // Save strictly to local storage
     useEffect(() => {
         if (isLoaded) {
             const favKey = user ? `wayku_favorites_user_${user.id}` : 'wayku_favorites_guest';
             localStorage.setItem(favKey, JSON.stringify(favorites));
-            
-            if (user && supabase) {
-                const syncData = async () => {
-                    try {
-                        await supabase!.from('users').update({ favorites: favorites }).eq('id', user.id);
-                    } catch (e) {}
-                };
-                syncData();
-            }
         }
     }, [favorites, isLoaded, user]);
 
@@ -84,16 +77,34 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     const toggleFavorite = (product: Product) => {
         setFavorites(prev => {
             const exists = prev.find(p => p.id === product.id);
+            let newFavs;
             if (exists) {
-                return prev.filter(p => p.id !== product.id);
+                newFavs = prev.filter(p => p.id !== product.id);
+                setToastMessage(`Se quitó de favoritos`);
             } else {
-                return [...prev, product];
+                newFavs = [...prev, product];
+                setToastMessage(`Agregado a tus favoritos`);
             }
+            
+            if (user && supabase) {
+                // @ts-ignore
+                supabase.from('users').update({ favorites: newFavs }).eq('id', user.id).then().catch(() => {});
+            }
+            
+            setTimeout(() => setToastMessage(null), 3000);
+            return newFavs;
         });
     };
 
     const removeFavorite = (productId: string) => {
-        setFavorites(prev => prev.filter(p => p.id !== productId));
+        setFavorites(prev => {
+            const newFavs = prev.filter(p => p.id !== productId);
+             if (user && supabase) {
+                // @ts-ignore
+                supabase.from('users').update({ favorites: newFavs }).eq('id', user.id).then().catch(() => {});
+            }
+            return newFavs;
+        });
     };
 
     const isFavorite = (productId: string) => favorites.some(p => p.id === productId);
@@ -106,7 +117,9 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
             closeFavorites,
             toggleFavorite,
             isFavorite,
-            removeFavorite
+            removeFavorite,
+            toastMessage,
+            setToastMessage
         }}>
             {children}
         </FavoritesContext.Provider>
