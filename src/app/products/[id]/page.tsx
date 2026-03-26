@@ -55,6 +55,7 @@ export default function ProductPage(props: PageProps) {
     }
 
     if (!product || product.isVisible === false) {
+        console.error('NOT FOUND TRIGGERED. Products available:', products.map(p => p.id), 'Requested ID:', params.id, 'Product state:', product);
         notFound();
     }
 
