@@ -79,9 +79,20 @@ export default function ContactPage() {
                                 <div className="rounded-lg bg-white p-3 shadow-sm">
                                     <Mail className="h-6 w-6 text-primary" />
                                 </div>
-                                <div>
+                                <div className="flex-1">
                                     <h3 className="font-semibold text-stone-900">Email</h3>
-                                    <a href="mailto:waykuargentina@gmail.com" className="text-stone-600 hover:text-primary transition-colors">waykuargentina@gmail.com</a>
+                                    <div className="flex items-center gap-2 group">
+                                        <a href="mailto:waykuargentina@gmail.com" className="text-stone-600 hover:text-primary transition-colors">waykuargentina@gmail.com</a>
+                                        <button 
+                                            onClick={() => {
+                                                navigator.clipboard.writeText('waykuargentina@gmail.com');
+                                                alert('Email copiado al portapapeles');
+                                            }}
+                                            className="text-[10px] uppercase font-bold text-stone-400 hover:text-primary opacity-0 group-hover:opacity-100 transition-all border border-stone-200 px-2 py-0.5 rounded cursor-pointer"
+                                        >
+                                            Copiar
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 

@@ -244,7 +244,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
             addOrder,
             addQuery: async (q) => {
                 const tempId = Date.now();
-                const newQuery = { ...q, id: tempId, date: 'Recién', read: false };
+                const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+                const newQuery = { ...q, id: tempId, date: new Date().toLocaleString('es-AR', options), read: false };
                 setQueries(prev => [newQuery, ...prev]);
                 if (supabase) {
                     const { id, ...insertData } = newQuery;
@@ -275,7 +276,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
                         email: email, 
                         subject: '¡Nueva suscripción!', 
                         message: `El usuario con email ${email} se acaba de suscribir al newsletter.`, 
-                        date: 'Recién', 
+                        date: new Date().toLocaleString('es-AR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }), 
                         read: false 
                     };
                     setQueries(prev => [newQuery, ...prev]);
