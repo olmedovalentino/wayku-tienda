@@ -163,7 +163,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 if (supabase) supabase.from('queries').update({ replied: true }).eq('id', id).then();
             },
             subscribeToNewsletter: (email) => {
-                if (supabase) supabase.from('subscribers').insert({ email }).then();
+                if (supabase) {
+                    supabase.from('subscribers').insert({ email }).then();
+                }
             }
         }}>
             {children}
