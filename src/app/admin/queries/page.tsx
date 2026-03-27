@@ -48,6 +48,12 @@ export default function AdminQueriesPage() {
         e.preventDefault();
         if (!selectedQuery || !replyText.trim()) return;
 
+        if (selectedQuery.replied) {
+            if (!confirm("Ya respondiste esta consulta. ¿Estás seguro que querés volver a enviar un mensaje?")) {
+                return;
+            }
+        }
+
         setIsSending(true);
         
         // Update database as replied
@@ -215,12 +221,12 @@ export default function AdminQueriesPage() {
                                     <Button
                                         type="submit"
                                         className="flex-1 gap-2"
-                                        disabled={isSending || selectedQuery.replied}
+                                        disabled={isSending}
                                     >
                                         {isSending ? 'Enviando...' : (
                                             <>
                                                 <Send size={18} />
-                                                Enviar Respuesta
+                                                {selectedQuery.replied ? 'Enviar de Nuevo' : 'Enviar Respuesta'}
                                             </>
                                         )}
                                     </Button>

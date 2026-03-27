@@ -7,7 +7,9 @@ import {
     ArrowDownRight,
     DollarSign,
     MessageSquare,
-    Package
+    Package,
+    PlusCircle,
+    MinusCircle
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -15,7 +17,7 @@ import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 
 export default function AdminDashboardPage() {
-    const { products, orders, queries } = useApp();
+    const { products, orders, queries, updateProduct } = useApp();
 
     const stats = [
         {
@@ -205,17 +207,28 @@ export default function AdminDashboardPage() {
 
 
                     <div className="pt-6 border-t border-stone-100">
-                        <h4 className="text-sm font-medium text-stone-900 mb-4">Sin Stock</h4>
+                        <h4 className="text-sm font-medium text-stone-900 mb-4">Stock Rápido (Global)</h4>
                         <div className="space-y-4">
-                            {products.filter(p => !p.inStock).slice(0, 3).map(p => (
+                            {products.map(p => (
                                 <div key={p.id} className="flex items-center justify-between">
-                                    <span className="text-sm text-stone-600 italic">{p.name}</span>
-                                    <span className="text-xs font-medium text-red-600 bg-red-50 px-2 py-0.5 rounded-full">Agotado</span>
+                                    <span className="text-sm text-stone-600 font-medium line-clamp-1 flex-1">{p.name}</span>
+                                    <div className="flex items-center gap-3 bg-stone-50 rounded-lg p-1 border border-stone-100">
+                                        <button 
+                                            onClick={() => updateProduct(p.id, { stockCount: Math.max(0, (p.stockCount || 0) - 1), inStock: Math.max(0, (p.stockCount || 0) - 1) > 0 })}
+                                            className="text-stone-400 hover:text-red-500 transition-colors"
+                                        >
+                                            <MinusCircle size={18} />
+                                        </button>
+                                        <span className="text-sm font-bold text-stone-900 w-4 text-center">{p.stockCount || 0}</span>
+                                        <button 
+                                            onClick={() => updateProduct(p.id, { stockCount: (p.stockCount || 0) + 1, inStock: true })}
+                                            className="text-stone-400 hover:text-green-500 transition-colors"
+                                        >
+                                            <PlusCircle size={18} />
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
-                            {products.filter(p => !p.inStock).length === 0 && (
-                                <p className="text-sm text-stone-500 italic">Todo el inventario al día.</p>
-                            )}
                         </div>
                     </div>
 

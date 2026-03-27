@@ -9,7 +9,9 @@ import {
     Trash2,
     Calendar,
     Download,
-    Check
+    Check,
+    Send,
+    X
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
@@ -23,6 +25,11 @@ export default function AdminSubscribersPage() {
     const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoading, setIsLoading] = useState(true);
+
+    const [isCampaignModalOpen, setIsCampaignModalOpen] = useState(false);
+    const [campaignSubject, setCampaignSubject] = useState('');
+    const [campaignMessage, setCampaignMessage] = useState('');
+    const [isSendingCampaign, setIsSendingCampaign] = useState(false);
 
     useEffect(() => {
         const fetchSubscribers = async () => {
@@ -62,6 +69,38 @@ export default function AdminSubscribersPage() {
         document.body.removeChild(link);
     };
 
+    const handleSendCampaign = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!campaignSubject || !campaignMessage) return;
+        
+        if (!confirm(`¿Estás seguro de enviar esta campaña a ${subscribers.length} suscriptores? Esta acción no se puede deshacer.`)) {
+            return;
+        }
+
+        setIsSendingCampaign(true);
+        try {
+            const res = await fetch('/api/campaign', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ subject: campaignSubject, message: campaignMessage })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert(`Campaña enviada con éxito a ${data.sentCount} suscriptores.`);
+                setIsCampaignModalOpen(false);
+                setCampaignSubject('');
+                setCampaignMessage('');
+            } else {
+                alert(`Error al enviar la campaña: ${data.error}`);
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error al conectar con el servidor.');
+        } finally {
+            setIsSendingCampaign(false);
+        }
+    };
+
     return (
         <div className="space-y-8">
             <div className="flex justify-between items-start">
@@ -69,10 +108,16 @@ export default function AdminSubscribersPage() {
                     <h1 className="text-2xl font-bold text-stone-900">Suscripciones al Newsletter</h1>
                     <p className="text-stone-500">Gestiona las personas interesadas en recibir tus correos.</p>
                 </div>
-                <Button onClick={handleExport} variant="outline" className="flex items-center gap-2">
-                    <Download size={18} />
-                    Exportar CSV
-                </Button>
+                <div className="flex gap-2">
+                    <Button onClick={() => setIsCampaignModalOpen(true)} className="flex items-center gap-2">
+                        <Mail size={18} />
+                        Crear Campaña
+                    </Button>
+                    <Button onClick={handleExport} variant="outline" className="flex items-center gap-2">
+                        <Download size={18} />
+                        Exportar CSV
+                    </Button>
+                </div>
             </div>
 
             {/* Stats */}
@@ -144,6 +189,70 @@ export default function AdminSubscribersPage() {
                     </div>
                 )}
             </div>
+
+            {/* Campaign Modal */}
+            {isCampaignModalOpen && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-center justify-between p-6 border-b border-stone-100">
+                            <div>
+                                <h2 className="text-xl font-bold text-stone-900">Nueva Campaña de Email</h2>
+                                <p className="text-sm text-stone-500">Se enviará un mail a as {subscribers.length} suscripciones.</p>
+                            </div>
+                            <button onClick={() => setIsCampaignModalOpen(false)} className="text-stone-400 hover:text-stone-900 transition-colors">
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSendCampaign} className="p-6 space-y-6">
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-stone-700">Asunto del correo</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="Ej: ¡Llegó la nueva colección de lámparas!"
+                                        className="w-full px-4 py-2 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary"
+                                        value={campaignSubject}
+                                        onChange={(e) => setCampaignSubject(e.target.value)}
+                                    />
+                                </div>
+                                
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-stone-700">Mensaje</label>
+                                    <textarea
+                                        rows={8}
+                                        required
+                                        placeholder="Escribe el contenido de la campaña aquí..."
+                                        className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary resize-none"
+                                        value={campaignMessage}
+                                        onChange={(e) => setCampaignMessage(e.target.value)}
+                                    ></textarea>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-4 pt-4 border-t border-stone-100">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="flex-1"
+                                    onClick={() => setIsCampaignModalOpen(false)}
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button type="submit" className="flex-1 gap-2" disabled={isSendingCampaign || subscribers.length === 0}>
+                                    {isSendingCampaign ? 'Enviando...' : (
+                                        <>
+                                            <Send size={18} />
+                                            Enviar Campaña
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
