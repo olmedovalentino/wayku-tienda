@@ -15,6 +15,7 @@ import {
     HelpCircle,
     Printer
 } from 'lucide-react';
+import { getTimeAgo } from '@/lib/time';
 
 
 export default function AdminOrdersPage() {
@@ -27,8 +28,8 @@ export default function AdminOrdersPage() {
     const sortedOrders = [...orders];
 
     const filteredOrders = sortedOrders.filter(order => {
-        const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                              order.customer.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                              order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
                               order.total.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = statusFilter === 'Todos' || order.status === statusFilter;
         return matchesSearch && matchesStatus;
@@ -114,7 +115,12 @@ export default function AdminOrdersPage() {
                                             <p className="text-xs text-stone-500">{order.email}</p>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-stone-500">{order.date}</td>
+                                    <td className="px-6 py-4 text-stone-500">
+                                        <div className="flex flex-col">
+                                            <span>{order.date}</span>
+                                            {order.created_at && <span className="text-[10px] text-primary/70 italic mt-0.5">{getTimeAgo(order.created_at)}</span>}
+                                        </div>
+                                    </td>
                                     <td className="px-6 py-4 text-stone-600">{order.items} {order.items === 1 ? 'item' : 'items'}</td>
                                     <td className="px-6 py-4 font-medium text-stone-900">{order.total}</td>
                                     <td className="px-6 py-4">
@@ -157,13 +163,16 @@ export default function AdminOrdersPage() {
                                     <Package size={24} />
                                 </div>
                                 <div>
-                                    <p 
+                                    <p
                                         onClick={() => setSelectedOrder(order)}
                                         className="font-bold text-stone-900 underline decoration-stone-200 underline-offset-4 cursor-pointer active:text-primary transition-colors"
                                     >
                                         {order.id}
                                     </p>
-                                    <p className="text-xs text-stone-500 capitalize">{order.date}</p>
+                                    <div className="flex flex-col">
+                                        <p className="text-xs text-stone-500 capitalize">{order.date}</p>
+                                        {order.created_at && <span className="text-[10px] text-primary/70 italic mt-0.5">{getTimeAgo(order.created_at)}</span>}
+                                    </div>
                                 </div>
                             </div>
                             <div className="flex gap-1">

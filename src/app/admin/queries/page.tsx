@@ -14,6 +14,8 @@ import {
     Send,
     Check
 } from 'lucide-react';
+import { toast } from 'sonner';
+import { getTimeAgo } from '@/lib/time';
 
 export default function AdminQueriesPage() {
     const { queries, markQueryAsRead, replyToQuery } = useApp();
@@ -44,29 +46,39 @@ export default function AdminQueriesPage() {
         setReplyText('');
     };
 
-    const handleSendReply = (e: React.FormEvent) => {
+    const handleSendReply = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedQuery || !replyText.trim()) return;
 
-        if (selectedQuery.replied) {
-            if (!confirm("Ya respondiste esta consulta. ¿Estás seguro que querés volver a enviar un mensaje?")) {
-                return;
-            }
-        }
-
         setIsSending(true);
-        
-        // Update database as replied
-        replyToQuery(selectedQuery.id, replyText);
 
-        // Open Gmail Web correctly with prefilled data
-        const subject = encodeURIComponent(`Re: ${selectedQuery.subject} - Waykú Lámparas`);
-        const body = encodeURIComponent(`${replyText}\n\n---\nMensaje original de ${selectedQuery.name}:\n${selectedQuery.message}`);
-        
-        window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${selectedQuery.email}&su=${subject}&body=${body}`, '_blank');
+        try {
+            const res = await fetch('/api/reply', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: selectedQuery.email,
+                    name: selectedQuery.name,
+                    subject: selectedQuery.subject,
+                    message: replyText,
+                    originalMessage: selectedQuery.message
+                })
+            });
 
-        setIsSending(false);
-        setSelectedQuery(null);
+            const data = await res.json();
+            if (data.success) {
+                replyToQuery(selectedQuery.id, replyText);
+                toast.success('Respuesta enviada directamente al cliente.');
+                setSelectedQuery(null);
+            } else {
+                toast.error(`Error: ${data.error}`);
+            }
+        } catch (err) {
+            console.error('Fetch error:', err);
+            toast.error('Error enviando la respuesta.');
+        } finally {
+            setIsSending(false);
+        }
     };
 
     return (
@@ -125,9 +137,14 @@ export default function AdminQueriesPage() {
                         <div className="py-2 border-y border-stone-100">
                             <div className="flex items-center justify-between mb-1">
                                 <p className="text-sm font-bold text-stone-900">{query.subject}</p>
-                                <div className="text-stone-400 text-[10px] flex items-center gap-1">
-                                    <Clock size={12} />
-                                    {query.date}
+                                <div className="text-stone-400 text-[10px] flex flex-col items-end">
+                                    <div className="flex items-center gap-1">
+                                        <Clock size={12} />
+                                        <span>{query.date}</span>
+                                    </div>
+                                    {query.created_at && (
+                                        <span className="text-[10px] text-primary/70 italic mt-0.5">{getTimeAgo(query.created_at)}</span>
+                                    )}
                                 </div>
                             </div>
                             <p className="text-sm text-stone-600 line-clamp-2 italic">"{query.message}"</p>
@@ -185,9 +202,14 @@ export default function AdminQueriesPage() {
                                 <p className="text-stone-800 leading-relaxed italic">
                                     "{selectedQuery.message}"
                                 </p>
-                                <div className="mt-4 flex items-center gap-2 text-[10px] text-stone-400 font-medium uppercase">
-                                    <Clock size={12} />
-                                    Enviado hace {selectedQuery.date}
+                                <div className="mt-4 flex flex-col gap-1 text-[10px] text-stone-400 font-medium uppercase min-h-[20px]">
+                                    <div className="flex items-center gap-2">
+                                        <Clock size={12} />
+                                        Enviado el {selectedQuery.date}
+                                    </div>
+                                    {selectedQuery.created_at && (
+                                        <div className="text-primary/70 italic ml-5 capitalize">{getTimeAgo(selectedQuery.created_at)}</div>
+                                    )}
                                 </div>
                             </div>
 

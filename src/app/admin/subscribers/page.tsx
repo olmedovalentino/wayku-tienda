@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { toast } from 'sonner';
+import { getTimeAgo } from '@/lib/time';
 
 interface Subscriber {
     id?: string;
@@ -163,9 +164,14 @@ export default function AdminSubscribersPage() {
                         </div>
 
                         <div className="pt-3 border-t border-stone-100 flex justify-between items-center text-xs mt-auto">
-                            <div className="text-stone-400 flex items-center gap-1 font-medium">
-                                <Calendar size={12} />
-                                {subscriber.created_at ? new Date(subscriber.created_at).toLocaleDateString() : '—'}
+                            <div className="text-stone-400 flex flex-col font-medium">
+                                <span className="flex items-center gap-1">
+                                    <Calendar size={12} />
+                                    {subscriber.created_at ? new Date(subscriber.created_at).toLocaleDateString() : '—'}
+                                </span>
+                                {subscriber.created_at && (
+                                    <span className="text-[10px] text-primary/70 italic mt-0.5 ml-4">{getTimeAgo(subscriber.created_at)}</span>
+                                )}
                             </div>
                             <button 
                                 onClick={() => handleDelete(subscriber.email)}

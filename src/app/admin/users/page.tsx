@@ -83,148 +83,75 @@ export default function UsersAdminPage() {
                     </div>
                 </div>
 
-                <div className="overflow-x-auto">
-                    {/* Desktop Table */}
-                    <table className="w-full text-left hidden lg:table">
-                        <thead>
-                            <tr className="bg-stone-50 text-stone-500 text-xs font-medium uppercase tracking-wider">
-                                <th className="px-6 py-4">Usuario</th>
-                                <th className="px-6 py-4">Email</th>
-                                <th className="px-6 py-4">Actividad</th>
-                                <th className="px-6 py-4">Rol</th>
-                                <th className="px-6 py-4 text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-stone-100">
-                            {filteredUsers.length === 0 ? (
-                                <tr>
-                                    <td colSpan={4} className="px-6 py-12 text-center text-stone-500">
-                                        No se encontraron usuarios registrados
-                                    </td>
-                                </tr>
-                            ) : (
-                                filteredUsers.map((user) => (
-                                    <tr key={user.id} className="hover:bg-stone-50/50 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                                                    {(user.name || '?').charAt(0).toUpperCase()}
-                                                </div>
-                                                <span className="font-medium text-stone-900">{user.name}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-stone-600">
-                                            <div className="flex items-center gap-2">
-                                                <Mail size={14} />
-                                                {user.email}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex gap-4 text-stone-400">
-                                                {orders.filter(o => o.email.toLowerCase() === user.email.toLowerCase()).length > 0 && (
-                                                    <span className="flex items-center gap-1 text-xs" title="Pedidos">
-                                                        <Package size={14} className="text-primary/60" />
-                                                        {orders.filter(o => o.email.toLowerCase() === user.email.toLowerCase()).length}
-                                                    </span>
-                                                )}
-                                                {queries.filter(q => q.email.toLowerCase() === user.email.toLowerCase()).length > 0 && (
-                                                    <span className="flex items-center gap-1 text-xs" title="Consultas">
-                                                        <MessageSquare size={14} className="text-primary/60" />
-                                                        {queries.filter(q => q.email.toLowerCase() === user.email.toLowerCase()).length}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2.5 py-0.5 text-xs font-medium text-stone-700">
-                                                {user.role || 'Cliente'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <button
-                                                onClick={() => deleteUser(user.id)}
-                                                className="p-2 text-stone-400 hover:text-red-600 transition-colors"
-                                                title="Eliminar usuario"
-                                            >
-                                                <Trash2 size={18} />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+                {/* Users Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+                    {filteredUsers.length === 0 ? (
+                        <div className="col-span-full p-8 text-center text-stone-500 bg-white rounded-2xl border border-stone-100">
+                            No se encontraron usuarios registrados
+                        </div>
+                    ) : (
+                        filteredUsers.map((user) => {
+                            const userOrders = orders.filter(o => o.email.toLowerCase() === user.email.toLowerCase() || o.customer.toLowerCase() === user.name.toLowerCase());
+                            const userQueries = queries.filter(q => q.email.toLowerCase() === user.email.toLowerCase());
+                            const userReviews = reviews.filter(r => r.userName.toLowerCase() === user.name.toLowerCase());
 
-                    {/* Mobile Cards */}
-                    <div className="lg:hidden flex flex-col divide-y divide-stone-100">
-                        {filteredUsers.length === 0 ? (
-                            <div className="p-8 text-center text-stone-500">
-                                No se encontraron usuarios registrados
-                            </div>
-                        ) : (
-                            filteredUsers.map((user) => {
-                                const userOrders = orders.filter(o => o.email.toLowerCase() === user.email.toLowerCase() || o.customer.toLowerCase() === user.name.toLowerCase());
-                                const userQueries = queries.filter(q => q.email.toLowerCase() === user.email.toLowerCase());
-                                const userReviews = reviews.filter(r => r.userName.toLowerCase() === user.name.toLowerCase());
-
-                                return (
-                                    <div key={user.id} className="p-4 flex flex-col gap-3 bg-white hover:bg-stone-50 transition-colors">
-                                        <div className="flex justify-between items-start">
-                                            <div className="flex items-center gap-3">
-                                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm flex-shrink-0">
-                                                    {(user.name || '?').charAt(0).toUpperCase()}
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-medium text-stone-900">{user.name}</h3>
-                                                    <p className="text-xs text-stone-500 flex items-center gap-1 mt-0.5"><Mail size={12}/> {user.email}</p>
-                                                </div>
+                            return (
+                                <div key={user.id} className="p-4 flex flex-col gap-3 bg-white hover:bg-stone-50 transition-colors rounded-xl border border-stone-100 shadow-sm">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm flex-shrink-0">
+                                                {(user.name || '?').charAt(0).toUpperCase()}
                                             </div>
-                                            <span className="inline-flex items-center rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-medium text-stone-700 flex-shrink-0">
-                                                {user.role || 'Cliente'}
-                                            </span>
+                                            <div>
+                                                <h3 className="font-medium text-stone-900">{user.name}</h3>
+                                                <p className="text-xs text-stone-500 flex items-center gap-1 mt-0.5"><Mail size={12}/> {user.email}</p>
+                                            </div>
                                         </div>
-
-                                        {/* Activity summary */}
-                                        <div className="mt-2 pt-3 border-t border-stone-100 flex flex-col gap-2">
-                                            <h4 className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Actividad</h4>
-                                            
-                                            {userOrders.length > 0 && (
-                                                <div className="text-xs text-stone-600 bg-stone-50 p-2 rounded-lg">
-                                                    <strong className="flex items-center gap-1 text-stone-800 mb-1"><Package size={12}/> Pedidos ({userOrders.length}):</strong>
-                                                    {userOrders.map(o => <div key={o.id} className="truncate">• {o.id} - <span className="font-semibold text-primary">{o.status}</span></div>)}
-                                                </div>
-                                            )}
-                                            {userQueries.length > 0 && (
-                                                <div className="text-xs text-stone-600 bg-stone-50 p-2 rounded-lg">
-                                                    <strong className="flex items-center gap-1 text-stone-800 mb-1"><MessageSquare size={12}/> Consultas ({userQueries.length}):</strong>
-                                                    {userQueries.map(q => <div key={q.id} className="truncate">• {q.subject} (<span className="font-semibold text-primary">{q.replied ? 'Respondida' : 'Pendiente'}</span>)</div>)}
-                                                </div>
-                                            )}
-                                            {userReviews.length > 0 && (
-                                                <div className="text-xs text-stone-600 bg-stone-50 p-2 rounded-lg">
-                                                    <strong className="flex items-center gap-1 text-stone-800 mb-1"><Star size={12}/> Reseñas ({userReviews.length}):</strong>
-                                                    {userReviews.map(r => <div key={r.id} className="truncate">• Producto: "{r.productId}" - {r.rating}★</div>)}
-                                                </div>
-                                            )}
-                                            {userOrders.length === 0 && userQueries.length === 0 && userReviews.length === 0 && (
-                                                <span className="text-[10px] text-stone-400 italic block mt-1">Sin actividad registrada en la plataforma.</span>
-                                            )}
-                                        </div>
-
-                                        <div className="flex justify-end pt-2 border-t border-stone-50">
-                                            <button
-                                                onClick={() => deleteUser(user.id)}
-                                                className="flex items-center gap-1 p-2 text-xs font-medium text-red-600 bg-red-50 rounded-lg transition-colors hover:bg-red-100"
-                                            >
-                                                <Trash2 size={14} />
-                                                Eliminar
-                                            </button>
-                                        </div>
+                                        <span className="inline-flex items-center rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-medium text-stone-700 flex-shrink-0">
+                                            {user.role || 'Cliente'}
+                                        </span>
                                     </div>
-                                );
-                            })
-                        )}
-                    </div>
+
+                                    {/* Activity summary */}
+                                    <div className="mt-2 pt-3 border-t border-stone-100 flex flex-col gap-2 flex-grow">
+                                        <h4 className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Actividad</h4>
+                                        
+                                        {userOrders.length > 0 && (
+                                            <div className="text-xs text-stone-600 bg-stone-50 p-2 rounded-lg">
+                                                <strong className="flex items-center gap-1 text-stone-800 mb-1"><Package size={12}/> Pedidos ({userOrders.length}):</strong>
+                                                {userOrders.map(o => <div key={o.id} className="truncate">• {o.id} - <span className="font-semibold text-primary">{o.status}</span></div>)}
+                                            </div>
+                                        )}
+                                        {userQueries.length > 0 && (
+                                            <div className="text-xs text-stone-600 bg-stone-50 p-2 rounded-lg">
+                                                <strong className="flex items-center gap-1 text-stone-800 mb-1"><MessageSquare size={12}/> Consultas ({userQueries.length}):</strong>
+                                                {userQueries.map(q => <div key={q.id} className="truncate">• {q.subject} (<span className="font-semibold text-primary">{q.replied ? 'Respondida' : 'Pendiente'}</span>)</div>)}
+                                            </div>
+                                        )}
+                                        {userReviews.length > 0 && (
+                                            <div className="text-xs text-stone-600 bg-stone-50 p-2 rounded-lg">
+                                                <strong className="flex items-center gap-1 text-stone-800 mb-1"><Star size={12}/> Reseñas ({userReviews.length}):</strong>
+                                                {userReviews.map(r => <div key={r.id} className="truncate">• Producto: "{r.productId}" - {r.rating}★</div>)}
+                                            </div>
+                                        )}
+                                        {userOrders.length === 0 && userQueries.length === 0 && userReviews.length === 0 && (
+                                            <span className="text-[10px] text-stone-400 italic block mt-1">Sin actividad registrada en la plataforma.</span>
+                                        )}
+                                    </div>
+
+                                    <div className="flex justify-end pt-2 mt-auto border-t border-stone-50">
+                                        <button
+                                            onClick={() => deleteUser(user.id)}
+                                            className="flex items-center gap-1 p-2 text-xs font-medium text-red-600 bg-red-50 rounded-lg transition-colors hover:bg-red-100"
+                                        >
+                                            <Trash2 size={14} />
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
                 </div>
             </div>
         </div>

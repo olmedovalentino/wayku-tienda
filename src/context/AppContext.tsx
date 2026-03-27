@@ -18,6 +18,8 @@ export interface Order {
     city?: string;
     postalCode?: string;
     phone?: string;
+    items_details?: any[];
+    created_at?: string;
     details?: {
         name: string;
         price: number;
@@ -39,6 +41,7 @@ export interface Query {
     date: string;
     read: boolean;
     replied?: boolean;
+    created_at?: string;
 }
 
 export interface Review {
@@ -48,6 +51,7 @@ export interface Review {
     rating: number;
     comment: string;
     date: string;
+    created_at?: string;
 }
 
 interface AppContextType {
