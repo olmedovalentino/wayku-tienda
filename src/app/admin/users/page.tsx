@@ -90,6 +90,7 @@ export default function UsersAdminPage() {
                             <tr className="bg-stone-50 text-stone-500 text-xs font-medium uppercase tracking-wider">
                                 <th className="px-6 py-4">Usuario</th>
                                 <th className="px-6 py-4">Email</th>
+                                <th className="px-6 py-4">Actividad</th>
                                 <th className="px-6 py-4">Rol</th>
                                 <th className="px-6 py-4 text-right">Acciones</th>
                             </tr>
@@ -107,7 +108,7 @@ export default function UsersAdminPage() {
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                                                    {user.name.charAt(0).toUpperCase()}
+                                                    {(user.name || '?').charAt(0).toUpperCase()}
                                                 </div>
                                                 <span className="font-medium text-stone-900">{user.name}</span>
                                             </div>
@@ -116,6 +117,22 @@ export default function UsersAdminPage() {
                                             <div className="flex items-center gap-2">
                                                 <Mail size={14} />
                                                 {user.email}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex gap-4 text-stone-400">
+                                                {orders.filter(o => o.email.toLowerCase() === user.email.toLowerCase()).length > 0 && (
+                                                    <span className="flex items-center gap-1 text-xs" title="Pedidos">
+                                                        <Package size={14} className="text-primary/60" />
+                                                        {orders.filter(o => o.email.toLowerCase() === user.email.toLowerCase()).length}
+                                                    </span>
+                                                )}
+                                                {queries.filter(q => q.email.toLowerCase() === user.email.toLowerCase()).length > 0 && (
+                                                    <span className="flex items-center gap-1 text-xs" title="Consultas">
+                                                        <MessageSquare size={14} className="text-primary/60" />
+                                                        {queries.filter(q => q.email.toLowerCase() === user.email.toLowerCase()).length}
+                                                    </span>
+                                                )}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
