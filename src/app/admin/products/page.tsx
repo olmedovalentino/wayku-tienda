@@ -19,9 +19,12 @@ import {
     Eye,
     EyeOff,
     PlusCircle,
-    MinusCircle
+    MinusCircle,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import Image from 'next/image';
+import { toast } from 'sonner';
 
 export default function AdminProductsPage() {
     const { products, addProduct, updateProduct, deleteProduct } = useApp();
@@ -392,18 +395,7 @@ export default function AdminProductsPage() {
                                         onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-stone-700">Material Principal</label>
-                                    <select
-                                        className="w-full px-4 py-2 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary"
-                                        value={formData.material}
-                                        onChange={(e) => setFormData({ ...formData, material: e.target.value as any })}
-                                    >
-                                        <option value="roble">Roble</option>
-                                        <option value="guayubira">Guayubira</option>
-                                        <option value="palo-santo">Palo Santo</option>
-                                    </select>
-                                </div>
+                                {/* Material Principal removed as per request to focus on variations */}
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-stone-700">Stock Global (Unidades)</label>
                                     <input
@@ -527,44 +519,77 @@ export default function AdminProductsPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-stone-700">Imágenes del Producto</label>
-                                <div className="space-y-4">
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="text"
-                                            placeholder="URL de imagen (opcional si subes archivo)"
-                                            className="flex-1 px-4 py-2 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary text-sm"
-                                            value={formData.images[0]}
-                                            onChange={(e) => setFormData({ ...formData, images: [e.target.value] })}
-                                        />
-                                    </div>
-                                    
-                                    <div className="relative group cursor-pointer">
+                                <label className="text-sm font-medium text-stone-700">Galería de Imágenes</label>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                    {formData.images.filter(img => img && img.trim() !== '').map((img, idx) => (
+                                        <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-stone-200 group">
+                                            <Image src={img} alt={`Imagen ${idx+1}`} fill className="object-cover" />
+                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                {idx > 0 && (
+                                                    <button type="button" onClick={(e) => {
+                                                        e.preventDefault();
+                                                        const newArr = [...formData.images];
+                                                        [newArr[idx-1], newArr[idx]] = [newArr[idx], newArr[idx-1]];
+                                                        setFormData({...formData, images: newArr});
+                                                    }} className="p-1.5 bg-white rounded-lg text-stone-900 hover:text-primary transition-colors">
+                                                        <ChevronLeft size={16} />
+                                                    </button>
+                                                )}
+                                                <button type="button" onClick={(e) => {
+                                                    e.preventDefault();
+                                                    const newArr = formData.images.filter((_, i) => i !== idx);
+                                                    setFormData({...formData, images: newArr.length ? newArr : ['']});
+                                                }} className="p-1.5 bg-white rounded-lg text-red-600 hover:bg-red-50 transition-colors">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                                {idx < formData.images.filter(img => img && img.trim() !== '').length - 1 && (
+                                                    <button type="button" onClick={(e) => {
+                                                        e.preventDefault();
+                                                        const newArr = [...formData.images];
+                                                        [newArr[idx+1], newArr[idx]] = [newArr[idx], newArr[idx+1]];
+                                                        setFormData({...formData, images: newArr});
+                                                    }} className="p-1.5 bg-white rounded-lg text-stone-900 hover:text-primary transition-colors">
+                                                        <ChevronRight size={16} />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                    <div className="relative aspect-square rounded-xl overflow-hidden border-2 border-dashed border-stone-200 group cursor-pointer hover:bg-stone-50 hover:border-primary transition-all flex flex-col items-center justify-center">
                                         <input
                                             type="file"
                                             accept="image/*"
+                                            multiple
                                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                             onChange={async (e) => {
-                                                const file = e.target.files?.[0];
-                                                if (file && supabase) {
-                                                    const fileName = `${Date.now()}-${file.name}`;
+                                                const files = Array.from(e.target.files || []);
+                                                if (!files.length || !supabase) return;
+                                                
+                                                toast.loading('Subiendo imágenes...');
+                                                const newUrls: string[] = [];
+                                                
+                                                for (const file of files) {
+                                                    const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
                                                     const { data, error } = await supabase.storage.from('products').upload(fileName, file);
                                                     if (data) {
                                                         const { data: { publicUrl } } = supabase.storage.from('products').getPublicUrl(fileName);
-                                                        setFormData({ ...formData, images: [publicUrl] });
-                                                        alert('Foto subida con éxito');
+                                                        newUrls.push(publicUrl);
                                                     } else {
-                                                        console.error('Error subiendo foto:', error);
-                                                        alert('Error al subir. Asegúrate de tener el bucket "products" en Supabase');
+                                                        toast.error(`Error al subir ${file.name}`);
                                                     }
+                                                }
+                                                
+                                                toast.dismiss();
+                                                if (newUrls.length > 0) {
+                                                    toast.success(`${newUrls.length} imágenes subidas correctamente`);
+                                                    const current = formData.images.filter(i => i && i.trim() !== '');
+                                                    setFormData({ ...formData, images: [...current, ...newUrls] });
                                                 }
                                             }}
                                         />
-                                        <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-stone-200 rounded-2xl bg-stone-50 group-hover:bg-white group-hover:border-primary transition-all">
-                                            <Upload className="h-8 w-8 text-stone-400 group-hover:text-primary mb-2" />
-                                            <p className="text-sm font-medium text-stone-600">Subir nueva foto</p>
-                                            <p className="text-xs text-stone-400 mt-1">Soporta JPG, PNG desde cámara o galería</p>
-                                        </div>
+                                        <Upload className="h-6 w-6 text-stone-400 group-hover:text-primary mb-2" />
+                                        <p className="text-xs font-medium text-stone-600 text-center px-2">Subir fotos (Múltiples)</p>
                                     </div>
                                 </div>
                             </div>

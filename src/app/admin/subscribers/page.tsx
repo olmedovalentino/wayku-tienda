@@ -14,6 +14,7 @@ import {
     X
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { toast } from 'sonner';
 
 interface Subscriber {
     id?: string;
@@ -86,16 +87,16 @@ export default function AdminSubscribersPage() {
             });
             const data = await res.json();
             if (data.success) {
-                alert(`Campaña enviada con éxito a ${data.sentCount} suscriptores.`);
+                toast.success(`Campaña enviada con éxito a ${data.sentCount} suscriptores.`);
                 setIsCampaignModalOpen(false);
                 setCampaignSubject('');
                 setCampaignMessage('');
             } else {
-                alert(`Error al enviar la campaña: ${data.error}`);
+                toast.error(`Error al enviar la campaña: ${data.error}`);
             }
         } catch (err) {
             console.error(err);
-            alert('Error al conectar con el servidor.');
+            toast.error('Error al conectar con el servidor.');
         } finally {
             setIsSendingCampaign(false);
         }
@@ -197,7 +198,7 @@ export default function AdminSubscribersPage() {
                         <div className="flex items-center justify-between p-6 border-b border-stone-100">
                             <div>
                                 <h2 className="text-xl font-bold text-stone-900">Nueva Campaña de Email</h2>
-                                <p className="text-sm text-stone-500">Se enviará un mail a as {subscribers.length} suscripciones.</p>
+                                <p className="text-sm text-stone-500">Se enviará un correo a las {subscribers.length} suscripciones activas.</p>
                             </div>
                             <button onClick={() => setIsCampaignModalOpen(false)} className="text-stone-400 hover:text-stone-900 transition-colors">
                                 <X size={24} />

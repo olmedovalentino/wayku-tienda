@@ -5,6 +5,7 @@ import { FavoritesProvider } from '@/context/FavoritesContext';
 import { AppProvider } from '@/context/AppContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { ConditionalWrapper } from "@/components/layout/ConditionalWrapper";
+import { Toaster } from 'sonner';
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -52,6 +53,7 @@ export default function RootLayout({
                 <ConditionalWrapper>
                   {children}
                 </ConditionalWrapper>
+                <Toaster position="top-center" richColors />
               </FavoritesProvider>
             </CartProvider>
           </AppProvider>
