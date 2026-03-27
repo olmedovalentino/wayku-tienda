@@ -341,26 +341,50 @@ export default function CheckoutPage() {
                                             </div>
                                         </div>
 
-                                        {paymentMethod === 'transfer' && (
-                                            <div className="mt-4 p-4 bg-stone-50 rounded-lg border border-stone-100 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                                                <p className="text-xs font-semibold text-stone-700 uppercase tracking-wider">Datos para la transferencia:</p>
-                                                <div className="grid grid-cols-2 gap-2 text-sm">
-                                                    <span className="text-stone-500">Alias:</span>
-                                                    <span className="text-stone-900 font-medium font-mono text-xs">waykuargentina</span>
-                                                    <span className="text-stone-500">CVU:</span>
-                                                    <span className="text-stone-900 font-medium font-mono text-xs">0000003100043743912911</span>
-                                                    <span className="text-stone-500">Titular:</span>
-                                                    <span className="text-stone-900 font-medium">Valentino Mateo Olmedo</span>
-                                                    <span className="text-stone-500">CUIT:</span>
-                                                    <span className="text-stone-900 font-medium text-xs">20-47304165-1</span>
+                                                <div className="bg-stone-50 p-4 rounded-xl border border-stone-100 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300 shadow-inner">
+                                                    <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1">Datos para la transferencia:</p>
+                                                    
+                                                    <div className="space-y-3">
+                                                        <div className="flex items-center justify-between group">
+                                                            <div className="flex flex-col">
+                                                                <span className="text-[10px] text-stone-400 uppercase font-bold tracking-tighter">Alias</span>
+                                                                <span className="text-stone-900 font-bold text-sm font-mono">waykuargentina</span>
+                                                            </div>
+                                                            <Button 
+                                                                type="button" size="sm" variant="outline" className="h-7 text-[10px] px-2"
+                                                                onClick={() => {navigator.clipboard.writeText('waykuargentina'); alert('Alias copiado')}}
+                                                            >Copiar</Button>
+                                                        </div>
+
+                                                        <div className="flex items-center justify-between group">
+                                                            <div className="flex flex-col">
+                                                                <span className="text-[10px] text-stone-400 uppercase font-bold tracking-tighter">CVU</span>
+                                                                <span className="text-stone-900 font-bold text-sm font-mono tracking-tight">0000003100043743912911</span>
+                                                            </div>
+                                                            <Button 
+                                                                type="button" size="sm" variant="outline" className="h-7 text-[10px] px-2"
+                                                                onClick={() => {navigator.clipboard.writeText('0000003100043743912911'); alert('CVU copiado')}}
+                                                            >Copiar</Button>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-2 gap-x-4 border-t border-stone-200 pt-3">
+                                                            <div className="flex flex-col">
+                                                                <span className="text-[10px] text-stone-400 uppercase font-bold tracking-tighter">Titular</span>
+                                                                <span className="text-stone-900 font-bold text-[11px] leading-tight">Valentino Mateo Olmedo</span>
+                                                            </div>
+                                                            <div className="flex flex-col">
+                                                                <span className="text-[10px] text-stone-400 uppercase font-bold tracking-tighter">CUIT/CUIL</span>
+                                                                <span className="text-stone-900 font-bold text-[11px]">20-47304165-1</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="mt-2 pt-2 border-t border-stone-200">
+                                                        <p className="text-[10px] text-stone-500 italic leading-relaxed">
+                                                            Una vez realizada la transferencia, deberás enviar el comprobante por WhatsApp al <strong>35138444333</strong>.
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                                <div className="mt-2 pt-2 border-t border-stone-200">
-                                                    <p className="text-xs text-stone-600 italic">
-                                                        Una vez realizada la transferencia, deberás enviar el comprobante por WhatsApp al <strong>35138444333</strong>.
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
                             </div>
