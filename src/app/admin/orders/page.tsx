@@ -23,10 +23,8 @@ export default function AdminOrdersPage() {
     const [statusFilter, setStatusFilter] = useState('Todos');
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
-    // Filter and Sort: Newest first logic based on id strings descending 
-    // or just reversing the internal orders array since they are fetched oldest to newest from Supabase
-    // But we sort string comparing inverted assuming IDs are chronological ORD-XXXX or using creation order.
-    const sortedOrders = [...orders].reverse();
+    // Orders are now correctly fetched and sorted newest-first in AppContext
+    const sortedOrders = [...orders];
 
     const filteredOrders = sortedOrders.filter(order => {
         const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) || 

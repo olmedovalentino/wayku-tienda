@@ -88,26 +88,78 @@ export function AppProvider({ children }: { children: ReactNode }) {
                         setProducts(mappedInitial);
                     }
 
+                    // Helper to parse dates like "22 de mar. de 2026" or "22 de mar de 2026"
+                    const parseDate = (dateStr: string) => {
+                        if (!dateStr) return 0;
+                        const months: Record<string, number> = { 'ene': 0, 'feb': 1, 'mar': 2, 'abr': 3, 'may': 4, 'jun': 5, 'jul': 6, 'ago': 7, 'sep': 8, 'oct': 9, 'nov': 10, 'dic': 11 };
+                        const parts = dateStr.toLowerCase().split(' ').filter(p => p !== 'de' && p !== 'del' && p !== '');
+                        if (parts.length >= 3) {
+                            const day = parseInt(parts[0], 10);
+                            const monthStr = parts[1].replace('.', '').substring(0, 3);
+                            const year = parseInt(parts[2], 10);
+                            if (!isNaN(day) && !isNaN(year) && typeof months[monthStr] !== 'undefined') {
+                                return new Date(year, months[monthStr], day).getTime();
+                            }
+                        }
+                        const ts = Date.parse(dateStr);
+                        return isNaN(ts) ? 0 : ts;
+                    };
+
+                    const sortOrders = (ordersList: any[]) => {
+                        return [...ordersList].sort((a, b) => {
+                            let timeA = 0; let timeB = 0;
+                            // check if created_at exists natively
+                            if (a.created_at) timeA = new Date(a.created_at).getTime();
+                            if (b.created_at) timeB = new Date(b.created_at).getTime();
+
+                            // fallback to id parsing if created_at is missing
+                            if (timeA === 0 && a.id && a.id.startsWith('ORD-') && a.id.length > 10) {
+                                const ts = parseInt(a.id.replace('ORD-', ''), 10);
+                                if (!isNaN(ts) && ts > 1000000000) timeA = ts;
+                            }
+                            if (timeB === 0 && b.id && b.id.startsWith('ORD-') && b.id.length > 10) {
+                                const ts = parseInt(b.id.replace('ORD-', ''), 10);
+                                if (!isNaN(ts) && ts > 1000000000) timeB = ts;
+                            }
+                            
+                            // fallback to date string parsing
+                            if (timeA === 0) timeA = parseDate(a.date);
+                            if (timeB === 0) timeB = parseDate(b.date);
+                            
+                            // If dates fall back to 0 or are identical, use ID string comparison as last resort
+                            if (timeA === timeB) {
+                                return b.id.localeCompare(a.id);
+                            }
+                            return timeB - timeA; // Descending (newest first)
+                        });
+                    };
+
                     try {
-                        const { data: oData } = await supabase.from('orders').select('*').order('id', { ascending: false });
-                        if (oData) setOrders(oData);
+                        const { data: oData } = await supabase.from('orders').select('*');
+                        if (oData) setOrders(sortOrders(oData));
                     } catch (e) {}
 
                     try {
                         const { data: qData } = await supabase.from('queries').select('*').order('id', { ascending: false });
                         if (qData) setQueries(qData);
                     } catch (e) {}
-
+                    
                     try {
-                        const { data: oData } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
-                        if (oData) setOrders(oData);
-
-                        const { data: qData } = await supabase.from('queries').select('*').order('created_at', { ascending: false });
-                        if (qData) setQueries(qData);
-
-                        const { data: sData } = await supabase.from('subscribers').select('*').order('created_at', { ascending: false });
+                        const { data: sData } = await supabase.from('subscribers').select('*').order('id', { ascending: false });
                         if (sData) setSubscribers(sData.map(s => s.email));
                     } catch (e) {}
+
+                    // Optional blocks to override with created_at if those exist in specific tables
+                    try {
+                        const { data: qData } = await supabase.from('queries').select('*').order('created_at', { ascending: false });
+                        if (qData && qData.length > 0 && qData[0].created_at) setQueries(qData);
+                    } catch (e) {}
+
+                    try {
+                        const { data: sData } = await supabase.from('subscribers').select('*').order('created_at', { ascending: false });
+                        if (sData && sData.length > 0 && sData[0].created_at) setSubscribers(sData.map(s => s.email));
+                    } catch (e) {}
+
                 } catch (err) {
                     console.error("Critical Admin Load error:", err);
                     setProducts(mappedInitial);
@@ -168,9 +220,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 setQueries(prev => prev.map(q => q.id === id ? { ...q, replied: true } : q));
                 if (supabase) supabase.from('queries').update({ replied: true }).eq('id', id).then();
             },
-            subscribeToNewsletter: (email) => {
+            subscribeToNewsletter: async (email) => {
                 if (supabase) {
                     supabase.from('subscribers').insert({ email }).then();
+                }
+                try {
+                    await fetch('/api/newsletter', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email })
+                    });
+                } catch (error) {
+                    console.error("Error calling newsletter API", error);
                 }
             }
         }}>
