@@ -93,14 +93,29 @@ export default function AdminProductsPage() {
         setIsModalOpen(true);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (editingProduct) {
-            updateProduct(editingProduct.id, formData);
-        } else {
-            addProduct(formData);
+        setIsSaving(true);
+        try {
+            // Filter out empty image entries before saving
+            const cleanedImages = formData.images.filter(img => img && img.trim() !== '');
+            const dataToSave = { ...formData, images: cleanedImages };
+            
+            if (editingProduct) {
+                await updateProduct(editingProduct.id, dataToSave);
+                toast.success('Producto actualizado correctamente');
+            } else {
+                await addProduct(dataToSave);
+                toast.success('Producto creado correctamente');
+            }
+            setIsModalOpen(false);
+        } catch (err) {
+            toast.error('Error al guardar el producto');
+        } finally {
+            setIsSaving(false);
         }
-        setIsModalOpen(false);
     };
 
     const handleDelete = (id: string, name: string) => {
@@ -627,8 +642,8 @@ export default function AdminProductsPage() {
                                 >
                                     Cancelar
                                 </Button>
-                                <Button type="submit" className="flex-1">
-                                    {editingProduct ? 'Guardar Cambios' : 'Crear Producto'}
+                                <Button type="submit" className="flex-1" disabled={isSaving}>
+                                    {isSaving ? 'Guardando...' : editingProduct ? 'Guardar Cambios' : 'Crear Producto'}
                                 </Button>
                             </div>
                         </form>

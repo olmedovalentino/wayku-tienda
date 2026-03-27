@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 import { Product } from '@/lib/products';
 import { useAuth } from './AuthContext';
 import { supabase } from '@/lib/supabase';
@@ -37,55 +37,106 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const [isLoaded, setIsLoaded] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
+    const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const prevUserRef = useRef<string | null>(null);
 
+    // Load cart on auth change
     useEffect(() => {
         setIsMounted(true);
-        const loadInitial = async () => {
-            // Wait for auth to settle
-            if (isAuthLoading) return;
+        if (isAuthLoading) return;
+
+        const loadCart = async () => {
+            // If user changed, reset first
+            const currentUserId = user?.id ?? null;
+            if (prevUserRef.current !== currentUserId) {
+                setItems([]);
+                setIsLoaded(false);
+                prevUserRef.current = currentUserId;
+            }
 
             if (!user) {
-                const savedGuest = localStorage.getItem('cart_guest');
-                if (savedGuest) setItems(JSON.parse(savedGuest));
+                // Guest: load from localStorage
+                try {
+                    const saved = localStorage.getItem('cart_guest');
+                    if (saved) setItems(JSON.parse(saved));
+                } catch (e) {}
                 setIsLoaded(true);
                 return;
             }
 
-            // Forced delay for cloud sync stability on mobile
-            await new Promise(r => setTimeout(r, 800));
-
+            // Logged-in user: try Supabase first
             if (supabase) {
                 try {
-                    const { data } = await supabase.from('users').select('cart').eq('id', user.id).single();
-                    if (data && Array.isArray(data.cart)) {
+                    const { data, error } = await supabase
+                        .from('users')
+                        .select('cart')
+                        .eq('id', user.id)
+                        .single();
+
+                    if (!error && data && Array.isArray(data.cart) && data.cart.length > 0) {
                         setItems(data.cart);
-                    } else {
-                        const guestLocal = localStorage.getItem('cart_guest');
-                        if (guestLocal) {
-                            setItems(JSON.parse(guestLocal));
-                            localStorage.removeItem('cart_guest');
-                        }
+                        setIsLoaded(true);
+                        return;
                     }
-                } catch (e) {}
+                } catch (e) {
+                    console.warn('Cart: could not load from Supabase, falling back to localStorage');
+                }
             }
+
+            // Fallback: localStorage (merge guest cart if exists)
+            try {
+                const userSaved = localStorage.getItem(`cart_user_${user.id}`);
+                const guestSaved = localStorage.getItem('cart_guest');
+                if (userSaved) {
+                    setItems(JSON.parse(userSaved));
+                } else if (guestSaved) {
+                    // Migrate guest cart to user
+                    setItems(JSON.parse(guestSaved));
+                    localStorage.removeItem('cart_guest');
+                }
+            } catch (e) {}
             setIsLoaded(true);
         };
-        loadInitial();
+
+        loadCart();
     }, [user, isAuthLoading]);
 
+    // Save cart whenever items change (debounced)
     useEffect(() => {
-        if (isLoaded && isMounted) {
-            const cartKey = user ? `cart_user_${user.id}` : 'cart_guest';
+        if (!isLoaded || !isMounted) return;
+
+        // Save to localStorage immediately
+        const cartKey = user ? `cart_user_${user.id}` : 'cart_guest';
+        try {
             localStorage.setItem(cartKey, JSON.stringify(items));
-            if (user && supabase) {
-                void supabase.from('users').update({ cart: items }).eq('id', user.id);
-            }
+        } catch (e) {}
+
+        // Debounce Supabase save to avoid too many requests
+        if (user && supabase) {
+            if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+            saveTimeoutRef.current = setTimeout(async () => {
+                try {
+                    await supabase!
+                        .from('users')
+                        .update({ cart: items })
+                        .eq('id', user.id);
+                } catch (e) {
+                    console.warn('Cart: could not sync to Supabase');
+                }
+            }, 600);
         }
     }, [items, user, isLoaded, isMounted]);
 
     const addItem = (p: any, m: any, s: any, shade: any, cable: any, canopy: any) => {
         setItems(prev => {
-            const exists = prev.find(i => i.id === p.id && i.selectedMaterial === m && i.selectedSize === s && i.shadeType === shade && i.cableColor === cable && i.canopyColor === canopy);
+            const exists = prev.find(i =>
+                i.id === p.id &&
+                i.selectedMaterial === m &&
+                i.selectedSize === s &&
+                i.shadeType === shade &&
+                i.cableColor === cable &&
+                i.canopyColor === canopy
+            );
             if (exists) return prev.map(i => i === exists ? { ...i, quantity: i.quantity + 1 } : i);
             return [...prev, { ...p, quantity: 1, selectedMaterial: m, selectedSize: s, shadeType: shade, cableColor: cable, canopyColor: canopy }];
         });
@@ -95,16 +146,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     return (
         <CartContext.Provider value={{
-            items, isOpen, openCart: () => setIsOpen(true), closeCart: () => setIsOpen(false),
-            addItem, removeItem: (idx) => setItems(prev => prev.filter((_, i) => i !== idx)),
+            items, isOpen,
+            openCart: () => setIsOpen(true),
+            closeCart: () => setIsOpen(false),
+            addItem,
+            removeItem: (idx) => setItems(prev => prev.filter((_, i) => i !== idx)),
             clearCart: () => setItems([]),
             subtotal: items.reduce((t, i) => t + (i.price * i.quantity), 0),
-            isInitialized: isMounted, toastMessage, setToastMessage
+            isInitialized: isMounted,
+            toastMessage, setToastMessage
         }}>
             {children}
         </CartContext.Provider>
     );
 }
+
 export function useCart() {
     const context = useContext(CartContext);
     if (!context) throw new Error('useCart missing');

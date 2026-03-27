@@ -107,11 +107,11 @@ export default function AdminSubscribersPage() {
                     <p className="text-stone-500">Gestiona las personas interesadas en recibir tus correos.</p>
                 </div>
                 <div className="flex gap-2">
-                    <Button onClick={() => setIsCampaignModalOpen(true)} className="flex items-center gap-2">
+                    <Button onClick={() => setIsCampaignModalOpen(true)} className="flex items-center gap-2 bg-primary text-white shadow-md shadow-primary/20 hover:bg-primary/90">
                         <Mail size={18} />
                         Crear Campaña
                     </Button>
-                    <Button onClick={handleExport} variant="outline" className="flex items-center gap-2">
+                    <Button onClick={handleExport} variant="outline" className="flex items-center gap-2 border-green-500 text-green-700 hover:bg-green-50">
                         <Download size={18} />
                         Exportar CSV
                     </Button>
@@ -119,8 +119,8 @@ export default function AdminSubscribersPage() {
             </div>
 
             {/* Stats */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-stone-100 flex items-center gap-6">
-                <div className="h-12 w-12 bg-primary/10 text-primary rounded-full flex items-center justify-center">
+            <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-6 rounded-2xl shadow-sm border border-primary/15 flex items-center gap-6">
+                <div className="h-12 w-12 bg-primary text-white rounded-full flex items-center justify-center shadow-md shadow-primary/30">
                     <Mail size={24} />
                 </div>
                 <div>
@@ -175,9 +175,9 @@ export default function AdminSubscribersPage() {
                             </div>
                             <button 
                                 onClick={() => handleDelete(subscriber.email)}
-                                className="text-stone-400 hover:text-red-600 transition-colors flex items-center gap-1 font-bold uppercase tracking-wider"
+                                className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors uppercase tracking-wider"
                             >
-                                <Trash2 size={14} />
+                                <Trash2 size={12} />
                                 Eliminar
                             </button>
                         </div>

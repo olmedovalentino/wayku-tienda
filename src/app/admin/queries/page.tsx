@@ -102,15 +102,25 @@ export default function AdminQueriesPage() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="w-full sm:w-auto px-4 py-2 bg-stone-50 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary text-sm font-medium text-stone-700"
-                >
-                    <option value="todas">Todas las consultas</option>
-                    <option value="pendientes">Sin Responder</option>
-                    <option value="respondidas">Respondidas</option>
-                </select>
+                <div className="flex gap-2">
+                    {[{v:'todas', label:'Todas'}, {v:'pendientes', label:'Pendientes'}, {v:'respondidas', label:'Respondidas'}].map(opt => (
+                        <button
+                            key={opt.v}
+                            onClick={() => setStatusFilter(opt.v)}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                                statusFilter === opt.v
+                                    ? opt.v === 'pendientes'
+                                        ? 'bg-orange-500 text-white shadow-sm'
+                                        : opt.v === 'respondidas'
+                                            ? 'bg-green-600 text-white shadow-sm'
+                                            : 'bg-primary text-white shadow-sm'
+                                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                            }`}
+                        >
+                            {opt.label}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             {/* Queries Grid */}
@@ -161,7 +171,7 @@ export default function AdminQueriesPage() {
                                     </span>
                                 )}
                             </div>
-                            <button className="text-primary font-bold hover:underline">Ver mensaje</button>
+                            <button className="text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 px-3 py-1 rounded-full transition-colors">Ver mensaje →</button>
                         </div>
                     </div>
                 ))}
