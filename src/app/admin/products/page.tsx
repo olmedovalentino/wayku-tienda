@@ -526,18 +526,46 @@ export default function AdminProductsPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-stone-700">URL de la Imagen</label>
-                                <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        required
-                                        placeholder="https://images.unsplash.com/..."
-                                        className="flex-1 px-4 py-2 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary"
-                                        value={formData.images[0]}
-                                        onChange={(e) => setFormData({ ...formData, images: [e.target.value] })}
-                                    />
+                                <label className="text-sm font-medium text-stone-700">Imágenes del Producto</label>
+                                <div className="space-y-4">
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            placeholder="URL de imagen (opcional si subes archivo)"
+                                            className="flex-1 px-4 py-2 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary text-sm"
+                                            value={formData.images[0]}
+                                            onChange={(e) => setFormData({ ...formData, images: [e.target.value] })}
+                                        />
+                                    </div>
+                                    
+                                    <div className="relative group cursor-pointer">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                            onChange={async (e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file && supabase) {
+                                                    const fileName = `${Date.now()}-${file.name}`;
+                                                    const { data, error } = await supabase.storage.from('products').upload(fileName, file);
+                                                    if (data) {
+                                                        const { data: { publicUrl } } = supabase.storage.from('products').getPublicUrl(fileName);
+                                                        setFormData({ ...formData, images: [publicUrl] });
+                                                        alert('Foto subida con éxito');
+                                                    } else {
+                                                        console.error('Error subiendo foto:', error);
+                                                        alert('Error al subir. Asegúrate de tener el bucket "products" en Supabase');
+                                                    }
+                                                }
+                                            }}
+                                        />
+                                        <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-stone-200 rounded-2xl bg-stone-50 group-hover:bg-white group-hover:border-primary transition-all">
+                                            <Upload className="h-8 w-8 text-stone-400 group-hover:text-primary mb-2" />
+                                            <p className="text-sm font-medium text-stone-600">Subir nueva foto</p>
+                                            <p className="text-xs text-stone-400 mt-1">Soporta JPG, PNG desde cámara o galería</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <p className="text-xs text-stone-400">Pega el link de la imagen principal del producto.</p>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
