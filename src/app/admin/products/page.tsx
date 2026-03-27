@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
+import { supabase } from '@/lib/supabase';
 import { Product, StockVariant } from '@/lib/products';
 import { Button } from '@/components/ui/Button';
 import {
