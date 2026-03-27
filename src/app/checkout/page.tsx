@@ -381,7 +381,7 @@ export default function CheckoutPage() {
 
                                                     <div className="mt-2 pt-2 border-t border-stone-200">
                                                         <p className="text-[10px] text-stone-500 italic leading-relaxed">
-                                                            Una vez realizada la transferencia, deberás enviar el comprobante por WhatsApp al <strong>35138444333</strong>.
+                                                            Una vez realizada la transferencia, deberás enviar el comprobante por WhatsApp al <strong>3513844333</strong>.
                                                         </p>
                                                     </div>
                                                 </div>

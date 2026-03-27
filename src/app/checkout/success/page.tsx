@@ -130,7 +130,7 @@ function SuccessContent() {
                         <div>
                             <p className="font-bold text-green-900 text-sm mb-1">¡Siguiente Paso!</p>
                             <p className="text-xs text-green-700 leading-relaxed mb-1">
-                                Para que despachemos tu lámpara, enviá el comprobante por WhatsApp al <strong className="text-green-900">35138444333</strong>.
+                                Para que despachemos tu lámpara, enviá el comprobante por WhatsApp al <strong className="text-green-900">3513844333</strong>.
                             </p>
                         </div>
                     </div>
@@ -139,7 +139,7 @@ function SuccessContent() {
             <div className="flex flex-col sm:flex-row gap-4">
                 {method === 'transfer' ? (
                     <a
-                        href={`https://wa.me/5435138444333?text=Hola,%20envio%20el%20comprobante%20de%20mi%20pedido%20a%20nombre%20de%20${encodeURIComponent(name)}`}
+                        href={`https://wa.me/543513844333?text=Hola,%20envio%20el%20comprobante%20de%20mi%20pedido%20a%20nombre%20de%20${encodeURIComponent(name)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="w-full sm:w-auto"
