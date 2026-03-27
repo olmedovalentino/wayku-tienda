@@ -345,12 +345,14 @@ export default function CheckoutPage() {
                                             <div className="mt-4 p-4 bg-stone-50 rounded-lg border border-stone-100 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
                                                 <p className="text-xs font-semibold text-stone-700 uppercase tracking-wider">Datos para la transferencia:</p>
                                                 <div className="grid grid-cols-2 gap-2 text-sm">
-                                                    <span className="text-stone-500">Banco:</span>
-                                                    <span className="text-stone-900 font-medium">Santander</span>
                                                     <span className="text-stone-500">Alias:</span>
-                                                    <span className="text-stone-900 font-medium font-mono text-xs">WAYKU.LAMP.PAGO</span>
+                                                    <span className="text-stone-900 font-medium font-mono text-xs">waykuargentina</span>
+                                                    <span className="text-stone-500">CVU:</span>
+                                                    <span className="text-stone-900 font-medium font-mono text-xs">0000003100043743912911</span>
                                                     <span className="text-stone-500">Titular:</span>
-                                                    <span className="text-stone-900 font-medium">Waykú Lamps S.R.L</span>
+                                                    <span className="text-stone-900 font-medium">Valentino Mateo Olmedo</span>
+                                                    <span className="text-stone-500">CUIT:</span>
+                                                    <span className="text-stone-900 font-medium text-xs">20-47304165-1</span>
                                                 </div>
                                                 <div className="mt-2 pt-2 border-t border-stone-200">
                                                     <p className="text-xs text-stone-600 italic">
