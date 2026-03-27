@@ -73,10 +73,6 @@ export default function AdminSubscribersPage() {
     const handleSendCampaign = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!campaignSubject || !campaignMessage) return;
-        
-        if (!confirm(`¿Estás seguro de enviar esta campaña a ${subscribers.length} suscriptores? Esta acción no se puede deshacer.`)) {
-            return;
-        }
 
         setIsSendingCampaign(true);
         try {

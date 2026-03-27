@@ -522,8 +522,8 @@ export default function AdminProductsPage() {
                                 <label className="text-sm font-medium text-stone-700">Galería de Imágenes</label>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                                     {formData.images.filter(img => img && img.trim() !== '').map((img, idx) => (
-                                        <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-stone-200 group">
-                                            <Image src={img} alt={`Imagen ${idx+1}`} fill className="object-cover" />
+                                        <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-stone-200 group bg-stone-50">
+                                            <img src={img} alt={`Imagen ${idx+1}`} className="object-cover w-full h-full absolute inset-0" />
                                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                                 {idx > 0 && (
                                                     <button type="button" onClick={(e) => {
