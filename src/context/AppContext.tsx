@@ -138,6 +138,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
                         });
                     };
 
+
+                    try {
+                        const { data: pData } = await supabase.from('products').select('*');
+                        if (pData && pData.length > 0) {
+                            setProducts(pData);
+                        } else {
+                            setProducts(mappedInitial);
+                        }
+                    } catch (e) {
+                         setProducts(mappedInitial);
+                    }
+
                     try {
                         const { data: oData } = await supabase.from('orders').select('*');
                         if (oData) setOrders(sortOrders(oData));
