@@ -45,8 +45,6 @@ export default function AdminOrdersPage() {
             case 'Despachado': return 'bg-purple-100 text-purple-700';
             case 'Devolución': return 'bg-orange-100 text-orange-700';
             case 'Cancelado': return 'bg-red-100 text-red-700';
-            case 'Pendiente': return 'bg-yellow-100 text-yellow-700';
-            case 'A Verificar': return 'bg-stone-100 text-stone-700';
             default: return 'bg-stone-100 text-stone-700';
         }
     };
@@ -86,8 +84,6 @@ export default function AdminOrdersPage() {
                     <option value="Entregado">Entregado</option>
                     <option value="Devolución">Devolución</option>
                     <option value="Cancelado">Cancelado</option>
-                    <option value="Pendiente">Pendiente</option>
-                    <option value="A Verificar">A Verificar</option>
                 </select>
             </div>
 
@@ -143,8 +139,6 @@ export default function AdminOrdersPage() {
                                             <option value="Entregado">Entregado</option>
                                             <option value="Devolución">Devolución</option>
                                             <option value="Cancelado">Cancelado</option>
-                                            <option value="Pendiente">Pendiente</option>
-                                            <option value="A Verificar">A Verificar</option>
                                         </select>
                                     </td>
                                     <td className="px-6 py-4 text-right">

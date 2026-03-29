@@ -10,7 +10,7 @@ export interface Order {
     email: string;
     date: string;
     total: string;
-    status: 'Pedido recibido' | 'Pago acreditado' | 'En preparación' | 'Embalado' | 'Despachado' | 'Entregado' | 'Devolución' | 'Cancelado' | 'Pendiente' | 'A Verificar';
+    status: 'Pedido recibido' | 'Pago acreditado' | 'En preparación' | 'Embalado' | 'Despachado' | 'Entregado' | 'Devolución' | 'Cancelado';
     items: number;
     shippingMethod: 'shipping' | 'pickup';
     paymentMethod: 'card' | 'transfer';

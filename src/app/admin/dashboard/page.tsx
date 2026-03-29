@@ -66,8 +66,6 @@ export default function AdminDashboardPage() {
             case 'Despachado': return 'bg-purple-100 text-purple-700';
             case 'Devolución': return 'bg-orange-100 text-orange-700';
             case 'Cancelado': return 'bg-red-100 text-red-700';
-            case 'Pendiente': return 'bg-yellow-100 text-yellow-700';
-            case 'A Verificar': return 'bg-stone-100 text-stone-700';
             default: return 'bg-stone-100 text-stone-700';
         }
     };
