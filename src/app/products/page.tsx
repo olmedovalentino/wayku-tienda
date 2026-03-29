@@ -46,13 +46,17 @@ function ProductsContent() {
 
         // Sort
         result.sort((a, b) => {
-            // Priority 1: Stock presence (true before false)
-            if (a.inStock !== b.inStock) {
-                return a.inStock ? -1 : 1;
+            // Priority 1: Available NOW (inStock = true AND isComingSoon = false)
+            const aAvailableNow = a.inStock && !a.isComingSoon;
+            const bAvailableNow = b.inStock && !b.isComingSoon;
+
+            if (aAvailableNow !== bAvailableNow) {
+                return aAvailableNow ? -1 : 1;
             }
             
-            // Priority 2: Coming Soon status (put it at the very bottom, after out of stock)
-            if (!a.inStock && !b.inStock) {
+            // Priority 2: If neither is available now, "Agotado" comes before "Próximamente"
+            // (So Coming Soon is always last)
+            if (!aAvailableNow && !bAvailableNow) {
                 if (a.isComingSoon !== b.isComingSoon) {
                     return a.isComingSoon ? 1 : -1;
                 }
