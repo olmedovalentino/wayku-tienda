@@ -109,15 +109,21 @@ export default function AdminProductsPage() {
             const dataToSave = { ...formData, images: cleanedImages };
             
             if (editingProduct) {
-                await updateProduct(editingProduct.id, dataToSave);
-                toast.success('Producto actualizado correctamente');
+                const { error } = await updateProduct(editingProduct.id, dataToSave);
+                if (error) {
+                    toast.error(`Error al guardar en base de datos: ${error.message}`);
+                } else {
+                    toast.success('Producto actualizado correctamente');
+                    setIsModalOpen(false);
+                }
             } else {
                 await addProduct(dataToSave);
                 toast.success('Producto creado correctamente');
+                setIsModalOpen(false);
             }
-            setIsModalOpen(false);
         } catch (err) {
-            toast.error('Error al guardar el producto');
+            console.error("Submit Error:", err);
+            toast.error('Error al procesar el formulario');
         } finally {
             setIsSaving(false);
         }

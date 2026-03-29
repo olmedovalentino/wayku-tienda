@@ -195,7 +195,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const updateProduct = async (id: string, fields: any) => {
         setProducts(prev => prev.map(p => p.id === id ? { ...p, ...fields } : p));
-        if (supabase) await supabase.from('products').update(fields).eq('id', id);
+        if (supabase) {
+            const { error } = await supabase.from('products').update(fields).eq('id', id);
+            return { error };
+        }
+        return { error: null };
     };
 
     const deleteProduct = async (id: string) => {
