@@ -4,7 +4,7 @@ import { useApp } from '@/context/AppContext';
 import { useParams, notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
-import { Check, Truck, Shield, ArrowLeft, Star, Heart, Hammer, PlusCircle } from 'lucide-react';
+import { Check, Truck, Shield, ArrowLeft, Star, Heart, Hammer, PlusCircle, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { useFavorites } from '@/context/FavoritesContext';
@@ -228,8 +228,8 @@ export default function ProductPage() {
                     <div className="mt-4 flex items-center gap-4">
                         <p className="text-3xl font-normal text-stone-900">${product.price.toLocaleString()}</p>
                         {product.isComingSoon ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-yellow-50 px-2.5 py-0.5 text-sm font-medium text-yellow-700">
-                                <PlusCircle size={14} className="rotate-45" /> Próximamente
+                            <span className="inline-flex items-center gap-1 rounded-full bg-[#5E6F5E] px-2.5 py-0.5 text-sm font-medium text-white shadow-sm">
+                                <Clock size={14} /> Próximamente
                             </span>
                         ) : product.inStock ? (
                             <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-0.5 text-sm font-medium text-green-700">

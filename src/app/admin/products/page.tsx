@@ -205,10 +205,10 @@ export default function AdminProductsPage() {
                             <tr>
                                 <th className="px-6 py-4 font-medium">Producto</th>
                                 <th className="px-6 py-4 font-medium">Categoría</th>
-                                <th className="px-6 py-4 font-medium">Precio</th>
+                                <th className="px-6 py-4 font-medium text-center">Precio</th>
                                 <th className="px-6 py-4 font-medium text-center">Stock (U)</th>
-                                <th className="px-6 py-4 font-medium">Estado</th>
-                                <th className="px-6 py-4 font-medium">Visibilidad</th>
+                                <th className="px-6 py-4 font-medium text-center min-w-[140px]">Estado</th>
+                                <th className="px-6 py-4 font-medium text-center">Visibilidad</th>
                                 <th className="px-6 py-4 font-medium text-right">Acciones</th>
                             </tr>
                         </thead>
@@ -241,7 +241,7 @@ export default function AdminProductsPage() {
                                         {product.stockCount ?? 0}
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="flex flex-col gap-1.5">
+                                        <div className="flex flex-col items-center gap-1.5 min-w-[140px]">
                                             <button
                                                 onClick={() => updateProduct(product.id, { inStock: !product.inStock })}
                                                 className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors ${product.inStock
@@ -267,7 +267,7 @@ export default function AdminProductsPage() {
                                         </div>
                                     </td>
 
-                                    <td className="px-6 py-4">
+                                    <td className="px-6 py-4 text-center">
                                         <button
                                             onClick={() => updateProduct(product.id, { isVisible: !(product.isVisible ?? true) })}
                                             className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors ${product.isVisible !== false
