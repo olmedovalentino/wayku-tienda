@@ -29,13 +29,13 @@ export async function POST(request: Request) {
                     // Update in our DB
                     const { error } = await supabase!
                         .from('orders')
-                        .update({ status: 'Confirmado' })
+                        .update({ status: 'Pago acreditado' })
                         .eq('id', orderId);
 
                     if (error) {
                         console.error('Error updating order status in DB:', error);
                     } else {
-                        console.log(`Successfully updated order ${orderId} to Confirmado`);
+                        console.log(`Successfully updated order ${orderId} to Pago acreditado`);
                     }
                 }
             }

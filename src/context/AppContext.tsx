@@ -10,7 +10,7 @@ export interface Order {
     email: string;
     date: string;
     total: string;
-    status: 'Pendiente' | 'A Verificar' | 'Confirmado' | 'Procesando' | 'Enviado' | 'Entregado' | 'Cancelado';
+    status: 'Pedido recibido' | 'Pago acreditado' | 'En preparación' | 'Embalado' | 'Despachado' | 'Entregado' | 'Devolución' | 'Cancelado' | 'Pendiente' | 'A Verificar';
     items: number;
     shippingMethod: 'shipping' | 'pickup';
     paymentMethod: 'card' | 'transfer';
@@ -205,7 +205,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 if (supabase) supabase.from('reviews').insert(newR).then();
             },
             addOrder: (order) => {
-                const newO = { ...order, date: new Date().toLocaleDateString(), status: 'Pendiente' };
+                const newO = { ...order, date: new Date().toLocaleDateString(), status: 'Pedido recibido' };
                 setOrders(prev => [newO as any, ...prev]);
                 if (supabase) supabase.from('orders').insert(newO).then();
             },

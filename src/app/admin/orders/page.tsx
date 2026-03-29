@@ -38,12 +38,15 @@ export default function AdminOrdersPage() {
     const getStatusStyles = (status: string) => {
         switch (status) {
             case 'Entregado': return 'bg-green-100 text-green-700';
-            case 'Confirmado': return 'bg-emerald-100 text-emerald-700';
-            case 'Procesando': return 'bg-blue-100 text-blue-700';
-            case 'Enviado': return 'bg-purple-100 text-purple-700';
-            case 'A Verificar': return 'bg-orange-100 text-orange-700';
-            case 'Pendiente': return 'bg-yellow-100 text-yellow-700';
+            case 'Pedido recibido': return 'bg-yellow-100 text-yellow-700 font-medium';
+            case 'Pago acreditado': return 'bg-emerald-100 text-emerald-700';
+            case 'En preparación': return 'bg-blue-100 text-blue-700';
+            case 'Embalado': return 'bg-indigo-100 text-indigo-700';
+            case 'Despachado': return 'bg-purple-100 text-purple-700';
+            case 'Devolución': return 'bg-orange-100 text-orange-700';
             case 'Cancelado': return 'bg-red-100 text-red-700';
+            case 'Pendiente': return 'bg-yellow-100 text-yellow-700';
+            case 'A Verificar': return 'bg-stone-100 text-stone-700';
             default: return 'bg-stone-100 text-stone-700';
         }
     };
@@ -75,13 +78,16 @@ export default function AdminOrdersPage() {
                     className="w-full sm:w-auto px-4 py-2 bg-stone-50 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary text-sm font-medium text-stone-700"
                 >
                     <option value="Todos">Todos los Estados</option>
+                    <option value="Pedido recibido">Pedido recibido</option>
+                    <option value="Pago acreditado">Pago acreditado</option>
+                    <option value="En preparación">En preparación</option>
+                    <option value="Embalado">Embalado</option>
+                    <option value="Despachado">Despachado</option>
+                    <option value="Entregado">Entregado</option>
+                    <option value="Devolución">Devolución</option>
+                    <option value="Cancelado">Cancelado</option>
                     <option value="Pendiente">Pendiente</option>
                     <option value="A Verificar">A Verificar</option>
-                    <option value="Confirmado">Confirmado</option>
-                    <option value="Procesando">Procesando</option>
-                    <option value="Enviado">Enviado</option>
-                    <option value="Entregado">Entregado</option>
-                    <option value="Cancelado">Cancelado</option>
                 </select>
             </div>
 
@@ -129,13 +135,16 @@ export default function AdminOrdersPage() {
                                             onChange={(e) => updateOrderStatus(order.id, e.target.value as any)}
                                             className={`px-2 py-0.5 rounded-full text-xs font-medium border-none focus:ring-0 cursor-pointer ${getStatusStyles(order.status)}`}
                                         >
+                                            <option value="Pedido recibido">Pedido recibido</option>
+                                            <option value="Pago acreditado">Pago acreditado</option>
+                                            <option value="En preparación">En preparación</option>
+                                            <option value="Embalado">Embalado</option>
+                                            <option value="Despachado">Despachado</option>
+                                            <option value="Entregado">Entregado</option>
+                                            <option value="Devolución">Devolución</option>
+                                            <option value="Cancelado">Cancelado</option>
                                             <option value="Pendiente">Pendiente</option>
                                             <option value="A Verificar">A Verificar</option>
-                                            <option value="Confirmado">Confirmado</option>
-                                            <option value="Procesando">Procesando</option>
-                                            <option value="Enviado">Enviado</option>
-                                            <option value="Entregado">Entregado</option>
-                                            <option value="Cancelado">Cancelado</option>
                                         </select>
                                     </td>
                                     <td className="px-6 py-4 text-right">
@@ -203,12 +212,13 @@ export default function AdminOrdersPage() {
                                 onChange={(e) => updateOrderStatus(order.id, e.target.value as any)}
                                 className={`flex-1 flex justify-center items-center px-2 py-1.5 rounded-lg text-xs font-medium border-none focus:ring-0 text-center uppercase tracking-wider ${getStatusStyles(order.status)}`}
                             >
-                                <option value="Pendiente">Pendiente</option>
-                                <option value="A Verificar">A Verificar</option>
-                                <option value="Confirmado">Confirmado</option>
-                                <option value="Procesando">Procesando</option>
-                                <option value="Enviado">Enviado</option>
+                                <option value="Pedido recibido">Recibido</option>
+                                <option value="Pago acreditado">Pagado</option>
+                                <option value="En preparación">En preparación</option>
+                                <option value="Embalado">Embalado</option>
+                                <option value="Despachado">Despachado</option>
                                 <option value="Entregado">Entregado</option>
+                                <option value="Devolución">Devolución</option>
                                 <option value="Cancelado">Cancelado</option>
                             </select>
                             <span className="flex-1 flex justify-center items-center bg-stone-50 rounded-lg border border-stone-100 py-1.5 text-xs font-medium text-stone-500">
@@ -237,9 +247,10 @@ export default function AdminOrdersPage() {
                             {/* Status Steps */}
                             <div className="flex justify-between items-start">
                                 {[
-                                    { label: 'Pendiente', icon: Clock },
-                                    { label: 'Procesando', icon: Package },
-                                    { label: 'Enviado', icon: Truck },
+                                    { label: 'Pedido recibido', icon: Clock },
+                                    { label: 'Pago acreditado', icon: CheckCircle2 },
+                                    { label: 'En preparación', icon: Package },
+                                    { label: 'Despachado', icon: Truck },
                                     { label: 'Entregado', icon: CheckCircle2 }
                                 ].map((step, idx, arr) => {
                                     const isActive = selectedOrder.status === step.label;
@@ -286,7 +297,7 @@ export default function AdminOrdersPage() {
                                     </h3>
                                     <div className="bg-stone-50 p-4 rounded-xl space-y-2">
                                         <p className="text-sm"><strong>Método:</strong> {selectedOrder.paymentMethod === 'card' ? 'Tarjeta (Mercado Pago)' : 'Transferencia Bancaria'}</p>
-                                        <p className="text-sm"><strong>Estado:</strong> {selectedOrder.status === 'Confirmado' || selectedOrder.status === 'Procesando' || selectedOrder.status === 'Enviado' || selectedOrder.status === 'Entregado' ? 'Pagado' : (selectedOrder.status === 'A Verificar' ? 'Esperando Comprobante' : 'Pendiente')}</p>
+                                        <p className="text-sm"><strong>Estado Pago:</strong> {['Pago acreditado', 'En preparación', 'Embalado', 'Despachado', 'Entregado'].includes(selectedOrder.status) ? 'Acreditado' : (selectedOrder.status === 'Pedido recibido' ? 'Pendiente' : (selectedOrder.status === 'Cancelado' ? 'Cancelado' : 'Pendiente'))}</p>
                                         <div className="pt-2 border-t border-stone-200 mt-2">
                                             <p className="text-lg font-bold text-stone-900 flex justify-between">
                                                 <span>Total:</span>
@@ -336,6 +347,32 @@ export default function AdminOrdersPage() {
                             <Button variant="outline" className="flex-1" onClick={() => setSelectedOrder(null)}>
                                 Cerrar
                             </Button>
+                            {(selectedOrder.status === 'Pedido recibido' || selectedOrder.status === 'Pago acreditado' || selectedOrder.status === 'En preparación' || selectedOrder.status === 'Embalado') && (
+                                <Button
+                                    variant="outline"
+                                    className="flex-1 text-red-600 border-red-100 hover:bg-red-50 hover:text-red-700 hover:border-red-200"
+                                    onClick={() => {
+                                        if (confirm('¿Estás seguro de cancelar este pedido?')) {
+                                            updateOrderStatus(selectedOrder.id, 'Cancelado');
+                                            setSelectedOrder({ ...selectedOrder, status: 'Cancelado' });
+                                        }
+                                    }}
+                                >
+                                    Cancelar Pedido
+                                </Button>
+                            )}
+                            {(selectedOrder.status === 'Despachado' || selectedOrder.status === 'Entregado') && (
+                                <Button
+                                    variant="outline"
+                                    className="flex-1 text-orange-600 border-orange-100 hover:bg-orange-50"
+                                    onClick={() => {
+                                        updateOrderStatus(selectedOrder.id, 'Devolución');
+                                        setSelectedOrder({ ...selectedOrder, status: 'Devolución' });
+                                    }}
+                                >
+                                    Marcar Devolución
+                                </Button>
+                            )}
                             <Button
                                 className="flex-1 gap-2"
                                 onClick={() => {

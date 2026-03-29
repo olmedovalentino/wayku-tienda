@@ -45,6 +45,7 @@ export default function AdminProductsPage() {
         inStock: true,
         isVisible: true,
         stockCount: 0,
+        isComingSoon: false,
         variants: []
     });
 
@@ -69,6 +70,7 @@ export default function AdminProductsPage() {
             inStock: true,
             isVisible: true,
             stockCount: 0,
+            isComingSoon: false,
             variants: []
         });
         setShowVariants(false);
@@ -87,6 +89,7 @@ export default function AdminProductsPage() {
             inStock: product.inStock,
             isVisible: product.isVisible ?? true,
             stockCount: product.stockCount ?? 0,
+            isComingSoon: product.isComingSoon ?? false,
             variants: product.variants || []
         });
         setShowVariants(!!product.variants && product.variants.length > 0);
@@ -357,6 +360,16 @@ export default function AdminProductsPage() {
                                 {product.isVisible !== false ? <Eye size={14} /> : <EyeOff size={14} />}
                                 {product.isVisible !== false ? 'Visible' : 'Oculto'}
                             </button>
+                            <button
+                                onClick={() => updateProduct(product.id, { isComingSoon: !product.isComingSoon })}
+                                className={`flex-1 flex justify-center items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${product.isComingSoon
+                                    ? 'bg-yellow-100 text-yellow-700'
+                                    : 'bg-stone-100 text-stone-600'
+                                    }`}
+                            >
+                                <PlusCircle size={14} className={product.isComingSoon ? "rotate-45" : ""} />
+                                {product.isComingSoon ? 'Próximamente' : 'Normal'}
+                            </button>
                         </div>
                     </div>
                 ))}
@@ -448,6 +461,18 @@ export default function AdminProductsPage() {
                                         />
                                         <label htmlFor="showVariants" className="text-sm font-medium text-stone-900">
                                             Gestionar Stock por Variantes (Material/Tamaño)
+                                        </label>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            id="isComingSoon"
+                                            className="h-4 w-4 rounded border-stone-300 text-yellow-600 focus:ring-yellow-500"
+                                            checked={formData.isComingSoon}
+                                            onChange={(e) => setFormData({ ...formData, isComingSoon: e.target.checked })}
+                                        />
+                                        <label htmlFor="isComingSoon" className="text-sm font-medium text-stone-900">
+                                            Marcar como "Próximamente"
                                         </label>
                                     </div>
                                     {showVariants && (

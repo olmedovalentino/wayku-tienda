@@ -15,6 +15,7 @@ export interface Product {
     inStock: boolean;
     isVisible?: boolean;
     stockCount?: number;
+    isComingSoon?: boolean;
     variants?: StockVariant[];
 }
 

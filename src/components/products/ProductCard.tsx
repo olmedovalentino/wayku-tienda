@@ -18,9 +18,14 @@ export function ProductCard({ product }: ProductCardProps) {
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
-                {!product.inStock && (
+                {!product.inStock && !product.isComingSoon && (
                     <div className="absolute left-2 top-2 rounded bg-stone-900/80 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
                         Agotado
+                    </div>
+                )}
+                {product.isComingSoon && (
+                    <div className="absolute left-2 top-2 rounded bg-[#5E6F5E] px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                        Próximamente
                     </div>
                 )}
             </div>
