@@ -583,36 +583,49 @@ export default function AdminProductsPage() {
                                 <label className="text-sm font-medium text-stone-700">Galería de Imágenes</label>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                                     {formData.images.filter(img => img && img.trim() !== '').map((img, idx) => (
-                                        <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-stone-200 group bg-stone-50">
+                                        <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-stone-200 bg-stone-50 shadow-sm">
                                             <img src={img} alt={`Imagen ${idx+1}`} className="object-cover w-full h-full absolute inset-0" />
-                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                                {idx > 0 && (
-                                                    <button type="button" onClick={(e) => {
+                                            
+                                            {/* Action Buttons Layer */}
+                                            <div className="absolute inset-x-0 bottom-0 p-1.5 flex justify-between items-center bg-gradient-to-t from-black/50 to-transparent">
+                                                <div className="flex gap-1">
+                                                    {idx > 0 && (
+                                                        <button type="button" 
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                const newArr = [...formData.images];
+                                                                [newArr[idx-1], newArr[idx]] = [newArr[idx], newArr[idx-1]];
+                                                                setFormData({...formData, images: newArr});
+                                                            }} 
+                                                            className="p-1 bgColor-white rounded-md text-stone-900 shadow-sm transition-all active:scale-95 bg-white/95"
+                                                        >
+                                                            <ChevronLeft size={14} />
+                                                        </button>
+                                                    )}
+                                                    {idx < formData.images.filter(img => img && img.trim() !== '').length - 1 && (
+                                                        <button type="button" 
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                const newArr = [...formData.images];
+                                                                [newArr[idx], newArr[idx+1]] = [newArr[idx+1], newArr[idx]];
+                                                                setFormData({...formData, images: newArr});
+                                                            }} 
+                                                            className="p-1 bgColor-white rounded-md text-stone-900 shadow-sm transition-all active:scale-95 bg-white/95"
+                                                        >
+                                                            <ChevronRight size={14} />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                <button type="button" 
+                                                    onClick={(e) => {
                                                         e.preventDefault();
-                                                        const newArr = [...formData.images];
-                                                        [newArr[idx-1], newArr[idx]] = [newArr[idx], newArr[idx-1]];
-                                                        setFormData({...formData, images: newArr});
-                                                    }} className="p-1.5 bg-white rounded-lg text-stone-900 hover:text-primary transition-colors">
-                                                        <ChevronLeft size={16} />
-                                                    </button>
-                                                )}
-                                                <button type="button" onClick={(e) => {
-                                                    e.preventDefault();
-                                                    const newArr = formData.images.filter((_, i) => i !== idx);
-                                                    setFormData({...formData, images: newArr.length ? newArr : ['']});
-                                                }} className="p-1.5 bg-white rounded-lg text-red-600 hover:bg-red-50 transition-colors">
-                                                    <Trash2 size={16} />
+                                                        const newArr = formData.images.filter((_, i) => i !== idx);
+                                                        setFormData({...formData, images: newArr.length ? newArr : []});
+                                                    }} 
+                                                    className="p-1 bg-red-500 rounded-md text-white shadow-sm transition-all active:scale-95 hover:bg-red-600"
+                                                >
+                                                    <Trash2 size={14} />
                                                 </button>
-                                                {idx < formData.images.filter(img => img && img.trim() !== '').length - 1 && (
-                                                    <button type="button" onClick={(e) => {
-                                                        e.preventDefault();
-                                                        const newArr = [...formData.images];
-                                                        [newArr[idx+1], newArr[idx]] = [newArr[idx], newArr[idx+1]];
-                                                        setFormData({...formData, images: newArr});
-                                                    }} className="p-1.5 bg-white rounded-lg text-stone-900 hover:text-primary transition-colors">
-                                                        <ChevronRight size={16} />
-                                                    </button>
-                                                )}
                                             </div>
                                         </div>
                                     ))}
