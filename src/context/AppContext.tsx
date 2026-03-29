@@ -60,7 +60,7 @@ interface AppContextType {
     queries: Query[];
     reviews: Review[];
     addProduct: (product: Omit<Product, 'id'>) => void;
-    updateProduct: (id: string, product: Partial<Product>) => void;
+    updateProduct: (id: string, product: Partial<Product>) => Promise<{ error: any }>;
     deleteProduct: (id: string) => void;
     updateOrderStatus: (id: string, status: Order['status']) => void;
     addQuery: (query: Omit<Query, 'id' | 'date' | 'read'>) => void;
