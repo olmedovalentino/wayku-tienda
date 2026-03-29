@@ -21,7 +21,9 @@ import {
     PlusCircle,
     MinusCircle,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    Calendar,
+    Clock
 } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'sonner';
@@ -239,17 +241,30 @@ export default function AdminProductsPage() {
                                         {product.stockCount ?? 0}
                                     </td>
                                     <td className="px-6 py-4">
-                                        <button
-                                            onClick={() => updateProduct(product.id, { inStock: !product.inStock })}
-                                            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors ${product.inStock
-                                                ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                                                : 'bg-red-100 text-red-700 hover:bg-red-200'
-                                                }`}
-                                        >
-                                            <span className={`h-1.5 w-1.5 rounded-full ${product.inStock ? 'bg-green-600' : 'bg-red-600'
-                                                }`}></span>
-                                            {product.inStock ? 'En Stock' : 'Sin Stock'}
-                                        </button>
+                                        <div className="flex flex-col gap-1.5">
+                                            <button
+                                                onClick={() => updateProduct(product.id, { inStock: !product.inStock })}
+                                                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors ${product.inStock
+                                                    ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                                                    : 'bg-red-100 text-red-700 hover:bg-red-200'
+                                                    }`}
+                                            >
+                                                <span className={`h-1.5 w-1.5 rounded-full ${product.inStock ? 'bg-green-600' : 'bg-red-600'
+                                                    }`}></span>
+                                                {product.inStock ? 'En Stock' : 'Sin Stock'}
+                                            </button>
+                                            
+                                            <button
+                                                onClick={() => updateProduct(product.id, { isComingSoon: !product.isComingSoon })}
+                                                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors ${product.isComingSoon
+                                                    ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                                                    : 'bg-stone-50 text-stone-400 hover:bg-stone-100'
+                                                    }`}
+                                            >
+                                                <Clock size={10} className={product.isComingSoon ? 'text-yellow-600' : 'text-stone-300'} />
+                                                {product.isComingSoon ? 'Próximamente' : 'Lanzado'}
+                                            </button>
+                                        </div>
                                     </td>
 
                                     <td className="px-6 py-4">
@@ -348,27 +363,27 @@ export default function AdminProductsPage() {
                             >
                                 <span className={`h-1.5 w-1.5 rounded-full ${product.inStock ? 'bg-green-600' : 'bg-red-600'
                                     }`}></span>
-                                {product.inStock ? 'En Stock' : 'Sin Stock'}
+                                {product.inStock ? 'Stock' : 'Sin Stock'}
+                            </button>
+                            <button
+                                onClick={() => updateProduct(product.id, { isComingSoon: !product.isComingSoon })}
+                                className={`flex-1 flex justify-center items-center gap-1.5 px-2 py-1.5 rounded-lg text-[10px] font-medium transition-colors ${product.isComingSoon
+                                    ? 'bg-yellow-100 text-yellow-700'
+                                    : 'bg-stone-100 text-stone-400'
+                                    }`}
+                            >
+                                <Clock size={12} className={product.isComingSoon ? 'text-yellow-600' : 'text-stone-300'} />
+                                {product.isComingSoon ? 'Próximamente' : 'Lanzado'}
                             </button>
                             <button
                                 onClick={() => updateProduct(product.id, { isVisible: !(product.isVisible ?? true) })}
-                                className={`flex-1 flex justify-center items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${product.isVisible !== false
+                                className={`flex-1 flex justify-center items-center gap-1.5 px-2 py-1.5 rounded-lg text-[10px] font-medium transition-colors ${product.isVisible !== false
                                     ? 'bg-blue-100 text-blue-700'
                                     : 'bg-stone-100 text-stone-600'
                                     }`}
                             >
-                                {product.isVisible !== false ? <Eye size={14} /> : <EyeOff size={14} />}
+                                {product.isVisible !== false ? <Eye size={12} /> : <EyeOff size={12} />}
                                 {product.isVisible !== false ? 'Visible' : 'Oculto'}
-                            </button>
-                            <button
-                                onClick={() => updateProduct(product.id, { isComingSoon: !product.isComingSoon })}
-                                className={`flex-1 flex justify-center items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${product.isComingSoon
-                                    ? 'bg-yellow-100 text-yellow-700'
-                                    : 'bg-stone-100 text-stone-600'
-                                    }`}
-                            >
-                                <PlusCircle size={14} className={product.isComingSoon ? "rotate-45" : ""} />
-                                {product.isComingSoon ? 'Próximamente' : 'Normal'}
                             </button>
                         </div>
                     </div>
