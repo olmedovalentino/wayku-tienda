@@ -46,9 +46,12 @@ function ProductsContent() {
 
         // Sort
         result.sort((a, b) => {
-            // First priority: inStock status (true before false)
-            if (a.inStock !== b.inStock) {
-                return a.inStock ? -1 : 1;
+            // First priority: available status (inStock or isComingSoon)
+            const aAvailable = a.inStock || a.isComingSoon;
+            const bAvailable = b.inStock || b.isComingSoon;
+            
+            if (aAvailable !== bAvailable) {
+                return aAvailable ? -1 : 1;
             }
 
             // Second priority: selected sort option
