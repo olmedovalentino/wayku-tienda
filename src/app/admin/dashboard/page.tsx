@@ -55,6 +55,22 @@ export default function AdminDashboardPage() {
     ];
 
     const recentOrders = orders.slice(0, 4);
+    
+    const getStatusStyles = (status: string) => {
+        switch (status) {
+            case 'Entregado': return 'bg-green-100 text-green-700';
+            case 'Pedido recibido': return 'bg-yellow-100 text-yellow-700';
+            case 'Pago acreditado': return 'bg-emerald-100 text-emerald-700';
+            case 'En preparación': return 'bg-blue-100 text-blue-700';
+            case 'Embalado': return 'bg-indigo-100 text-indigo-700';
+            case 'Despachado': return 'bg-purple-100 text-purple-700';
+            case 'Devolución': return 'bg-orange-100 text-orange-700';
+            case 'Cancelado': return 'bg-red-100 text-red-700';
+            case 'Pendiente': return 'bg-yellow-100 text-yellow-700';
+            case 'A Verificar': return 'bg-stone-100 text-stone-700';
+            default: return 'bg-stone-100 text-stone-700';
+        }
+    };
 
 
     return (
@@ -113,16 +129,7 @@ export default function AdminDashboardPage() {
                                         <td className="px-6 py-4 text-stone-500">{order.date}</td>
                                         <td className="px-6 py-4 text-stone-900 font-medium">{order.total}</td>
                                         <td className="px-6 py-4">
-                                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                                order.status === 'Entregado' ? 'bg-green-100 text-green-700' :
-                                                order.status === 'Confirmado' ? 'bg-emerald-100 text-emerald-700' :
-                                                order.status === 'Procesando' ? 'bg-blue-100 text-blue-700' :
-                                                order.status === 'Enviado' ? 'bg-purple-100 text-purple-700' :
-                                                order.status === 'A Verificar' ? 'bg-orange-100 text-orange-700' :
-                                                order.status === 'Pendiente' ? 'bg-yellow-100 text-yellow-700' :
-                                                order.status === 'Cancelado' ? 'bg-red-100 text-red-700' :
-                                                'bg-stone-100 text-stone-700'
-                                                }`}>
+                                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusStyles(order.status)}`}>
                                                 {order.status}
                                             </span>
                                         </td>
@@ -145,16 +152,7 @@ export default function AdminDashboardPage() {
                                                 <h3 className="font-bold text-stone-900 text-sm">{order.id}</h3>
                                                 <p className="text-xs text-stone-500 mt-1">{order.date}</p>
                                             </div>
-                                            <span className={`px-2 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider ${
-                                                order.status === 'Entregado' ? 'bg-green-100 text-green-700' :
-                                                order.status === 'Confirmado' ? 'bg-emerald-100 text-emerald-700' :
-                                                order.status === 'Procesando' ? 'bg-blue-100 text-blue-700' :
-                                                order.status === 'Enviado' ? 'bg-purple-100 text-purple-700' :
-                                                order.status === 'A Verificar' ? 'bg-orange-100 text-orange-700' :
-                                                order.status === 'Pendiente' ? 'bg-yellow-100 text-yellow-700' :
-                                                order.status === 'Cancelado' ? 'bg-red-100 text-red-700' :
-                                                'bg-stone-100 text-stone-700'
-                                                }`}>
+                                            <span className={`px-2 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider ${getStatusStyles(order.status)}`}>
                                                 {order.status}
                                             </span>
                                         </div>
