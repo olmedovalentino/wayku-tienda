@@ -85,10 +85,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             const mappedInitial = initialProducts.map(p => ({ ...p, isVisible: true, stockCount: p.stockCount || 0 }));
             if (supabase) {
                 try {
-                    // Eliminamos este bloque duplicado que estaba antes para limpiar el código
-                } catch (e) {}
-
-                    // Helper to parse dates like "22 de mar. de 2026" or "22 de mar de 2026"
+                    // Helper para parsear fechas
                     const parseDate = (dateStr: string) => {
                         if (!dateStr) return 0;
                         const months: Record<string, number> = { 'ene': 0, 'feb': 1, 'mar': 2, 'abr': 3, 'may': 4, 'jun': 5, 'jul': 6, 'ago': 7, 'sep': 8, 'oct': 9, 'nov': 10, 'dic': 11 };
@@ -108,11 +105,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
                     const sortOrders = (ordersList: any[]) => {
                         return [...ordersList].sort((a, b) => {
                             let timeA = 0; let timeB = 0;
-                            // check if created_at exists natively
                             if (a.created_at) timeA = new Date(a.created_at).getTime();
                             if (b.created_at) timeB = new Date(b.created_at).getTime();
-
-                            // fallback to id parsing if created_at is missing
                             if (timeA === 0 && a.id && a.id.startsWith('ORD-') && a.id.length > 10) {
                                 const ts = parseInt(a.id.replace('ORD-', ''), 10);
                                 if (!isNaN(ts) && ts > 1000000000) timeA = ts;
@@ -121,20 +115,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
                                 const ts = parseInt(b.id.replace('ORD-', ''), 10);
                                 if (!isNaN(ts) && ts > 1000000000) timeB = ts;
                             }
-                            
-                            // fallback to date string parsing
                             if (timeA === 0) timeA = parseDate(a.date);
                             if (timeB === 0) timeB = parseDate(b.date);
-                            
-                            // If dates fall back to 0 or are identical, use ID string comparison as last resort
-                            if (timeA === timeB) {
-                                return b.id.localeCompare(a.id);
-                            }
-                            return timeB - timeA; // Descending (newest first)
+                            if (timeA === timeB) return b.id.localeCompare(a.id);
+                            return timeB - timeA;
                         });
                     };
 
-                    // Cargar productos desde Supabase
+                    // Cargar productos
                     try {
                         const { data: pData } = await supabase.from('products').select('*');
                         if (pData && pData.length > 0) {
@@ -144,10 +132,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
                             setProducts(mappedInitial);
                         }
                     } catch (e) {
-                         console.error("Error loading products from Supabase:", e);
+                         console.error("Error loading products:", e);
                          setProducts(mappedInitial);
                     }
 
+                    // Cargar otros datos
                     try {
                         const { data: oData } = await supabase.from('orders').select('*');
                         if (oData) setOrders(sortOrders(oData));
@@ -163,7 +152,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
                         if (sData) setSubscribers(sData.map(s => s.email));
                     } catch (e) {}
 
-                    // Optional blocks to override with created_at if those exist in specific tables
                     try {
                         const { data: qData } = await supabase.from('queries').select('*').order('created_at', { ascending: false });
                         if (qData && qData.length > 0 && qData[0].created_at) setQueries(qData);
