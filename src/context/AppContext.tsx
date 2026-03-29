@@ -124,15 +124,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
                     // Cargar productos
                     try {
-                        const { data: pData } = await supabase.from('products').select('*');
+                        const { data: pData, error: pErr } = await supabase.from('products').select('*');
+                        if (pErr) console.error("SUPABASE PRODUCTS ERROR:", pErr);
+                        
                         if (pData && pData.length > 0) {
+                            console.log("Supabase Products Loaded:", pData.length);
                             setProducts(pData);
                         } else {
-                            // Si la tabla está vacía, usamos los datos iniciales del código
+                            console.warn("No products in Supabase, falling back to mock.");
                             setProducts(mappedInitial);
                         }
                     } catch (e) {
-                         console.error("Error loading products:", e);
+                         console.error("Critical error fetching products:", e);
                          setProducts(mappedInitial);
                     }
 
@@ -153,13 +156,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
                     } catch (e) {}
 
                     try {
-                        const { data: qData } = await supabase.from('queries').select('*').order('created_at', { ascending: false });
-                        if (qData && qData.length > 0 && qData[0].created_at) setQueries(qData);
+                        const { data: qData, error: qErr } = await supabase.from('queries').select('*').order('created_at', { ascending: false });
+                        if (qErr) {
+                            // Fallback if created_at doesn't exist yet
+                            const { data: qDataAlt } = await supabase.from('queries').select('*').order('id', { ascending: false });
+                            if (qDataAlt) setQueries(qDataAlt);
+                        } else if (qData) {
+                             setQueries(qData);
+                        }
                     } catch (e) {}
 
                     try {
-                        const { data: sData } = await supabase.from('subscribers').select('*').order('created_at', { ascending: false });
-                        if (sData && sData.length > 0 && sData[0].created_at) setSubscribers(sData.map(s => s.email));
+                        const { data: sData, error: sErr } = await supabase.from('subscribers').select('*').order('created_at', { ascending: false });
+                        if (sErr) {
+                            const { data: sDataAlt } = await supabase.from('subscribers').select('*').order('id', { ascending: false });
+                            if (sDataAlt) setSubscribers(sDataAlt.map(s => s.email));
+                        } else if (sData) {
+                             setSubscribers(sData.map(s => s.email));
+                        }
                     } catch (e) {}
 
                 } catch (err) {
