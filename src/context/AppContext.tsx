@@ -85,12 +85,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
             const mappedInitial = initialProducts.map(p => ({ ...p, isVisible: true, stockCount: p.stockCount || 0 }));
             if (supabase) {
                 try {
-                    const { data: pData } = await supabase.from('products').select('*');
-                    if (pData && pData.length > 0) {
-                        setProducts(pData);
-                    } else {
-                        setProducts(mappedInitial);
-                    }
+                    // Eliminamos este bloque duplicado que estaba antes para limpiar el código
+                } catch (e) {}
 
                     // Helper to parse dates like "22 de mar. de 2026" or "22 de mar de 2026"
                     const parseDate = (dateStr: string) => {
@@ -138,15 +134,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
                         });
                     };
 
-
+                    // Cargar productos desde Supabase
                     try {
                         const { data: pData } = await supabase.from('products').select('*');
                         if (pData && pData.length > 0) {
                             setProducts(pData);
                         } else {
+                            // Si la tabla está vacía, usamos los datos iniciales del código
                             setProducts(mappedInitial);
                         }
                     } catch (e) {
+                         console.error("Error loading products from Supabase:", e);
                          setProducts(mappedInitial);
                     }
 
