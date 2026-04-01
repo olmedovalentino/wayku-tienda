@@ -40,19 +40,10 @@ CREATE POLICY "Public insert access for reviews"
 ON public.reviews FOR INSERT 
 WITH CHECK (true);
 
--- USUARIOS: Un usuario público SÓLO puede leer, crear y editar su propio perfil (por ID ó coincidencia de texto)
--- NOTA: Como no usas Supabase Auth nativo todavía, damos permiso condicional por el momento al anon para interactuar.
+-- USUARIOS: Public can NOT select users list. They can insert at checkout.
 CREATE POLICY "Public can insert into users"
 ON public.users FOR INSERT
 WITH CHECK (true);
-
-CREATE POLICY "Public can select users"
-ON public.users FOR SELECT
-USING (true);
-
-CREATE POLICY "Public can update users"
-ON public.users FOR UPDATE
-USING (true);
 
 -- PEDIDOS (ORDERS): Cualquiera puede CREAR un pedido (al pagar), pero NO leerlos (para no filtrar ventas).
 CREATE POLICY "Public can insert orders" 
@@ -72,8 +63,6 @@ WITH CHECK (true);
 -- ---------------------
 -- FIN DEL SCRIPT
 -- ---------------------
--- OJO: Como tenés el Login de Admin "casero" (con una clave tuya en localStorage), 
--- tu panel de Admin no va a poder LEER la lista de órdenes ni clientes si la bloqueamos 100% acá, 
--- a menos que usemos una SERVICE_KEY en el servidor en Next.js. 
--- Por eso, dejé las políticas de Lectura de "users" abiertas por ahora para no romperte la web.
--- Cuando configures SUPABASE_SERVICE_ROLE_KEY en Vercel, ajustamos las tuercas al máximo.
+-- OJO: Ya está implementada la lectura backend en Next.js usando /api/admin/data. 
+-- El panel de Admin funcionará correctamente a través del middleware y la cookie HttpOnly.
+-- Asegurate de configurar SUPABASE_SERVICE_ROLE_KEY en Vercel para seguridad máxima.
