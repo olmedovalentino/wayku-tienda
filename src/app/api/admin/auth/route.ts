@@ -4,8 +4,12 @@ import { cookies } from 'next/headers';
 export async function POST(request: Request) {
     try {
         const { username, password } = await request.json();
-        const adminUser = process.env.ADMIN_USERNAME || 'waykuarg';
-        const adminPass = process.env.ADMIN_PASSWORD || 'waykuenlomasalto';
+        const adminUser = process.env.ADMIN_USERNAME;
+        const adminPass = process.env.ADMIN_PASSWORD;
+
+        if (!adminUser || !adminPass) {
+            return NextResponse.json({ success: false, error: 'Configuración de servidor incompleta (Variables de Entorno faltantes)' }, { status: 500 });
+        }
 
         if (username === adminUser && password === adminPass) {
             // Set an HttpOnly cookie

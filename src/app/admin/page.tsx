@@ -7,12 +7,7 @@ export default function AdminPage() {
     const router = useRouter();
 
     useEffect(() => {
-        const session = localStorage.getItem('admin_session');
-        if (session) {
-            router.push('/admin/dashboard');
-        } else {
-            router.push('/admin/login');
-        }
+        router.push('/admin/dashboard');
     }, [router]);
 
     return null;
