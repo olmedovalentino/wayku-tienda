@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
@@ -9,6 +10,30 @@ export async function POST(request: Request) {
         // MercadoPago send topic/type and id in query params or body
         const topic = url.searchParams.get('topic') || url.searchParams.get('type');
         const id = url.searchParams.get('data.id') || url.searchParams.get('id');
+
+        // Signature Verification
+        const xSignature = request.headers.get('x-signature');
+        const xRequestId = request.headers.get('x-request-id');
+        const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
+
+        if (secret && xSignature && xRequestId && id) {
+            const parts = xSignature.split(',');
+            let ts = '';
+            let hash = '';
+            parts.forEach(part => {
+                const [key, value] = part.split('=');
+                if (key === 'ts') ts = value;
+                else if (key === 'v1') hash = value;
+            });
+
+            const manifest = `id:${id};request-id:${xRequestId};ts:${ts};`;
+            const generatedHash = crypto.createHmac('sha256', secret).update(manifest).digest('hex');
+            
+            if (generatedHash !== hash) {
+                console.error('Webhook signature verification failed');
+                return new NextResponse('Invalid signature', { status: 403 });
+            }
+        }
 
         if (topic === 'payment' && id) {
             // Verify payment status with MP API

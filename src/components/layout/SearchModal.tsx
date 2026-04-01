@@ -31,10 +31,16 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         };
     }, [isOpen]);
 
+    const normalizeString = (str: string) => {
+        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    };
+
+    const searchStr = normalizeString(query);
+
     const filteredProducts = query
         ? products.filter((product) =>
-            product.name.toLowerCase().includes(query.toLowerCase()) ||
-            product.description.toLowerCase().includes(query.toLowerCase())
+            normalizeString(product.name).includes(searchStr) ||
+            normalizeString(product.description).includes(searchStr)
         )
         : [];
 

@@ -12,18 +12,28 @@ export default function AdminLoginPage() {
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setIsLoading(true);
 
-        // Demo login as requested
-        if (username === 'waykuarg' && password === 'waykuenlomasalto') {
-            // Save admin session
-            localStorage.setItem('admin_session', 'true');
-            router.push('/admin/dashboard');
-        } else {
-            setError('Usuario o contraseña incorrectos');
+        try {
+            const res = await fetch('/api/admin/auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+            
+            if (res.ok && data.success) {
+                router.push('/admin/dashboard');
+                router.refresh();
+            } else {
+                setError(data.error || 'Usuario o contraseña incorrectos');
+                setIsLoading(false);
+            }
+        } catch (e) {
+            setError('Error de conexión');
             setIsLoading(false);
         }
     };

@@ -18,7 +18,7 @@ export function ProductCard({ product }: ProductCardProps) {
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
-                {!product.inStock && !product.isComingSoon && (
+                {!(product.variants && product.variants.length > 0 ? product.variants.some(v => v.stock > 0) : (product.stockCount !== undefined && product.stockCount > 0)) && !product.isComingSoon && (
                     <div className="absolute left-2 top-2 rounded bg-stone-900/80 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
                         Agotado
                     </div>

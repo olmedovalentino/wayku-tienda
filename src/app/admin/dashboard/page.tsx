@@ -22,7 +22,7 @@ export default function AdminDashboardPage() {
     const stats = [
         {
             name: 'Ventas Totales',
-            value: `$${orders.reduce((acc, o) => acc + (parseFloat(o.total.replace('$', '').replace('.', '')) || 0), 0).toLocaleString()}`,
+            value: `$${orders.reduce((acc, o) => acc + (o.total || 0), 0).toLocaleString()}`,
             change: '+12%',
             trendingUp: true,
             icon: DollarSign,
@@ -125,7 +125,7 @@ export default function AdminDashboardPage() {
                                         <td className="px-6 py-4 font-medium text-stone-900">{order.id}</td>
                                         <td className="px-6 py-4 text-stone-600">{order.customer}</td>
                                         <td className="px-6 py-4 text-stone-500">{order.date}</td>
-                                        <td className="px-6 py-4 text-stone-900 font-medium">{order.total}</td>
+                                        <td className="px-6 py-4 text-stone-900 font-medium">${(order.total || 0).toLocaleString()}</td>
                                         <td className="px-6 py-4">
                                             <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusStyles(order.status)}`}>
                                                 {order.status}
@@ -161,7 +161,7 @@ export default function AdminDashboardPage() {
                                             </div>
                                             <div className="flex justify-between text-sm">
                                                 <span className="text-stone-500">Total:</span>
-                                                <span className="font-bold text-primary">{order.total}</span>
+                                                <span className="font-bold text-primary">${(order.total || 0).toLocaleString()}</span>
                                             </div>
                                         </div>
                                     </div>

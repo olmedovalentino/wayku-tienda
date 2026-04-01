@@ -96,7 +96,7 @@ export default function CheckoutPage() {
             id: orderId,
             customer: `${formData.firstName} ${formData.lastName}`,
             email: formData.email,
-            total: `$${total.toLocaleString()}`,
+            total: total,
             items: items.reduce((acc, item) => acc + item.quantity, 0),
             shippingMethod,
             paymentMethod,
@@ -117,9 +117,29 @@ export default function CheckoutPage() {
         };
 
         if (paymentMethod === 'transfer') {
+            // Descontar inventario antes de redirigir (reserva de stock)
+            await Promise.all(items.map(async (item) => {
+                const currentProduct = products.find((p: any) => p.id === item.id);
+                if (currentProduct && currentProduct.stockCount !== undefined) {
+                    const newStock = Math.max(0, currentProduct.stockCount - item.quantity);
+                    await updateProduct(item.id, {
+                        stockCount: newStock,
+                        inStock: newStock > 0
+                    });
+                }
+            }));
+            
             addOrder(orderData);
 
+            // Send confirmation email
+            fetch('/api/checkout/email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderData)
+            }).catch(console.error);
+
             // For transfer, we just go to success page with a flag
+            clearCart();
             router.push(`/checkout/success?method=transfer&name=${formData.firstName}&total=${total}&order_id=${orderId}`);
             return;
         }
@@ -127,9 +147,27 @@ export default function CheckoutPage() {
         setIsProcessing(true);
 
         try {
+            // Descontar inventario antes de redirigir (reserva de stock)
+            await Promise.all(items.map(async (item) => {
+                const currentProduct = products.find((p: any) => p.id === item.id);
+                if (currentProduct && currentProduct.stockCount !== undefined) {
+                    const newStock = Math.max(0, currentProduct.stockCount - item.quantity);
+                    await updateProduct(item.id, {
+                        stockCount: newStock,
+                        inStock: newStock > 0
+                    });
+                }
+            }));
+
             // Save order to state even for Card (it will be "Pendiente")
             addOrder(orderData);
 
+            // Send confirmation email
+            fetch('/api/checkout/email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderData)
+            }).catch(console.error);
 
             const response = await fetch('/api/checkout/preference', {
                 method: 'POST',
@@ -150,6 +188,7 @@ export default function CheckoutPage() {
             const data = await response.json();
 
             if (data.init_point) {
+                clearCart();
                 window.location.href = data.init_point;
             } else {
                 throw new Error(data.error || 'Error al crear la preferencia de pago');

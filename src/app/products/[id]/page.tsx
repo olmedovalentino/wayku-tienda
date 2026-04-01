@@ -231,7 +231,7 @@ export default function ProductPage() {
                             <span className="inline-flex items-center gap-1 rounded-full bg-[#5E6F5E] px-2.5 py-0.5 text-sm font-medium text-white shadow-sm">
                                 <Clock size={14} /> Próximamente
                             </span>
-                        ) : product.inStock ? (
+                        ) : (product.variants && product.variants.length > 0 ? product.variants.some(v => v.stock > 0) : (product.stockCount !== undefined && product.stockCount > 0)) ? (
                             <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-0.5 text-sm font-medium text-green-700">
                                 <Check size={14} /> En Stock
                             </span>

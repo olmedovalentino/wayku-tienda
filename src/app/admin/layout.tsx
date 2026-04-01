@@ -25,17 +25,13 @@ export default function AdminLayout({
     const pathname = usePathname();
 
     useEffect(() => {
-        const session = localStorage.getItem('admin_session');
-        if (!session && pathname !== '/admin/login') {
-            router.push('/admin/login');
-        } else {
-            setIsAuthorized(true);
-        }
-    }, [pathname, router]);
+        setIsAuthorized(true);
+    }, []);
 
-    const handleLogout = () => {
-        localStorage.removeItem('admin_session');
+    const handleLogout = async () => {
+        await fetch('/api/admin/auth', { method: 'DELETE' });
         router.push('/admin/login');
+        router.refresh();
     };
 
     if (pathname === '/admin/login') {

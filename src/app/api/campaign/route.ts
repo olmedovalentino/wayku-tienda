@@ -1,9 +1,16 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { createClient } from '@supabase/supabase-js';
+import { cookies } from 'next/headers';
 
 export async function POST(req: Request) {
     try {
+        const cookieStore = await cookies();
+        const session = cookieStore.get('admin_session');
+        
+        if (!session || session.value !== 'authenticated') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         const { subject, message } = await req.json();
 
         if (!subject || !message) {

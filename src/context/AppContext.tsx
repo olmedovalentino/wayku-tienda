@@ -9,7 +9,7 @@ export interface Order {
     customer: string;
     email: string;
     date: string;
-    total: string;
+    total: number;
     status: 'Pedido recibido' | 'Pago acreditado' | 'En preparación' | 'Embalado' | 'Despachado' | 'Entregado' | 'Devolución' | 'Cancelado';
     items: number;
     shippingMethod: 'shipping' | 'pickup';
@@ -122,59 +122,36 @@ export function AppProvider({ children }: { children: ReactNode }) {
                         });
                     };
 
-                    // Cargar productos
+                    // Cargar productos y reviews (públicos)
                     try {
                         const { data: pData, error: pErr } = await supabase.from('products').select('*');
                         if (pErr) console.error("SUPABASE PRODUCTS ERROR:", pErr);
                         
                         if (pData && pData.length > 0) {
-                            console.log("Supabase Products Loaded:", pData.length);
                             setProducts(pData);
                         } else {
-                            console.warn("No products in Supabase, falling back to mock.");
                             setProducts(mappedInitial);
                         }
+                        
+                        const { data: rData } = await supabase.from('reviews').select('*');
+                        if (rData) setReviews(rData);
                     } catch (e) {
-                         console.error("Critical error fetching products:", e);
                          setProducts(mappedInitial);
                     }
 
-                    // Cargar otros datos
+                    // Intentar cargar datos sensibles mediante API administrativa
+                    // Si falla silenciosamente (401), es un usuario normal.
                     try {
-                        const { data: oData } = await supabase.from('orders').select('*');
-                        if (oData) setOrders(sortOrders(oData));
-                    } catch (e) {}
-
-                    try {
-                        const { data: qData } = await supabase.from('queries').select('*').order('id', { ascending: false });
-                        if (qData) setQueries(qData);
-                    } catch (e) {}
-                    
-                    try {
-                        const { data: sData } = await supabase.from('subscribers').select('*').order('id', { ascending: false });
-                        if (sData) setSubscribers(sData.map(s => s.email));
-                    } catch (e) {}
-
-                    try {
-                        const { data: qData, error: qErr } = await supabase.from('queries').select('*').order('created_at', { ascending: false });
-                        if (qErr) {
-                            // Fallback if created_at doesn't exist yet
-                            const { data: qDataAlt } = await supabase.from('queries').select('*').order('id', { ascending: false });
-                            if (qDataAlt) setQueries(qDataAlt);
-                        } else if (qData) {
-                             setQueries(qData);
+                        const adminRes = await fetch('/api/admin/data');
+                        if (adminRes.ok) {
+                            const adminData = await adminRes.json();
+                            if (adminData.orders) setOrders(sortOrders(adminData.orders));
+                            if (adminData.queries) setQueries(adminData.queries);
+                            if (adminData.subscribers) setSubscribers(adminData.subscribers);
                         }
-                    } catch (e) {}
-
-                    try {
-                        const { data: sData, error: sErr } = await supabase.from('subscribers').select('*').order('created_at', { ascending: false });
-                        if (sErr) {
-                            const { data: sDataAlt } = await supabase.from('subscribers').select('*').order('id', { ascending: false });
-                            if (sDataAlt) setSubscribers(sDataAlt.map(s => s.email));
-                        } else if (sData) {
-                             setSubscribers(sData.map(s => s.email));
-                        }
-                    } catch (e) {}
+                    } catch (e) {
+                        // Silent fail
+                    }
 
                 } catch (err) {
                     console.error("Critical Admin Load error:", err);
@@ -213,12 +190,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
             addProduct, updateProduct, deleteProduct,
             updateOrderStatus: (id, status) => {
                 setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
-                if (supabase) supabase.from('orders').update({ status }).eq('id', id).then();
+                fetch('/api/admin/data', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ table: 'orders', action: 'update', data: { status }, match: { id } })
+                }).catch(console.error);
             },
-            addReview: (review) => {
-                const newR = { ...review, id: Math.random().toString(36).substr(2, 9), date: new Date().toLocaleDateString() };
+            addReview: async (review) => {
+                const tempId = Math.random().toString(36).substr(2, 9);
+                const newR = { ...review, id: tempId, date: new Date().toLocaleDateString() };
                 setReviews(prev => [newR as any, ...prev]);
-                if (supabase) supabase.from('reviews').insert(newR).then();
+                if (supabase) {
+                    const { id, ...dbReview } = newR;
+                    const { data, error } = await supabase.from('reviews').insert(dbReview).select().single();
+                    if (error) {
+                        console.error("Review Insert Error:", error);
+                    } else if (data) {
+                        setReviews(prev => prev.map(r => r.id === tempId ? data : r));
+                    }
+                }
             },
             addOrder: (order) => {
                 const newO = { ...order, date: new Date().toLocaleDateString(), status: 'Pedido recibido' };
@@ -234,11 +224,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
             },
             markQueryAsRead: (id) => {
                 setQueries(prev => prev.map(q => q.id === id ? { ...q, read: true } : q));
-                if (supabase) supabase.from('queries').update({ read: true }).eq('id', id).then();
+                fetch('/api/admin/data', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ table: 'queries', action: 'update', data: { read: true }, match: { id } })
+                }).catch(console.error);
             },
             replyToQuery: (id) => {
                 setQueries(prev => prev.map(q => q.id === id ? { ...q, replied: true } : q));
-                if (supabase) supabase.from('queries').update({ replied: true }).eq('id', id).then();
+                fetch('/api/admin/data', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ table: 'queries', action: 'update', data: { replied: true }, match: { id } })
+                }).catch(console.error);
             },
             subscribeToNewsletter: async (email) => {
                 if (supabase) {

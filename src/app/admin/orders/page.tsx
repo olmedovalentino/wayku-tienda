@@ -17,6 +17,15 @@ import {
 } from 'lucide-react';
 import { getTimeAgo } from '@/lib/time';
 
+function escapeHtml(unsafe: string | null | undefined): string {
+    if (!unsafe) return '';
+    return unsafe.toString()
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+}
 
 export default function AdminOrdersPage() {
     const { orders, updateOrderStatus } = useApp();
@@ -30,7 +39,7 @@ export default function AdminOrdersPage() {
     const filteredOrders = sortedOrders.filter(order => {
         const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                               order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                              order.total.toLowerCase().includes(searchTerm.toLowerCase());
+                              (order.total?.toString() || '').includes(searchTerm.toLowerCase());
         const matchesStatus = statusFilter === 'Todos' || order.status === statusFilter;
         return matchesSearch && matchesStatus;
     });
@@ -124,7 +133,7 @@ export default function AdminOrdersPage() {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-stone-600">{order.items} {order.items === 1 ? 'item' : 'items'}</td>
-                                    <td className="px-6 py-4 font-medium text-stone-900">{order.total}</td>
+                                    <td className="px-6 py-4 font-medium text-stone-900">${(order.total || 0).toLocaleString()}</td>
                                     <td className="px-6 py-4">
                                         <select
                                             value={order.status}
@@ -192,7 +201,7 @@ export default function AdminOrdersPage() {
                         <div className="flex justify-between items-center text-sm py-2 border-y border-stone-100">
                             <div>
                                 <span className="text-stone-500 block text-xs">Total</span>
-                                <span className="font-bold text-stone-900">{order.total}</span>
+                                <span className="font-bold text-stone-900">${(order.total || 0).toLocaleString()}</span>
                             </div>
                             <div className="text-right">
                                 <span className="text-stone-500 block text-xs">Cliente</span>
@@ -295,7 +304,7 @@ export default function AdminOrdersPage() {
                                         <div className="pt-2 border-t border-stone-200 mt-2">
                                             <p className="text-lg font-bold text-stone-900 flex justify-between">
                                                 <span>Total:</span>
-                                                <span>{selectedOrder.total}</span>
+                                                <span>${(selectedOrder.total || 0).toLocaleString()}</span>
                                             </p>
                                         </div>
                                     </div>
@@ -393,14 +402,14 @@ export default function AdminOrdersPage() {
     </div>
     
     <div class="details">
-        <strong>Fecha:</strong> ${selectedOrder.date}<br>
-        <strong>Cliente:</strong> ${selectedOrder.customer}<br>
-        <strong>Email:</strong> ${selectedOrder.email}<br>
-        <strong>Teléfono:</strong> ${selectedOrder.phone || 'No provisto'}<br>
+        <strong>Fecha:</strong> ${escapeHtml(selectedOrder.date)}<br>
+        <strong>Cliente:</strong> ${escapeHtml(selectedOrder.customer)}<br>
+        <strong>Email:</strong> ${escapeHtml(selectedOrder.email)}<br>
+        <strong>Teléfono:</strong> ${escapeHtml(selectedOrder.phone) || 'No provisto'}<br>
         <strong>Método Entrega:</strong> ${selectedOrder.shippingMethod === 'pickup' ? 'Retiro en tienda' : 'Envío a Domicilio'}<br>
-        ${selectedOrder.shippingMethod === 'shipping' ? `<strong>Dirección:</strong> ${selectedOrder.address}, ${selectedOrder.city} (${selectedOrder.postalCode})<br>` : ''}
+        ${selectedOrder.shippingMethod === 'shipping' ? `<strong>Dirección:</strong> ${escapeHtml(selectedOrder.address)}, ${escapeHtml(selectedOrder.city)} (${escapeHtml(selectedOrder.postalCode)})<br>` : ''}
         <strong>Método Pago:</strong> ${selectedOrder.paymentMethod === 'card' ? 'Mercado Pago / Tarjetas' : 'Transferencia Bancaria'}<br>
-        <strong>Estado:</strong> ${selectedOrder.status}
+        <strong>Estado:</strong> ${escapeHtml(selectedOrder.status)}
     </div>
     
     <table class="table">
@@ -415,13 +424,13 @@ export default function AdminOrdersPage() {
             ${(selectedOrder.details || []).map(item => `
                 <tr>
                     <td>
-                        <div style="font-weight: bold;">${item.name}</div>
+                        <div style="font-weight: bold;">${escapeHtml(item.name)}</div>
                         <div style="font-size: 11px; color: #666; margin-top: 4px;">
-                            ${item.material ? `Madera: ${item.material} / ` : ''}
-                            ${item.size ? `Medida: ${item.size} / ` : ''}
-                            ${item.shade ? `Pantalla: ${item.shade} / ` : ''}
-                            ${item.cable ? `Cable: ${item.cable} / ` : ''}
-                            ${item.canopy ? `Florón: ${item.canopy}` : ''}
+                            ${item.material ? `Madera: ${escapeHtml(item.material)} / ` : ''}
+                            ${item.size ? `Medida: ${escapeHtml(item.size)} / ` : ''}
+                            ${item.shade ? `Pantalla: ${escapeHtml(item.shade)} / ` : ''}
+                            ${item.cable ? `Cable: ${escapeHtml(item.cable)} / ` : ''}
+                            ${item.canopy ? `Florón: ${escapeHtml(item.canopy)}` : ''}
                         </div>
                     </td>
                     <td>${item.quantity}</td>
@@ -432,7 +441,7 @@ export default function AdminOrdersPage() {
     </table>
     
     <div class="total">
-        TOTAL: ${selectedOrder.total}
+        TOTAL: $${(selectedOrder.total || 0).toLocaleString()}
     </div>
     
     <div class="footer">
