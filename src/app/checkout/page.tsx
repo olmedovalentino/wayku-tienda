@@ -11,7 +11,7 @@ import Link from 'next/link';
 
 export default function CheckoutPage() {
     const { items, subtotal, clearCart, isInitialized } = useCart();
-    const { updateProduct, products, addOrder } = useApp();
+    const { updateProduct, products, addOrder, orders } = useApp();
     const { user } = useAuth();
 
     const [isProcessing, setIsProcessing] = useState(false);
@@ -40,16 +40,19 @@ export default function CheckoutPage() {
             setFormData(prev => ({
                 ...prev,
                 email: user.email,
-                firstName: user.name.split(' ')[0],
-                lastName: user.name.split(' ')[1] || '' // Handle cases where there's no last name
+                firstName: user.name?.split(' ')[0] || '',
+                lastName: user.name?.split(' ')[1] || ''
             }));
             
-            if (appliedDiscount === 0) {
+            // Check if it's their first order
+            const hasPastOrders = orders.some(o => o.email?.toLowerCase() === user.email?.toLowerCase());
+            
+            if (!hasPastOrders && appliedDiscount === 0) {
                 setAppliedDiscount(5);
-                setCouponCode('USUARIO WAYKÚ (-5%)');
+                setCouponCode('PRIMERACOMPRA5');
             }
         }
-    }, [user]);
+    }, [user, orders, appliedDiscount]);
 
     const discountAmount = useMemo(() => {
         return subtotal * (appliedDiscount / 100);
@@ -76,12 +79,50 @@ export default function CheckoutPage() {
         );
     }
 
-    const applyCoupon = () => {
-        if (couponCode.toUpperCase() === 'FIRSTORDER5') {
-            setAppliedDiscount(5);
-            setCouponError('');
-        } else {
-            setCouponError('Código inválido');
+    const applyCoupon = async () => {
+        if (!couponCode.trim()) {
+            setCouponError('Ingresa un código');
+            setAppliedDiscount(0);
+            return;
+        }
+
+        // Special hardcoded fallback or from DB
+        if (couponCode.toUpperCase() === 'PRIMERACOMPRA5') {
+            const hasPastOrders = orders.some(o => o.email?.toLowerCase() === formData.email?.toLowerCase());
+            if (hasPastOrders) {
+                setCouponError('Este cupón es solo para tu primera compra.');
+                setAppliedDiscount(0);
+            } else {
+                setAppliedDiscount(5);
+                setCouponError('');
+            }
+            return;
+        }
+
+        try {
+            // Import supabase dynamically if not in component scope, wait we can just import it at the top
+            // assuming it's available via context or we can use fetch
+            const { createClient } = await import('@supabase/supabase-js');
+            const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+
+            const { data, error } = await supabase
+                .from('coupons')
+                .select('discount_percentage, is_active')
+                .eq('code', couponCode.toUpperCase())
+                .single();
+
+            if (error || !data) {
+                setCouponError('Código inválido o no encontrado');
+                setAppliedDiscount(0);
+            } else if (!data.is_active) {
+                setCouponError('El cupón ha expirado o está desactivado');
+                setAppliedDiscount(0);
+            } else {
+                setAppliedDiscount(data.discount_percentage);
+                setCouponError('');
+            }
+        } catch (e) {
+            setCouponError('Error al validar el cupón');
             setAppliedDiscount(0);
         }
     };

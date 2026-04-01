@@ -50,6 +50,7 @@ export interface Review {
     userName: string;
     rating: number;
     comment: string;
+    image?: string;
     date: string;
     created_at?: string;
 }

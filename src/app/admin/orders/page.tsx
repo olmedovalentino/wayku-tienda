@@ -461,6 +461,62 @@ export default function AdminOrdersPage() {
                                 Imprimir Comprobante
                             </Button>
 
+                            {selectedOrder.shippingMethod === 'shipping' && (
+                                <Button
+                                    className="flex-1 gap-2 border-stone-200 bg-stone-100 text-stone-700 hover:bg-stone-200"
+                                    onClick={() => {
+                                        const printLabel = `
+<html>
+<head>
+    <title>Etiqueta de Envío ${selectedOrder.id}</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .label { width: 100%; max-width: 500px; height: 350px; border: 2px solid #000; padding: 20px; margin: 0 auto; display: flex; flex-direction: column; justify-content: space-between; }
+        .sender { font-size: 14px; color: #555; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+        .recipient { margin-bottom: 20px; }
+        .recipient h2 { margin: 0 0 10px 0; font-size: 24px; text-transform: uppercase; }
+        .address { font-size: 18px; font-weight: bold; line-height: 1.4; }
+        .footer { display: flex; justify-content: space-between; border-top: 1px solid #000; padding-top: 10px; margin-top: auto; }
+        .order-id { font-weight: bold; font-size: 16px; }
+        .postal { font-size: 20px; font-weight: bold; border: 2px solid #000; padding: 5px 10px; }
+    </style>
+</head>
+<body>
+    <div class="label">
+        <div class="sender">
+            <strong>REMITENTE:</strong><br>
+            Waykú Iluminación<br>
+            Córdoba, Argentina<br>
+            IG: @waykuarg
+        </div>
+        <div class="recipient">
+            <strong>DESTINATARIO:</strong>
+            <h2>${escapeHtml(selectedOrder.customer)}</h2>
+            <div class="address">
+                ${escapeHtml(selectedOrder.address)}<br>
+                ${escapeHtml(selectedOrder.city)}, CP: ${escapeHtml(selectedOrder.postalCode)}<br>
+                ${selectedOrder.phone ? `Tel: ${escapeHtml(selectedOrder.phone)}` : ''}
+            </div>
+        </div>
+        <div class="footer">
+            <div class="order-id">Pedido #${selectedOrder.id}</div>
+            <div class="postal">CP ${escapeHtml(selectedOrder.postalCode)}</div>
+        </div>
+    </div>
+    <script>window.print();</script>
+</body>
+</html>
+                                        `;
+                                        const win = window.open('', '_blank');
+                                        win?.document.write(printLabel);
+                                        win?.document.close();
+                                    }}
+                                >
+                                    <Package size={18} />
+                                    Etiqueta de Envío
+                                </Button>
+                            )}
+
                         </div>
 
                     </div>

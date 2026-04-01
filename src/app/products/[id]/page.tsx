@@ -4,7 +4,7 @@ import { useApp } from '@/context/AppContext';
 import { useParams, notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
-import { Check, Truck, Shield, ArrowLeft, Star, Heart, Hammer, PlusCircle, Clock } from 'lucide-react';
+import { Check, Truck, Shield, ArrowLeft, Star, Heart, Hammer, PlusCircle, Clock, X } from 'lucide-react';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { useFavorites } from '@/context/FavoritesContext';
@@ -27,6 +27,8 @@ export default function ProductPage() {
 
     const [reviewComment, setReviewComment] = useState('');
     const [reviewRating, setReviewRating] = useState(5);
+    const [reviewImage, setReviewImage] = useState<string | null>(null);
+    const [isUploadingImage, setIsUploadingImage] = useState(false);
 
     const { addItem } = useCart();
     const { toggleFavorite, isFavorite } = useFavorites();
@@ -64,9 +66,11 @@ export default function ProductPage() {
             productId: decodedId,
             userName: user.name,
             rating: reviewRating,
-            comment: reviewComment
+            comment: reviewComment,
+            image: reviewImage || undefined
         });
         setReviewComment('');
+        setReviewImage(null);
     };
 
     const materials = useMemo(() => {
@@ -440,6 +444,11 @@ export default function ProductPage() {
                                         </div>
                                     </div>
                                     <p className="text-stone-600 text-sm leading-relaxed">{review.comment}</p>
+                                    {review.image && (
+                                        <div className="mt-4 relative h-32 w-32 rounded-lg overflow-hidden border border-stone-200">
+                                            <Image src={review.image} alt="User photo" fill className="object-cover" />
+                                        </div>
+                                    )}
                                 </div>
                             ))
                         )}
@@ -476,8 +485,52 @@ export default function ProductPage() {
                                         onChange={(e) => setReviewComment(e.target.value)}
                                     />
                                 </div>
-                                <Button type="submit" className="w-full">
-                                    Publicar Reseña
+                                <div className="pt-2">
+                                    <label className="block text-sm font-medium text-stone-700 mb-2">Foto de tu lámpara (Opcional)</label>
+                                    <div className="relative">
+                                        {reviewImage ? (
+                                            <div className="relative h-24 w-24 rounded-lg overflow-hidden border border-stone-200 mb-2">
+                                                <Image src={reviewImage} alt="Preview" fill className="object-cover" />
+                                                <button type="button" onClick={() => setReviewImage(null)} className="absolute top-1 right-1 bg-white/80 rounded-full p-1 text-red-500 hover:bg-white transition-colors">
+                                                    <X size={14} />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                className="w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/5 file:text-primary hover:file:bg-primary/10 cursor-pointer"
+                                                disabled={isUploadingImage}
+                                                onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (!file) return;
+                                                    
+                                                    setIsUploadingImage(true);
+                                                    try {
+                                                        const { createClient } = await import('@supabase/supabase-js');
+                                                        const supabaseObj = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+                                                        const fileName = `review-${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+                                                        const { data, error } = await supabaseObj.storage.from('products').upload(fileName, file);
+                                                        
+                                                        if (data) {
+                                                            const { data: { publicUrl } } = supabaseObj.storage.from('products').getPublicUrl(fileName);
+                                                            setReviewImage(publicUrl);
+                                                        } else {
+                                                            alert('Error al subir la foto');
+                                                        }
+                                                    } catch (err) {
+                                                        alert('Hubo un problema procesando tu foto');
+                                                    } finally {
+                                                        setIsUploadingImage(false);
+                                                    }
+                                                }}
+                                            />
+                                        )}
+                                        {isUploadingImage && <p className="text-xs text-primary mt-2 animate-pulse">Subiendo foto...</p>}
+                                    </div>
+                                </div>
+                                <Button type="submit" className="w-full" disabled={isUploadingImage}>
+                                    {isUploadingImage ? 'Procesando...' : 'Publicar Reseña'}
                                 </Button>
                             </form>
                         ) : (
