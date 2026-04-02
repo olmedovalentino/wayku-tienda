@@ -137,7 +137,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             })
             .subscribe();
 
-        return () => { supabase.removeChannel(channel); };
+        return () => { supabase?.removeChannel(channel); };
     }, [addNotif, pathname]);
 
     const handleLogout = async () => {
