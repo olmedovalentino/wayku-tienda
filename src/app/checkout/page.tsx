@@ -119,7 +119,7 @@ export default function CheckoutPage() {
 
             const { data, error } = await supabase
                 .from('coupons')
-                .select('discount_percentage, is_active')
+                .select('discount_percentage, is_active, expires_at')
                 .eq('code', couponCode.toUpperCase())
                 .single();
 
@@ -127,7 +127,10 @@ export default function CheckoutPage() {
                 setCouponError('Código inválido o no encontrado');
                 setAppliedDiscount(0);
             } else if (!data.is_active) {
-                setCouponError('El cupón ha expirado o está desactivado');
+                setCouponError('El cupón está desactivado');
+                setAppliedDiscount(0);
+            } else if (data.expires_at && new Date(data.expires_at) <= new Date()) {
+                setCouponError('Este cupón ya venció');
                 setAppliedDiscount(0);
             } else {
                 setAppliedDiscount(data.discount_percentage);
