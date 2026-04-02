@@ -22,6 +22,7 @@ export default function CheckoutPage() {
     const [shippingCost, setShippingCost] = useState<number | null>(null);
     const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
     const [shippingError, setShippingError] = useState('');
+    const [checkoutToast, setCheckoutToast] = useState<{message: string, type: 'error' | 'success'} | null>(null);
 
     const [formData, setFormData] = useState({
         email: user?.email || '',
@@ -168,7 +169,8 @@ export default function CheckoutPage() {
         e.preventDefault();
 
         if (shippingMethod === 'shipping' && shippingCost === null) {
-            alert('Por favor, calculá el costo de envío antes de continuar.');
+            setCheckoutToast({ message: 'Por favor, cotizá el costo de envío para poder continuar.', type: 'error' });
+            setTimeout(() => setCheckoutToast(null), 4000);
             return;
         }
 
@@ -626,6 +628,19 @@ export default function CheckoutPage() {
 
                 </div>
             </div>
+
+            {/* Custom Toast Message */}
+            {checkoutToast && (
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-5 fade-in duration-300">
+                    <div className={`px-5 py-3 rounded-full flex items-center gap-3 shadow-xl ${
+                        checkoutToast.type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-stone-900 text-white shadow-stone-900/20'
+                    }`}>
+                        {checkoutToast.type === 'error' ? <div className="h-2 w-2 rounded-full bg-red-500 shrink-0" /> : <div className="h-2 w-2 rounded-full bg-green-400 shrink-0" />}
+                        <p className="text-sm font-medium whitespace-nowrap">{checkoutToast.message}</p>
+                        <button onClick={() => setCheckoutToast(null)} className={`ml-2 ${checkoutToast.type === 'error' ? 'text-red-400 hover:text-red-600' : 'text-stone-400 hover:text-white'}`}>✕</button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
