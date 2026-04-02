@@ -64,13 +64,16 @@ export default function ProductPage() {
 
     const handleAddToCart = () => {
         if (!product) return;
+        
+        const isUnifiedCableCanopy = product.category === 'pendant' && product.id !== 'new-1' && product.id !== 'new-4';
+
         addItem(
             product,
             selectedMaterial,
             hasSizeVariants ? selectedSize : undefined,
             product.category === 'table' ? shadeType : undefined,
-            (product.category === 'table' || (product.category === 'pendant' && product.id !== 'new-1' && product.id !== 'new-4')) ? cableColor : undefined,
-            product.category === 'pendant' ? canopyColor : undefined
+            (product.category === 'table' || isUnifiedCableCanopy) ? cableColor : undefined,
+            product.category === 'pendant' ? (isUnifiedCableCanopy ? cableColor : canopyColor) : undefined
         );
     };
 
@@ -364,7 +367,7 @@ export default function ProductPage() {
                         )}
 
                         {/* Canopy Selector */}
-                        {product.category === 'pendant' && (
+                        {product.category === 'pendant' && (product.id === 'new-1' || product.id === 'new-4') && (
                             <div>
                                 <h3 className="text-sm font-medium text-stone-900 mb-3">Color Florón</h3>
                                 <div className="grid grid-cols-2 gap-3">
