@@ -211,7 +211,7 @@ export default function UsersAdminPage() {
             </div>
 
             {/* Users Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
                 {filteredUsers.length === 0 ? (
                     <div className="col-span-full p-8 text-center text-stone-500 bg-white rounded-2xl border border-stone-100">
                         <User className="h-10 w-10 text-stone-200 mx-auto mb-2" />
