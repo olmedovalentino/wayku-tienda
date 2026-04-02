@@ -54,7 +54,30 @@ export default function AdminOrdersPage() {
 
     // Orders sorted newest-first
     const sortedOrders = [...orders].sort((a, b) => {
-        if (a.created_at && b.created_at) return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        let timeA = 0; let timeB = 0;
+        if (a.created_at) timeA = new Date(a.created_at).getTime();
+        if (b.created_at) timeB = new Date(b.created_at).getTime();
+        
+        if (timeA === 0 && a.id && a.id.startsWith('ORD-') && a.id.length > 10) {
+            const ts = Number(a.id.replace('ORD-', ''));
+            if (!isNaN(ts) && ts > 1000000000) timeA = ts;
+        }
+        if (timeB === 0 && b.id && b.id.startsWith('ORD-') && b.id.length > 10) {
+            const ts = Number(b.id.replace('ORD-', ''));
+            if (!isNaN(ts) && ts > 1000000000) timeB = ts;
+        }
+        
+        if (timeA !== 0 && timeB !== 0 && timeA !== timeB) {
+            return timeB - timeA;
+        }
+        
+        // Fallback to numeric ID sort
+        const numA = Number(String(a.id).replace('ORD-', ''));
+        const numB = Number(String(b.id).replace('ORD-', ''));
+        if (!isNaN(numA) && !isNaN(numB)) {
+             return numB - numA;
+        }
+        
         return String(b.id).localeCompare(String(a.id));
     });
 
