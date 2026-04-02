@@ -378,14 +378,14 @@ export default function AdminOrdersPage() {
                             </div>
                         </div>
 
-                        <div className="p-6 border-t border-stone-100 flex gap-4">
-                            <Button variant="outline" className="flex-1" onClick={() => setSelectedOrder(null)}>
+                        <div className="p-4 sm:p-6 border-t border-stone-100 flex flex-wrap gap-2 sm:gap-3">
+                            <Button variant="outline" className="flex-1 min-w-[100px]" onClick={() => setSelectedOrder(null)}>
                                 Cerrar
                             </Button>
                             {(selectedOrder.status === 'Pedido recibido' || selectedOrder.status === 'Pago acreditado' || selectedOrder.status === 'En preparación' || selectedOrder.status === 'Embalado') && (
                                 <Button
                                     variant="outline"
-                                    className="flex-1 text-red-600 border-red-100 hover:bg-red-50 hover:text-red-700 hover:border-red-200"
+                                    className="flex-1 min-w-[120px] text-red-600 border-red-100 hover:bg-red-50 hover:text-red-700 hover:border-red-200"
                                     onClick={() => {
                                         if (confirm('¿Estás seguro de cancelar este pedido?')) {
                                             updateOrderStatus(selectedOrder.id, 'Cancelado');
@@ -393,23 +393,23 @@ export default function AdminOrdersPage() {
                                         }
                                     }}
                                 >
-                                    Cancelar Pedido
+                                    Cancelar
                                 </Button>
                             )}
                             {(selectedOrder.status === 'Despachado' || selectedOrder.status === 'Entregado') && (
                                 <Button
                                     variant="outline"
-                                    className="flex-1 text-orange-600 border-orange-100 hover:bg-orange-50"
+                                    className="flex-1 min-w-[120px] text-orange-600 border-orange-100 hover:bg-orange-50"
                                     onClick={() => {
                                         updateOrderStatus(selectedOrder.id, 'Devolución');
                                         setSelectedOrder({ ...selectedOrder, status: 'Devolución' });
                                     }}
                                 >
-                                    Marcar Devolución
+                                    Devolución
                                 </Button>
                             )}
                             <Button
-                                className="flex-1 gap-2"
+                                className="flex-1 min-w-[130px] gap-1.5 text-sm"
                                 onClick={() => {
                                     const printContent = `
 <html>
@@ -489,13 +489,13 @@ export default function AdminOrdersPage() {
                                     win?.print();
                                 }}
                             >
-                                <Printer size={18} />
-                                Imprimir Comprobante
+                                <Printer size={16} />
+                                <span className="hidden sm:inline">Imprimir </span>Comprobante
                             </Button>
 
                             {selectedOrder.shippingMethod === 'shipping' && (
                                 <Button
-                                    className="flex-1 gap-2 border-stone-200 bg-stone-100 text-stone-700 hover:bg-stone-200"
+                                    className="flex-1 min-w-[130px] gap-1.5 text-sm border-stone-200 bg-stone-100 text-stone-700 hover:bg-stone-200"
                                     onClick={() => {
                                         const printLabel = `
 <html>
@@ -602,8 +602,8 @@ export default function AdminOrdersPage() {
                                         win?.document.close();
                                     }}
                                 >
-                                    <Package size={18} />
-                                    Etiqueta de Envío
+                                    <Package size={16} />
+                                    <span className="hidden sm:inline">Etiqueta</span><span className="sm:hidden">Etiqueta</span> de Envío
                                 </Button>
                             )}
 
