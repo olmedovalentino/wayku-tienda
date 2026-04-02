@@ -70,9 +70,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-    // history = todos los que llegaron (para el dropdown del ícono)
+    // history = persistido en localStorage para que sobreviva refrescos
     const [history, setHistory]   = useState<Notif[]>([]);
-    // toasts = los que están mostrando el popup visual
     const [toasts, setToasts]     = useState<Notif[]>([]);
     const [showBell, setShowBell] = useState(false);
 
@@ -83,6 +82,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => { setIsAuthorized(true); }, []);
+
+    // Cargar historial desde localStorage al montar
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem('wayku_admin_notifs');
+            if (saved) {
+                const parsed = JSON.parse(saved) as Notif[];
+                // Convertir strings de fecha de vuelta a Date
+                setHistory(parsed.map(n => ({ ...n, time: new Date(n.time) })));
+            }
+        } catch (e) {}
+    }, []);
 
     // Cerrar dropdown al click afuera (excluyendo el botón Y el propio dropdown)
     useEffect(() => {
@@ -99,8 +110,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const addNotif = useCallback((notif: Omit<Notif, 'id' | 'time'>) => {
         const id = Math.random().toString(36).slice(2);
         const full: Notif = { ...notif, id, time: new Date() };
-        setHistory(prev => [full, ...prev]);  // guarda para siempre
-        setToasts(prev => [...prev, full]);    // muestra el popup
+        setHistory(prev => {
+            const next = [full, ...prev].slice(0, 50); // máximo 50
+            try { localStorage.setItem('wayku_admin_notifs', JSON.stringify(next)); } catch (e) {}
+            return next;
+        });
+        setToasts(prev => [...prev, full]);
     }, []);
 
     const dismissToast = useCallback((id: string) => {
@@ -110,6 +125,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     const clearHistory = useCallback(() => {
         setHistory([]);
+        try { localStorage.removeItem('wayku_admin_notifs'); } catch (e) {}
         setShowBell(false);
     }, []);
 
