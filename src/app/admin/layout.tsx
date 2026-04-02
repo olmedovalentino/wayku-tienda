@@ -17,6 +17,7 @@ import {
     Mail,
     Rss,
     ChevronRight,
+    Ticket,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -178,6 +179,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const navigation = [
         { name: 'Dashboard',     href: '/admin/dashboard',   icon: LayoutDashboard },
         { name: 'Productos',     href: '/admin/products',    icon: Package },
+        { name: 'Cupones',       href: '/admin/coupons',     icon: Ticket },
         { name: 'Pedidos',       href: '/admin/orders',      icon: ShoppingBag },
         { name: 'Consultas',     href: '/admin/queries',     icon: MessageSquare },
         { name: 'Suscripciones', href: '/admin/subscribers', icon: Users },

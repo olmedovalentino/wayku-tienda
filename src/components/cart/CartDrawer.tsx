@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { useEffect } from 'react';
 
 export function CartDrawer() {
-    const { items, isOpen, closeCart, removeItem, subtotal } = useCart();
+    const { items, isOpen, closeCart, removeItem, updateItemQuantity, subtotal } = useCart();
 
     // Prevent scrolling when cart is open
     useEffect(() => {
@@ -92,8 +92,23 @@ export function CartDrawer() {
                                                 )}
                                             </div>
                                             <div className="flex flex-1 items-end justify-between text-sm">
-                                                <div className="flex items-center gap-2 text-stone-500">
-                                                    Cant: {item.quantity}
+                                                <div className="flex items-center gap-3 rounded-md border border-stone-200 px-2 py-1">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => updateItemQuantity(idx, item.quantity - 1)}
+                                                        className="text-stone-500 hover:text-stone-900 focus:outline-none disabled:opacity-30"
+                                                        disabled={item.quantity <= 1}
+                                                    >
+                                                        <Minus size={14} />
+                                                    </button>
+                                                    <span className="w-4 text-center font-medium text-stone-900">{item.quantity}</span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => updateItemQuantity(idx, item.quantity + 1)}
+                                                        className="text-stone-500 hover:text-stone-900 focus:outline-none"
+                                                    >
+                                                        <Plus size={14} />
+                                                    </button>
                                                 </div>
                                                 <button
                                                     type="button"

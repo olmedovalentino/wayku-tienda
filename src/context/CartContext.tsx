@@ -21,6 +21,7 @@ interface CartContextType {
     closeCart: () => void;
     addItem: (p: Product, m: 'guayubira' | 'roble' | 'palo-santo', s?: '1m' | '1.5m' | '2m', shade?: 'lino' | 'blanco-calido' | 'blanco-frio', cable?: 'blanco' | 'negro', canopy?: 'blanco' | 'negro') => void;
     removeItem: (index: number) => void;
+    updateItemQuantity: (index: number, quantity: number) => void;
     clearCart: () => void;
     subtotal: number;
     isInitialized: boolean;
@@ -151,6 +152,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             closeCart: () => setIsOpen(false),
             addItem,
             removeItem: (idx) => setItems(prev => prev.filter((_, i) => i !== idx)),
+            updateItemQuantity: (idx, quantity) => setItems(prev => prev.map((item, i) => i === idx ? { ...item, quantity: Math.max(1, quantity) } : item)),
             clearCart: () => setItems([]),
             subtotal: items.reduce((t, i) => t + (i.price * i.quantity), 0),
             isInitialized: isMounted,

@@ -35,7 +35,7 @@ export function SpecialOffer() {
                         </>
                     ) : (
                         <>
-                            <p className="text-base mb-8 text-white">Obtén 5% de descuento usando el código <strong className="bg-[#5E6F5E] px-2 py-1 rounded">FIRSTORDER5</strong></p>
+                            <p className="text-base mb-8 text-white">Obtén 5% de descuento usando el código <strong className="bg-[#5E6F5E] px-2 py-1 rounded">PRIMERACOMPRA5</strong></p>
                             <Link href="/products">
                                 <Button
                                     size="md"
