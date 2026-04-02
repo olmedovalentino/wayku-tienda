@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useApp, Order } from '@/context/AppContext';
 import { Button } from '@/components/ui/Button';
 import {
@@ -13,7 +13,8 @@ import {
     Clock,
     Truck,
     HelpCircle,
-    Printer
+    Printer,
+    RefreshCw
 } from 'lucide-react';
 import { getTimeAgo } from '@/lib/time';
 
@@ -28,13 +29,34 @@ function escapeHtml(unsafe: string | null | undefined): string {
 }
 
 export default function AdminOrdersPage() {
-    const { orders, updateOrderStatus } = useApp();
+    const { orders: contextOrders, updateOrderStatus } = useApp();
+    const [orders, setOrders] = useState<Order[]>(contextOrders);
+    const [isLoading, setIsLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('Todos');
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
-    // Orders are now correctly fetched and sorted newest-first in AppContext
-    const sortedOrders = [...orders];
+    // Keep in sync with context on mount
+    useEffect(() => { setOrders(contextOrders); }, [contextOrders]);
+
+    const fetchOrders = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const res = await fetch('/api/admin/data');
+            const data = await res.json();
+            if (data.orders) setOrders(data.orders);
+        } catch (e) {
+            console.error('Error fetching orders:', e);
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    // Orders sorted newest-first
+    const sortedOrders = [...orders].sort((a, b) => {
+        if (a.created_at && b.created_at) return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        return String(b.id).localeCompare(String(a.id));
+    });
 
     const filteredOrders = sortedOrders.filter(order => {
         const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -60,9 +82,19 @@ export default function AdminOrdersPage() {
 
     return (
         <div className="space-y-8">
-            <div>
-                <h1 className="text-2xl font-bold text-stone-900">Pedidos</h1>
-                <p className="text-stone-500">Gestiona las ventas y el estado de los envíos.</p>
+            <div className="flex items-start justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold text-stone-900">Pedidos</h1>
+                    <p className="text-stone-500">Gestiona las ventas y el estado de los envíos.</p>
+                </div>
+                <button
+                    onClick={fetchOrders}
+                    className="flex items-center gap-2 text-sm text-stone-500 hover:text-primary transition-colors border border-stone-200 rounded-lg px-3 py-2"
+                    title="Actualizar pedidos"
+                >
+                    <RefreshCw size={15} className={isLoading ? 'animate-spin' : ''} />
+                    Actualizar
+                </button>
             </div>
 
             {/* Filters and Search */}
