@@ -18,12 +18,15 @@ export default function ProductPage() {
 
     const decodedId = params?.id ? decodeURIComponent(params.id as string) : '';
     const product = products.find((p) => p.id === decodedId);
+    
+    // Default to the first ones, then we'll adjust in useEffect if needed
     const [selectedMaterial, setSelectedMaterial] = useState<'guayubira' | 'roble' | 'palo-santo'>('roble');
     const [selectedSize, setSelectedSize] = useState<'1m' | '1.5m' | '2m'>('1m');
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [shadeType, setShadeType] = useState<'lino' | 'blanco-calido' | 'blanco-frio'>('lino');
     const [cableColor, setCableColor] = useState<'blanco' | 'negro'>('blanco');
     const [canopyColor, setCanopyColor] = useState<'blanco' | 'negro'>('blanco');
+    const [autoSelected, setAutoSelected] = useState(false);
 
     const [reviewComment, setReviewComment] = useState('');
     const [reviewRating, setReviewRating] = useState(5);
@@ -44,6 +47,18 @@ export default function ProductPage() {
     const productReviews = useMemo(() => {
         return reviews.filter(r => r.productId === decodedId);
     }, [reviews, decodedId]);
+
+    // Auto-select the first available variant on mount
+    useEffect(() => {
+        if (product?.variants && product.variants.length > 0 && !autoSelected) {
+            const availableVariant = product.variants.find(v => v.stock > 0);
+            if (availableVariant) {
+                if (availableVariant.material) setSelectedMaterial(availableVariant.material as any);
+                if (availableVariant.size) setSelectedSize(availableVariant.size as any);
+            }
+            setAutoSelected(true);
+        }
+    }, [product, autoSelected]);
 
 
 
@@ -120,7 +135,7 @@ export default function ProductPage() {
     ];
 
     const getVariantStock = (material: string, size?: string) => {
-        if (!product?.variants) return product?.stockCount ?? 0;
+        if (!product?.variants || product.variants.length === 0) return product?.stockCount ?? 0;
         const variant = product.variants.find(v => v.material === material && v.size === size);
         return variant ? variant.stock : 0;
     };
@@ -130,7 +145,8 @@ export default function ProductPage() {
     }, [product]);
 
     const isSelectionInStock = () => {
-        if (!product?.variants) return product?.inStock;
+        if (!product?.inStock) return false;
+        if (!product?.variants || product.variants.length === 0) return product?.stockCount !== undefined && product.stockCount > 0;
 
         const sizeToCheck = hasSizeVariants ? selectedSize : undefined;
         return getVariantStock(selectedMaterial, sizeToCheck) > 0;
@@ -235,13 +251,13 @@ export default function ProductPage() {
                             <span className="inline-flex items-center gap-1 rounded-full bg-[#5E6F5E] px-2.5 py-0.5 text-sm font-medium text-white shadow-sm">
                                 <Clock size={14} /> Próximamente
                             </span>
-                        ) : (product.variants && product.variants.length > 0 ? product.variants.some(v => v.stock > 0) : (product.stockCount !== undefined && product.stockCount > 0)) ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-0.5 text-sm font-medium text-green-700">
-                                <Check size={14} /> En Stock
-                            </span>
-                        ) : (
+                        ) : (!product.inStock || !(product.variants && product.variants.length > 0 ? product.variants.some(v => v.stock > 0) : (product.stockCount !== undefined && product.stockCount > 0))) ? (
                             <span className="inline-flex items-center rounded-full bg-red-50 px-2.5 py-0.5 text-sm font-medium text-red-700">
                                 Agotado
+                            </span>
+                        ) : (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-0.5 text-sm font-medium text-green-700">
+                                <Check size={14} /> En Stock
                             </span>
                         )}
                     </div>
@@ -397,10 +413,10 @@ export default function ProductPage() {
                         <Button
                             size="lg"
                             className="w-full flex-1 min-h-[56px] text-lg font-bold shadow-md hover:shadow-lg transition-all"
-                            disabled={product.isComingSoon || !product.inStock || (!!product.variants && !isSelectionInStock())}
+                            disabled={product.isComingSoon || !product.inStock || !isSelectionInStock()}
                             onClick={handleAddToCart}
                         >
-                            {product.isComingSoon ? 'Próximamente' : (product.inStock && (!product.variants || isSelectionInStock()) ? 'Añadir al Carrito' : 'Sin Stock')}
+                            {product.isComingSoon ? 'Próximamente' : (!product.inStock ? 'Sin Stock' : (isSelectionInStock() ? 'Añadir al Carrito' : 'Variante Agotada'))}
                         </Button>
                         <Button
                             variant="outline"
