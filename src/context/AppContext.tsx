@@ -218,9 +218,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
             },
             addQuery: async (q) => {
                 const newQ = { ...q, date: new Date().toLocaleDateString(), read: false };
+                // Add an optimistic ID for UI so we don't need to select it back 
+                // (RLS blocks selecting queries for security)
+                setQueries(prev => [{ ...newQ, id: crypto.randomUUID() } as any, ...prev]);
                 if (supabase) {
-                    const { data } = await supabase.from('queries').insert(newQ).select().single();
-                    if (data) setQueries(prev => [data, ...prev]);
+                    const { error } = await supabase.from('queries').insert(newQ);
+                    if (error) console.error("Error inserting query:", error);
                 }
             },
             markQueryAsRead: (id) => {
