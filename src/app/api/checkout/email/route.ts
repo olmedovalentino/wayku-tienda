@@ -53,11 +53,17 @@ export async function POST(req: Request) {
                     </thead>
                     <tbody>
                         ${itemsHtml}
+                        ${order.shippingCost && order.shippingMethod === 'shipping' ? `
+                        <tr>
+                            <td colspan="2" style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;"><strong>Envío a domicilio:</strong></td>
+                            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">$${order.shippingCost.toLocaleString()}</td>
+                        </tr>
+                        ` : ''}
                     </tbody>
                     <tfoot>
                         <tr>
                             <td colspan="2" style="padding: 15px 10px; text-align: right; font-weight: bold;">Total a pagar:</td>
-                            <td style="padding: 15px 10px; text-align: right; font-weight: bold; font-size: 16px; color: #5E6F5E;">${order.total}</td>
+                            <td style="padding: 15px 10px; text-align: right; font-weight: bold; font-size: 16px; color: #5E6F5E;">$${order.total.toLocaleString()}</td>
                         </tr>
                     </tfoot>
                 </table>
@@ -65,7 +71,7 @@ export async function POST(req: Request) {
             
             <div style="font-size: 14px; color: #57534e; text-align: center;">
                 <p>Si elegiste Transferencia Bancaria, recordá enviar el comprobante por WhatsApp.</p>
-                <a href="${process.env.NEXT_PUBLIC_URL || 'https://wayku-tienda.vercel.app'}" style="display: inline-block; background-color: #5E6F5E; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin-top: 15px;">Ir a la tienda</a>
+                <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://wayku-tienda.vercel.app'}" style="display: inline-block; background-color: #5E6F5E; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin-top: 15px;">Ir a la tienda</a>
             </div>
         </div>
         `;

@@ -198,7 +198,8 @@ export default function CheckoutPage() {
                 shade: item.shadeType,
                 cable: item.cableColor,
                 canopy: item.canopyColor
-            }))
+            })),
+            shippingCost: shippingMethod === 'shipping' ? shippingCost : 0,
         };
 
         if (paymentMethod === 'transfer') {
