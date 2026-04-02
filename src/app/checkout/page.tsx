@@ -26,6 +26,7 @@ export default function CheckoutPage() {
         phone: '',
         address: '',
         city: '',
+        province: '',
         postalCode: '',
         notes: ''
     });
@@ -143,7 +144,7 @@ export default function CheckoutPage() {
             paymentMethod,
             phone: formData.phone,
             address: shippingMethod === 'shipping' ? (formData.notes ? `${formData.address} | Notas: ${formData.notes}` : formData.address) : undefined,
-            city: shippingMethod === 'shipping' ? formData.city : undefined,
+            city: shippingMethod === 'shipping' ? `${formData.city}, ${formData.province}` : undefined,
             postalCode: shippingMethod === 'shipping' ? formData.postalCode : undefined,
             details: items.map(item => ({
                 name: item.name,
@@ -359,6 +360,17 @@ export default function CheckoutPage() {
                                             />
                                         </div>
                                         <div>
+                                            <label htmlFor="province" className="block text-sm font-medium text-stone-700">Provincia</label>
+                                            <input
+                                                type="text"
+                                                id="province"
+                                                required={shippingMethod === 'shipping'}
+                                                className="mt-1 block w-full rounded-md border-stone-200 shadow-sm focus:border-primary focus:ring-primary py-2 px-3 border transition-colors"
+                                                value={formData.province}
+                                                onChange={(e) => setFormData({ ...formData, province: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="sm:col-span-2">
                                             <label htmlFor="postalCode" className="block text-sm font-medium text-stone-700">Código Postal</label>
                                             <input
                                                 type="text"

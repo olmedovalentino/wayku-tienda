@@ -16,6 +16,7 @@ export interface Order {
     paymentMethod: 'card' | 'transfer';
     address?: string;
     city?: string;
+    province?: string;
     postalCode?: string;
     phone?: string;
     items_details?: any[];

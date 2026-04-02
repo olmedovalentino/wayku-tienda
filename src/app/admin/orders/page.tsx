@@ -321,7 +321,7 @@ export default function AdminOrdersPage() {
                                         {selectedOrder.phone && <p className="text-sm"><strong>Teléfono:</strong> {selectedOrder.phone}</p>}
                                         <p className="text-sm"><strong>Entrega:</strong> {selectedOrder.shippingMethod === 'pickup' ? 'Retiro en tienda' : 'Envío a domicilio'}</p>
                                         {selectedOrder.shippingMethod === 'shipping' && (
-                                            <p className="text-sm"><strong>Dirección:</strong> {selectedOrder.address}, {selectedOrder.city} ({selectedOrder.postalCode})</p>
+                                            <p className="text-sm"><strong>Dirección:</strong> {selectedOrder.address}, {selectedOrder.city}{selectedOrder.province ? `, ${selectedOrder.province}` : ''} ({selectedOrder.postalCode})</p>
                                         )}
                                     </div>
                                 </div>
@@ -378,14 +378,14 @@ export default function AdminOrdersPage() {
                             </div>
                         </div>
 
-                        <div className="p-4 sm:p-6 border-t border-stone-100 flex flex-wrap gap-2 sm:gap-3">
-                            <Button variant="outline" className="flex-1 min-w-[100px]" onClick={() => setSelectedOrder(null)}>
+                        <div className="p-6 border-t border-stone-100 flex flex-col sm:flex-row gap-4">
+                            <Button variant="outline" className="flex-1" onClick={() => setSelectedOrder(null)}>
                                 Cerrar
                             </Button>
                             {(selectedOrder.status === 'Pedido recibido' || selectedOrder.status === 'Pago acreditado' || selectedOrder.status === 'En preparación' || selectedOrder.status === 'Embalado') && (
                                 <Button
                                     variant="outline"
-                                    className="flex-1 min-w-[120px] text-red-600 border-red-100 hover:bg-red-50 hover:text-red-700 hover:border-red-200"
+                                    className="flex-1 text-red-600 border-red-100 hover:bg-red-50 hover:text-red-700 hover:border-red-200"
                                     onClick={() => {
                                         if (confirm('¿Estás seguro de cancelar este pedido?')) {
                                             updateOrderStatus(selectedOrder.id, 'Cancelado');
@@ -393,23 +393,23 @@ export default function AdminOrdersPage() {
                                         }
                                     }}
                                 >
-                                    Cancelar
+                                    Cancelar Pedido
                                 </Button>
                             )}
                             {(selectedOrder.status === 'Despachado' || selectedOrder.status === 'Entregado') && (
                                 <Button
                                     variant="outline"
-                                    className="flex-1 min-w-[120px] text-orange-600 border-orange-100 hover:bg-orange-50"
+                                    className="flex-1 text-orange-600 border-orange-100 hover:bg-orange-50"
                                     onClick={() => {
                                         updateOrderStatus(selectedOrder.id, 'Devolución');
                                         setSelectedOrder({ ...selectedOrder, status: 'Devolución' });
                                     }}
                                 >
-                                    Devolución
+                                    Marcar Devolución
                                 </Button>
                             )}
                             <Button
-                                className="flex-1 min-w-[130px] gap-1.5 text-sm"
+                                className="flex-1 gap-2"
                                 onClick={() => {
                                     const printContent = `
 <html>
@@ -439,7 +439,7 @@ export default function AdminOrdersPage() {
         <strong>Email:</strong> ${escapeHtml(selectedOrder.email)}<br>
         <strong>Teléfono:</strong> ${escapeHtml(selectedOrder.phone) || 'No provisto'}<br>
         <strong>Método Entrega:</strong> ${selectedOrder.shippingMethod === 'pickup' ? 'Retiro en tienda' : 'Envío a Domicilio'}<br>
-        ${selectedOrder.shippingMethod === 'shipping' ? `<strong>Dirección:</strong> ${escapeHtml(selectedOrder.address)}, ${escapeHtml(selectedOrder.city)} (${escapeHtml(selectedOrder.postalCode)})<br>` : ''}
+        ${selectedOrder.shippingMethod === 'shipping' ? `<strong>Dirección:</strong> ${escapeHtml(selectedOrder.address)}, ${escapeHtml(selectedOrder.city)}${selectedOrder.province ? `, ${escapeHtml(selectedOrder.province)}` : ''} (${escapeHtml(selectedOrder.postalCode)})<br>` : ''}
         <strong>Método Pago:</strong> ${selectedOrder.paymentMethod === 'card' ? 'Mercado Pago / Tarjetas' : 'Transferencia Bancaria'}<br>
         <strong>Estado:</strong> ${escapeHtml(selectedOrder.status)}
     </div>
@@ -489,13 +489,13 @@ export default function AdminOrdersPage() {
                                     win?.print();
                                 }}
                             >
-                                <Printer size={16} />
-                                <span className="hidden sm:inline">Imprimir </span>Comprobante
+                                <Printer size={18} />
+                                Imprimir Comprobante
                             </Button>
 
                             {selectedOrder.shippingMethod === 'shipping' && (
                                 <Button
-                                    className="flex-1 min-w-[130px] gap-1.5 text-sm border-stone-200 bg-stone-100 text-stone-700 hover:bg-stone-200"
+                                    className="flex-1 gap-2 border-stone-200 bg-stone-100 text-stone-700 hover:bg-stone-200"
                                     onClick={() => {
                                         const printLabel = `
 <html>
@@ -563,7 +563,7 @@ export default function AdminOrdersPage() {
             <div class="recipient-name">${escapeHtml(selectedOrder.customer)}</div>
             <div class="recipient-address">
                 ${escapeHtml(selectedOrder.address)}<br>
-                ${escapeHtml(selectedOrder.city)}, Argentina
+                ${escapeHtml(selectedOrder.city)}${selectedOrder.province ? `, ${escapeHtml(selectedOrder.province)}` : ''}, Argentina
             </div>
             ${selectedOrder.phone ? '<div class="recipient-phone">Tel: ' + escapeHtml(selectedOrder.phone) + '</div>' : ''}
         </div>
@@ -602,8 +602,8 @@ export default function AdminOrdersPage() {
                                         win?.document.close();
                                     }}
                                 >
-                                    <Package size={16} />
-                                    <span className="hidden sm:inline">Etiqueta</span><span className="sm:hidden">Etiqueta</span> de Envío
+                                    <Package size={18} />
+                                    Etiqueta de Envío
                                 </Button>
                             )}
 
