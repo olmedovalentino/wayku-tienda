@@ -33,6 +33,8 @@ function ProductsContent() {
     useEffect(() => {
         if (categoryQuery) {
             setSelectedCategory(categoryQuery);
+        } else {
+            setSelectedCategory(null);
         }
     }, [categoryQuery]);
 
