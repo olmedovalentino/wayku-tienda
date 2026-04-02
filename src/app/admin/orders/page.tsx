@@ -501,41 +501,99 @@ export default function AdminOrdersPage() {
 <html>
 <head>
     <title>Etiqueta de Envío ${selectedOrder.id}</title>
+    <meta charset="UTF-8">
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        .label { width: 100%; max-width: 500px; height: 350px; border: 2px solid #000; padding: 20px; margin: 0 auto; display: flex; flex-direction: column; justify-content: space-between; }
-        .sender { font-size: 14px; color: #555; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
-        .recipient { margin-bottom: 20px; }
-        .recipient h2 { margin: 0 0 10px 0; font-size: 24px; text-transform: uppercase; }
-        .address { font-size: 18px; font-weight: bold; line-height: 1.4; }
-        .footer { display: flex; justify-content: space-between; border-top: 1px solid #000; padding-top: 10px; margin-top: auto; }
-        .order-id { font-weight: bold; font-size: 16px; }
-        .postal { font-size: 20px; font-weight: bold; border: 2px solid #000; padding: 5px 10px; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', Arial, sans-serif; background: #f5f5f0; display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 32px; }
+        .label { width: 148mm; background: #fff; border: 1.5px solid #1a1a1a; border-radius: 4px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.10); }
+        .label-header { background: #1a1a1a; color: #fff; padding: 10px 18px; display: flex; align-items: center; justify-content: space-between; }
+        .brand-name { font-size: 18px; font-weight: 900; letter-spacing: 0.3em; text-transform: uppercase; color: #fff; }
+        .brand-sub  { font-size: 9px; letter-spacing: 0.2em; color: #aaa; text-transform: uppercase; margin-top: 1px; }
+        .order-badge { font-size: 10px; font-weight: 700; background: #fff; color: #1a1a1a; padding: 4px 10px; border-radius: 2px; letter-spacing: 0.05em; }
+        .label-body { padding: 16px 18px; }
+        .section-label { font-size: 8px; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase; color: #999; margin-bottom: 6px; }
+        .sender-block { font-size: 10px; line-height: 1.7; color: #555; border-bottom: 1px dashed #ddd; padding-bottom: 12px; margin-bottom: 14px; }
+        .sender-block strong { color: #1a1a1a; font-size: 11px; font-weight: 700; display: block; margin-bottom: 2px; }
+        .divider-arrow { text-align: center; font-size: 14px; color: #ccc; margin-bottom: 12px; letter-spacing: 4px; }
+        .recipient-block { margin-bottom: 14px; }
+        .recipient-name { font-size: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em; color: #1a1a1a; line-height: 1.2; margin-bottom: 6px; }
+        .recipient-address { font-size: 12px; line-height: 1.8; color: #333; }
+        .recipient-phone { font-size: 11px; color: #666; margin-top: 4px; }
+        .label-footer { background: #f7f7f5; border-top: 1px solid #eee; padding: 10px 18px; display: flex; align-items: center; justify-content: space-between; }
+        .cp-box { font-size: 13px; font-weight: 900; letter-spacing: 0.08em; color: #1a1a1a; border: 2px solid #1a1a1a; padding: 4px 12px; border-radius: 2px; }
+        .powered { font-size: 8px; color: #bbb; text-transform: uppercase; letter-spacing: 0.15em; }
+        .stickers-row { display: flex; gap: 16px; }
+        .sticker-fragil { width: 80mm; background: #fff; border: 2px solid #e85d04; border-radius: 4px; overflow: hidden; }
+        .sticker-fragil-header { background: #e85d04; padding: 8px 14px; }
+        .sticker-fragil-header span { font-size: 20px; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; color: #fff; }
+        .sticker-fragil-body { padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
+        .fragil-icon { font-size: 26px; }
+        .fragil-text { font-size: 10px; line-height: 1.5; color: #666; }
+        .fragil-text strong { color: #e85d04; font-size: 11px; display: block; }
+        .sticker-wayku { width: 80mm; background: #1a1a1a; border-radius: 4px; padding: 16px 20px; text-align: center; }
+        .sticker-wayku-name { font-size: 26px; font-weight: 900; letter-spacing: 0.35em; text-transform: uppercase; color: #fff; }
+        .sticker-wayku-sub { font-size: 8px; letter-spacing: 0.3em; text-transform: uppercase; color: #888; margin-top: 4px; }
+        .sticker-wayku-line { height: 1px; background: #444; margin: 12px 0; }
+        .sticker-wayku-tagline { font-size: 9px; color: #aaa; letter-spacing: 0.12em; text-transform: uppercase; }
+        @media print { body { background: #fff; padding: 8mm; gap: 10mm; } .label, .sticker-fragil, .sticker-wayku { box-shadow: none; } }
     </style>
 </head>
 <body>
-    <div class="label">
-        <div class="sender">
-            <strong>REMITENTE:</strong><br>
-            Waykú Iluminación<br>
-            Córdoba, Argentina<br>
+
+<div class="label">
+    <div class="label-header">
+        <div>
+            <div class="brand-name">Waykú</div>
+            <div class="brand-sub">Iluminación Artesanal</div>
+        </div>
+        <div class="order-badge">Pedido #${selectedOrder.id}</div>
+    </div>
+    <div class="label-body">
+        <div class="section-label">Remitente</div>
+        <div class="sender-block">
+            <strong>Waykú Iluminación</strong>
+            Villa Allende, Córdoba, Argentina<br>
+            Tel: 3513844333 &nbsp;·&nbsp; waykuargentina@gmail.com<br>
             IG: @waykuarg
         </div>
-        <div class="recipient">
-            <strong>DESTINATARIO:</strong>
-            <h2>${escapeHtml(selectedOrder.customer)}</h2>
-            <div class="address">
+        <div class="divider-arrow">▼ &nbsp; ▼ &nbsp; ▼</div>
+        <div class="section-label">Destinatario</div>
+        <div class="recipient-block">
+            <div class="recipient-name">${escapeHtml(selectedOrder.customer)}</div>
+            <div class="recipient-address">
                 ${escapeHtml(selectedOrder.address)}<br>
-                ${escapeHtml(selectedOrder.city)}, CP: ${escapeHtml(selectedOrder.postalCode)}<br>
-                ${selectedOrder.phone ? `Tel: ${escapeHtml(selectedOrder.phone)}` : ''}
+                ${escapeHtml(selectedOrder.city)}, Argentina
             </div>
-        </div>
-        <div class="footer">
-            <div class="order-id">Pedido #${selectedOrder.id}</div>
-            <div class="postal">CP ${escapeHtml(selectedOrder.postalCode)}</div>
+            ${selectedOrder.phone ? '<div class="recipient-phone">Tel: ' + escapeHtml(selectedOrder.phone) + '</div>' : ''}
         </div>
     </div>
-    <script>window.print();</script>
+    <div class="label-footer">
+        <div class="cp-box">CP ${escapeHtml(selectedOrder.postalCode)}</div>
+        <div class="powered">wayku-tienda.vercel.app</div>
+    </div>
+</div>
+
+<div class="stickers-row">
+    <div class="sticker-fragil">
+        <div class="sticker-fragil-header"><span>⚠ Frágil</span></div>
+        <div class="sticker-fragil-body">
+            <div class="fragil-icon">🫙</div>
+            <div class="fragil-text">
+                <strong>Manipular con cuidado</strong>
+                Contenido delicado. No arrojar.<br>No apilar más de 3 cajas.
+            </div>
+        </div>
+    </div>
+    <div class="sticker-wayku">
+        <div class="sticker-wayku-name">Waykú</div>
+        <div class="sticker-wayku-sub">Iluminación Artesanal</div>
+        <div class="sticker-wayku-line"></div>
+        <div class="sticker-wayku-tagline">Córdoba · Argentina · @waykuarg</div>
+    </div>
+</div>
+
+<script>window.print();</script>
 </body>
 </html>
                                         `;
