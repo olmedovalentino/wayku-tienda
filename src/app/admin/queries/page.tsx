@@ -25,7 +25,6 @@ interface Query {
     date: string;
     read: boolean;
     replied: boolean;
-    created_at?: string;
 }
 
 export default function AdminQueriesPage() {
@@ -56,10 +55,7 @@ export default function AdminQueriesPage() {
 
     const sortedQueries = [...queries]
         .filter(q => q.name !== 'Sistema Newsletter')
-        .sort((a, b) => {
-            if (a.created_at && b.created_at) return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-            return String(b.id).localeCompare(String(a.id));
-        });
+        .sort((a, b) => b.id - a.id);
 
     const filteredQueries = sortedQueries.filter(query => {
         const matchesSearch = query.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -208,9 +204,6 @@ export default function AdminQueriesPage() {
                                             <Clock size={12} />
                                             <span>{query.date}</span>
                                         </div>
-                                        {query.created_at && (
-                                            <span className="text-[10px] text-primary/70 italic mt-0.5">{getTimeAgo(query.created_at)}</span>
-                                        )}
                                     </div>
                                 </div>
                                 <p className="text-sm text-stone-600 line-clamp-2 italic">"{query.message}"</p>
@@ -269,14 +262,9 @@ export default function AdminQueriesPage() {
                                 <p className="text-stone-800 leading-relaxed italic">
                                     "{selectedQuery.message}"
                                 </p>
-                                <div className="mt-4 flex flex-col gap-1 text-[10px] text-stone-400 font-medium uppercase min-h-[20px]">
-                                    <div className="flex items-center gap-2">
-                                        <Clock size={12} />
-                                        Enviado el {selectedQuery.date}
-                                    </div>
-                                    {selectedQuery.created_at && (
-                                        <div className="text-primary/70 italic ml-5 capitalize">{getTimeAgo(selectedQuery.created_at)}</div>
-                                    )}
+                                <div className="mt-4 flex items-center gap-2 text-[10px] text-stone-400 font-medium uppercase">
+                                    <Clock size={12} />
+                                    Enviado el {selectedQuery.date}
                                 </div>
                             </div>
 
