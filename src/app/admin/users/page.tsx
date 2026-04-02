@@ -12,14 +12,15 @@ interface RegisteredUser {
     role?: string;
 }
 
-function UserCard({ user, orders, queries, reviews, onDelete }: {
+function UserCard({ user, orders, queries, reviews, onDelete, expanded, onToggle }: {
     user: RegisteredUser;
     orders: any[];
     queries: any[];
     reviews: any[];
     onDelete: (id: string) => void;
+    expanded: boolean;
+    onToggle: () => void;
 }) {
-    const [expanded, setExpanded] = useState(false);
     const hasActivity = orders.length > 0 || queries.length > 0 || reviews.length > 0;
 
     return (
@@ -70,7 +71,7 @@ function UserCard({ user, orders, queries, reviews, onDelete }: {
                 </button>
                 {hasActivity ? (
                     <button
-                        onClick={() => setExpanded(!expanded)}
+                        onClick={onToggle}
                         className="flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
                     >
                         {expanded ? 'Ocultar' : 'Ver actividad'}
@@ -144,6 +145,7 @@ function UserCard({ user, orders, queries, reviews, onDelete }: {
 export default function UsersAdminPage() {
     const [users, setUsers] = useState<RegisteredUser[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
     const { orders, queries, reviews } = useApp();
 
     useEffect(() => {
@@ -236,6 +238,8 @@ export default function UsersAdminPage() {
                                 queries={userQueries}
                                 reviews={userReviews}
                                 onDelete={deleteUser}
+                                expanded={expandedUserId === user.id}
+                                onToggle={() => setExpandedUserId(expandedUserId === user.id ? null : user.id)}
                             />
                         );
                     })

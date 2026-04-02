@@ -4,16 +4,26 @@ import { ProductCard } from '@/components/products/ProductCard';
 import { useApp } from '@/context/AppContext';
 import { useState, useMemo, useEffect, Suspense } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 type SortOption = 'relevance' | 'price-asc' | 'price-desc';
 
 function ProductsContent() {
     const { products } = useApp();
+    const router = useRouter();
     const searchParams = useSearchParams();
     const categoryQuery = searchParams.get('category');
 
     const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryQuery);
+
+    const handleCategoryClick = (catId: string | null) => {
+        setSelectedCategory(catId);
+        if (catId) {
+            router.push(`/products?category=${catId}`, { scroll: false });
+        } else {
+            router.push('/products', { scroll: false });
+        }
+    };
     const [sortBy, setSortBy] = useState<SortOption>('relevance');
     const [showSortMenu, setShowSortMenu] = useState(false);
     const [showFiltersMobile, setShowFiltersMobile] = useState(false);
@@ -110,7 +120,7 @@ function ProductsContent() {
                 <div className="lg:hidden w-full overflow-x-auto hide-scrollbar -mx-4 px-4 pb-2">
                     <div className="flex gap-2">
                         <button
-                            onClick={() => setSelectedCategory(null)}
+                            onClick={() => handleCategoryClick(null)}
                             className={`whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-medium transition-all border ${!selectedCategory ? 'bg-primary text-white border-primary shadow-sm' : 'bg-white text-stone-600 border-stone-200 hover:border-stone-300'}`}
                         >
                             Ver todo
@@ -118,7 +128,7 @@ function ProductsContent() {
                         {categories.map(cat => (
                             <button
                                 key={cat.id}
-                                onClick={() => setSelectedCategory(cat.id)}
+                                onClick={() => handleCategoryClick(cat.id)}
                                 className={`whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-medium transition-all border ${selectedCategory === cat.id ? 'bg-primary text-white border-primary shadow-sm' : 'bg-white text-stone-600 border-stone-200 hover:border-stone-300'}`}
                             >
                                 {cat.name}
@@ -174,7 +184,7 @@ function ProductsContent() {
                             <ul className="space-y-3">
                                 <li>
                                     <button
-                                        onClick={() => setSelectedCategory(null)}
+                                        onClick={() => handleCategoryClick(null)}
                                         className={`text-sm ${!selectedCategory ? 'text-primary font-medium' : 'text-stone-500 hover:text-stone-900'}`}
                                     >
                                         Ver todas
@@ -183,7 +193,7 @@ function ProductsContent() {
                                 {categories.map(cat => (
                                     <li key={cat.id}>
                                         <button
-                                            onClick={() => setSelectedCategory(cat.id)}
+                                            onClick={() => handleCategoryClick(cat.id)}
                                             className={`text-sm ${selectedCategory === cat.id ? 'text-primary font-medium' : 'text-stone-500 hover:text-stone-900'}`}
                                         >
                                             {cat.name}
