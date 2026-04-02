@@ -14,7 +14,8 @@ import {
     Truck,
     HelpCircle,
     Printer,
-    RefreshCw
+    RefreshCw,
+    AlertTriangle
 } from 'lucide-react';
 import { getTimeAgo } from '@/lib/time';
 
@@ -35,6 +36,7 @@ export default function AdminOrdersPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('Todos');
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+    const [confirmAction, setConfirmAction] = useState<string | null>(null);
 
     // Keep in sync with context on mount
     useEffect(() => { setOrders(contextOrders); }, [contextOrders]);
@@ -290,13 +292,34 @@ export default function AdminOrdersPage() {
             {/* Order Detail Modal */}
             {selectedOrder && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
+                        {/* Elegant Cancel Confirmation Overlay */}
+                        {confirmAction === 'cancel' && (
+                            <div className="absolute inset-0 z-50 bg-white/90 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-200">
+                                <div className="bg-white border border-stone-100 shadow-2xl rounded-3xl p-8 max-w-sm text-center">
+                                    <div className="h-16 w-16 rounded-full bg-red-50 text-red-500 flex items-center justify-center mx-auto mb-5">
+                                    <AlertTriangle size={28} />
+                                    </div>
+                                    <h3 className="text-lg font-bold text-stone-900 mb-2">¿Cancelar pedido?</h3>
+                                    <p className="text-sm text-stone-500 mb-8">Esta acción cambiará el estado del pedido a 'Cancelado'.</p>
+                                    <div className="flex flex-col sm:flex-row gap-3">
+                                    <Button className="flex-1 w-full bg-stone-100 text-stone-600 hover:bg-stone-200 border-transparent" variant="outline" onClick={() => setConfirmAction(null)}>Volver</Button>
+                                    <Button className="flex-1 w-full bg-red-600 hover:bg-red-700 text-white" onClick={() => {
+                                        updateOrderStatus(selectedOrder.id, 'Cancelado');
+                                        setSelectedOrder({ ...selectedOrder, status: 'Cancelado' });
+                                        setConfirmAction(null);
+                                    }}>Sí, cancelar</Button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         <div className="flex items-center justify-between p-6 border-b border-stone-100">
                             <div>
                                 <h2 className="text-xl font-bold text-stone-900">Detalle de Pedido {selectedOrder.id}</h2>
                                 <p className="text-sm text-stone-500">{selectedOrder.date}</p>
                             </div>
-                            <button onClick={() => setSelectedOrder(null)} className="text-stone-400 hover:text-stone-900 transition-colors">
+                            <button onClick={() => { setSelectedOrder(null); setConfirmAction(null); }} className="text-stone-400 hover:text-stone-900 transition-colors">
                                 <X size={24} />
                             </button>
                         </div>
@@ -402,19 +425,14 @@ export default function AdminOrdersPage() {
                         </div>
 
                         <div className="p-6 border-t border-stone-100 flex flex-col sm:flex-row gap-4">
-                            <Button variant="outline" className="flex-1" onClick={() => setSelectedOrder(null)}>
+                            <Button variant="outline" className="flex-1" onClick={() => { setSelectedOrder(null); setConfirmAction(null); }}>
                                 Cerrar
                             </Button>
                             {(selectedOrder.status === 'Pedido recibido' || selectedOrder.status === 'Pago acreditado' || selectedOrder.status === 'En preparación' || selectedOrder.status === 'Embalado') && (
                                 <Button
                                     variant="outline"
                                     className="flex-1 text-red-600 border-red-100 hover:bg-red-50 hover:text-red-700 hover:border-red-200"
-                                    onClick={() => {
-                                        if (confirm('¿Estás seguro de cancelar este pedido?')) {
-                                            updateOrderStatus(selectedOrder.id, 'Cancelado');
-                                            setSelectedOrder({ ...selectedOrder, status: 'Cancelado' });
-                                        }
-                                    }}
+                                    onClick={() => setConfirmAction('cancel')}
                                 >
                                     Cancelar Pedido
                                 </Button>
