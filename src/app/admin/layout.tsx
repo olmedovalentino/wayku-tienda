@@ -80,15 +80,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const pathname = usePathname();
     const seenIds  = useRef<Set<string>>(new Set());
     const bellRef  = useRef<HTMLButtonElement>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => { setIsAuthorized(true); }, []);
 
-    // Cerrar dropdown al click afuera
+    // Cerrar dropdown al click afuera (excluyendo el botón Y el propio dropdown)
     useEffect(() => {
         const handler = (e: MouseEvent) => {
-            if (bellRef.current && !bellRef.current.contains(e.target as Node)) {
-                setShowBell(false);
-            }
+            const t = e.target as Node;
+            const outsideBell     = bellRef.current     && !bellRef.current.contains(t);
+            const outsideDropdown = dropdownRef.current && !dropdownRef.current.contains(t);
+            if (outsideBell && outsideDropdown) setShowBell(false);
         };
         document.addEventListener('mousedown', handler);
         return () => document.removeEventListener('mousedown', handler);
@@ -234,7 +236,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             {/* ── Bell dropdown — fixed, fuera del sidebar ── */}
             {showBell && (
-                <div className="fixed top-4 left-[148px] z-[200] w-80 bg-stone-800 border border-stone-700 rounded-2xl shadow-2xl overflow-hidden">
+                <div
+                    ref={dropdownRef}
+                    className="fixed top-4 left-[148px] z-[200] w-80 bg-stone-800 border border-stone-700 rounded-2xl shadow-2xl overflow-hidden"
+                >
                     <div className="flex items-center justify-between px-4 py-3 border-b border-stone-700">
                         <span className="text-xs font-bold text-stone-300 uppercase tracking-widest">Notificaciones</span>
                         {history.length > 0 && (
