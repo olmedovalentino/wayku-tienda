@@ -189,7 +189,7 @@ function ProductsContent() {
                                         onClick={() => handleCategoryClick(null)}
                                         className={`text-sm ${!selectedCategory ? 'text-primary font-medium' : 'text-stone-500 hover:text-stone-900'}`}
                                     >
-                                        Ver todas
+                                        Ver todo
                                     </button>
                                 </li>
                                 {categories.map(cat => (
