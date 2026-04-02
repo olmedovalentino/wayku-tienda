@@ -399,7 +399,7 @@ export default function ProductPage() {
                                 <Truck className="mt-0.5 h-6 w-6 text-[#5E6F5E]" />
                                 <div>
                                     <p className="font-bold text-stone-900 text-sm">Envíos a todo el país</p>
-                                    <p className="text-xs text-stone-500 mt-1">Gratis en pedidos superiores a $100.000.</p>
+                                    <p className="text-xs text-stone-500 mt-1">Gratis en pedidos superiores a $200.000.</p>
                                 </div>
                             </div>
                             <div className="flex items-start gap-4">

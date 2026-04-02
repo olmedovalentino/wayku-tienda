@@ -60,6 +60,12 @@ export default function CheckoutPage() {
         }
     }, [user, orders, appliedDiscount]);
 
+    useEffect(() => {
+        if (subtotal >= 200000) {
+            setShippingCost(0);
+        }
+    }, [subtotal]);
+
     const discountAmount = useMemo(() => {
         return subtotal * (appliedDiscount / 100);
     }, [subtotal, appliedDiscount]);
@@ -137,6 +143,11 @@ export default function CheckoutPage() {
         if (e) e.preventDefault();
         if (!formData.postalCode || formData.postalCode.length < 4) {
             setShippingError('Ingresá un código postal válido (mínimo 4 dígitos)');
+            return;
+        }
+
+        if (subtotal >= 200000) {
+            setShippingCost(0);
             return;
         }
 

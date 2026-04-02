@@ -75,43 +75,43 @@ export default function ContactPage() {
                         </p>
 
                         <div className="mt-10 space-y-6">
-                            <div className="flex items-start gap-4">
-                                <div className="rounded-lg bg-white p-3 shadow-sm">
+                            <a href="mailto:waykuargentina@gmail.com" className="flex items-start gap-4 group cursor-pointer">
+                                <div className="rounded-lg bg-white p-3 shadow-sm border border-stone-100 group-hover:border-primary/50 transition-colors">
                                     <Mail className="h-6 w-6 text-primary" />
                                 </div>
                                 <div className="flex-1">
-                                    <h3 className="font-semibold text-stone-900">Email</h3>
-                                    <div className="flex items-center gap-2 group">
-                                        <a href="mailto:waykuargentina@gmail.com" className="text-stone-600 hover:text-primary transition-colors font-medium">
+                                    <h3 className="font-semibold text-stone-900 group-hover:text-primary transition-colors">Email</h3>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-stone-600 group-hover:text-primary transition-colors font-medium">
                                             waykuargentina@gmail.com
-                                        </a>
+                                        </span>
                                     </div>
                                 </div>
-                            </div>
+                            </a>
 
-                            <div className="flex items-start gap-4">
-                                <div className="rounded-lg bg-white p-3 shadow-sm border border-stone-100">
-                                    <MessageCircle className="h-6 w-6 text-primary" />
+                            <a href="https://wa.me/5493513844333" target="_blank" rel="noopener noreferrer" className="flex items-start gap-4 group cursor-pointer">
+                                <div className="rounded-lg bg-white p-3 shadow-sm border border-stone-100 group-hover:border-[#25D366]/50 transition-colors">
+                                    <MessageCircle className="h-6 w-6 text-primary group-hover:text-[#25D366] transition-colors" />
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-stone-900">WhatsApp</h3>
-                                    <a href="https://wa.me/5493513844333" target="_blank" rel="noopener noreferrer" className="text-stone-600 hover:text-[#25D366] transition-colors">
+                                    <h3 className="font-semibold text-stone-900 group-hover:text-[#25D366] transition-colors">WhatsApp</h3>
+                                    <span className="text-stone-600 group-hover:text-[#25D366] transition-colors font-medium">
                                         +54 9 351 3844333
-                                    </a>
+                                    </span>
                                 </div>
-                            </div>
+                            </a>
 
-                            <div className="flex items-start gap-4">
-                                <div className="rounded-lg bg-white p-3 shadow-sm border border-stone-100">
-                                    <Instagram className="h-6 w-6 text-primary" />
+                            <a href="https://instagram.com/waykuarg" target="_blank" rel="noopener noreferrer" className="flex items-start gap-4 group cursor-pointer">
+                                <div className="rounded-lg bg-white p-3 shadow-sm border border-stone-100 group-hover:border-[#E1306C]/50 transition-colors">
+                                    <Instagram className="h-6 w-6 text-primary group-hover:text-[#E1306C] transition-colors" />
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-stone-900">Instagram</h3>
-                                    <a href="https://instagram.com/waykuarg" target="_blank" rel="noopener noreferrer" className="text-stone-600 hover:text-[#E1306C] transition-colors">
+                                    <h3 className="font-semibold text-stone-900 group-hover:text-[#E1306C] transition-colors">Instagram</h3>
+                                    <span className="text-stone-600 group-hover:text-[#E1306C] transition-colors font-medium">
                                         @waykuarg
-                                    </a>
+                                    </span>
                                 </div>
-                            </div>
+                            </a>
                         </div>
                     </div>
 
@@ -255,7 +255,7 @@ export default function ContactPage() {
                                             </li>
                                             <li className="flex items-center gap-2">
                                                 <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                                                <span><strong>Envío Gratis:</strong> En compras superiores a $100.000.</span>
+                                                <span><strong>Envío Gratis:</strong> En compras superiores a $200.000.</span>
                                             </li>
                                         </ul>
                                     </div>
