@@ -19,6 +19,10 @@ export default function CheckoutPage() {
     const [appliedDiscount, setAppliedDiscount] = useState(0); // Percentage
     const [couponError, setCouponError] = useState('');
 
+    const [shippingCost, setShippingCost] = useState<number | null>(null);
+    const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
+    const [shippingError, setShippingError] = useState('');
+
     const [formData, setFormData] = useState({
         email: user?.email || '',
         firstName: user?.name?.split(' ')[0] || '',
@@ -59,7 +63,7 @@ export default function CheckoutPage() {
         return subtotal * (appliedDiscount / 100);
     }, [subtotal, appliedDiscount]);
 
-    const total = subtotal - discountAmount;
+    const total = subtotal - discountAmount + (shippingCost || 0);
 
     if (!isInitialized) {
         return (
@@ -128,8 +132,45 @@ export default function CheckoutPage() {
         }
     };
 
+    const calculateShipping = async (e?: React.MouseEvent) => {
+        if (e) e.preventDefault();
+        if (!formData.postalCode || formData.postalCode.length < 4) {
+            setShippingError('Ingresá un código postal válido (mínimo 4 dígitos)');
+            return;
+        }
+
+        setIsCalculatingShipping(true);
+        setShippingError('');
+        try {
+            const res = await fetch('/api/shipping/quote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    postalCode: formData.postalCode,
+                    items: items.map(i => ({ name: i.name, quantity: i.quantity }))
+                })
+            });
+            const data = await res.json();
+            if (data.error) {
+                setShippingError(data.error);
+                setShippingCost(null);
+            } else {
+                setShippingCost(data.cost);
+            }
+        } catch (err) {
+            setShippingError('Error al contactar con el correo');
+        } finally {
+            setIsCalculatingShipping(false);
+        }
+    };
+
     const handlePayment = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (shippingMethod === 'shipping' && shippingCost === null) {
+            alert('Por favor, calculá el costo de envío antes de continuar.');
+            return;
+        }
 
         const orderId = `ORD-${Date.now()}`;
 
@@ -371,15 +412,33 @@ export default function CheckoutPage() {
                                             />
                                         </div>
                                         <div className="sm:col-span-2">
-                                            <label htmlFor="postalCode" className="block text-sm font-medium text-stone-700">Código Postal</label>
-                                            <input
-                                                type="text"
-                                                id="postalCode"
-                                                required={shippingMethod === 'shipping'}
-                                                className="mt-1 block w-full rounded-md border-stone-200 shadow-sm focus:border-primary focus:ring-primary py-2 px-3 border transition-colors"
-                                                value={formData.postalCode}
-                                                onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                                            />
+                                            <div className="flex justify-between items-end mb-1">
+                                                <label htmlFor="postalCode" className="block text-sm font-medium text-stone-700">Código Postal</label>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    id="postalCode"
+                                                    required={shippingMethod === 'shipping'}
+                                                    placeholder="Ej: 5000"
+                                                    className="block w-full rounded-md border-stone-200 shadow-sm focus:border-primary focus:ring-primary py-2 px-3 border transition-colors"
+                                                    value={formData.postalCode}
+                                                    onChange={(e) => {
+                                                        setFormData({ ...formData, postalCode: e.target.value });
+                                                        setShippingCost(null); // Reset shipping quote when CP changes
+                                                    }}
+                                                />
+                                                <Button type="button" variant="outline" onClick={calculateShipping} disabled={isCalculatingShipping || !formData.postalCode}>
+                                                    {isCalculatingShipping ? '...' : 'Cotizar'}
+                                                </Button>
+                                            </div>
+                                            {shippingError && <p className="mt-1 text-xs text-red-500">{shippingError}</p>}
+                                            {shippingCost !== null && (
+                                                <div className="mt-2 p-3 bg-green-50 border border-green-100 rounded-md flex items-center gap-2">
+                                                    <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                                                    <span className="text-sm font-medium text-green-800">Costo de envío a domicilio: ${shippingCost.toLocaleString()}</span>
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="sm:col-span-2">
                                             <label htmlFor="notes" className="block text-sm font-medium text-stone-700">Notas para el envío (Opcional)</label>
@@ -539,9 +598,19 @@ export default function CheckoutPage() {
                                 <dd className="text-stone-900">${subtotal.toLocaleString()}</dd>
                             </div>
                             <div className="flex justify-between">
-                                <dt>Envío</dt>
-                                <dd className="text-stone-900">Gratis</dd>
-                            </div>
+                                        <dt>Envío</dt>
+                                        <dd className="text-stone-900">
+                                            {shippingMethod === 'pickup' ? (
+                                                'Gratis (Retiro)'
+                                            ) : (
+                                                shippingCost === null ? (
+                                                    <span className="text-stone-400 italic font-normal text-xs">Pte. Calcular</span>
+                                                ) : (
+                                                    `$${shippingCost.toLocaleString()}`
+                                                )
+                                            )}
+                                        </dd>
+                                    </div>
                             {appliedDiscount > 0 && (
                                 <div className="flex justify-between text-green-600 font-bold uppercase tracking-wider text-xs">
                                     <dt>Descuento (5%)</dt>
