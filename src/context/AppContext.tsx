@@ -220,7 +220,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 const newQ = { ...q, date: new Date().toLocaleDateString(), read: false };
                 // Add an optimistic ID for UI so we don't need to select it back 
                 // (RLS blocks selecting queries for security)
-                setQueries(prev => [{ ...newQ, id: 9999999 + Math.floor(Math.random() * 1000) } as any, ...prev]);
+                setQueries(prev => [{ ...newQ, id: crypto.randomUUID() } as any, ...prev]);
                 if (supabase) {
                     const { error } = await supabase.from('queries').insert(newQ);
                     if (error) console.error("Error inserting query:", error);

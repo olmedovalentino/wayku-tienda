@@ -1,49 +1,87 @@
 'use client';
 
-import { useState } from 'react';
-import { useApp, Query } from '@/context/AppContext';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/Button';
 import {
     Search,
-    MoreVertical,
     Mail,
     MessageSquare,
     User,
     Clock,
     X,
     Send,
-    Check
+    Check,
+    RefreshCw
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getTimeAgo } from '@/lib/time';
 
+interface Query {
+    id: any;
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+    date: string;
+    read: boolean;
+    replied: boolean;
+    created_at?: string;
+}
+
 export default function AdminQueriesPage() {
-    const { queries, markQueryAsRead, replyToQuery } = useApp();
+    const [queries, setQueries] = useState<Query[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedQuery, setSelectedQuery] = useState<Query | null>(null);
     const [statusFilter, setStatusFilter] = useState('todas');
     const [replyText, setReplyText] = useState('');
     const [isSending, setIsSending] = useState(false);
 
-    // Sort by descending ID: Newest first.
-    // Exclude Newsletter notifications from standard Queries page
+    const fetchQueries = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const res = await fetch('/api/admin/data');
+            const data = await res.json();
+            setQueries(data.queries || []);
+        } catch (e) {
+            console.error('Error fetching queries:', e);
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchQueries();
+    }, [fetchQueries]);
+
     const sortedQueries = [...queries]
         .filter(q => q.name !== 'Sistema Newsletter')
-        .sort((a, b) => b.id - a.id);
+        .sort((a, b) => {
+            if (a.created_at && b.created_at) return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+            return String(b.id).localeCompare(String(a.id));
+        });
 
     const filteredQueries = sortedQueries.filter(query => {
-        const matchesSearch = query.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        const matchesSearch = query.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                               query.subject.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus = statusFilter === 'todas' || 
-                              (statusFilter === 'pendientes' && !query.replied) || 
+        const matchesStatus = statusFilter === 'todas' ||
+                              (statusFilter === 'pendientes' && !query.replied) ||
                               (statusFilter === 'respondidas' && query.replied);
         return matchesSearch && matchesStatus;
     });
 
-    const handleOpenQuery = (query: Query) => {
+    const handleOpenQuery = async (query: Query) => {
         setSelectedQuery(query);
-        markQueryAsRead(query.id);
         setReplyText('');
+        if (!query.read) {
+            // Mark as read in Supabase
+            await fetch('/api/admin/data', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ table: 'queries', action: 'update', data: { read: true }, match: { id: query.id } })
+            });
+            setQueries(prev => prev.map(q => q.id === query.id ? { ...q, read: true } : q));
+        }
     };
 
     const handleSendReply = async (e: React.FormEvent) => {
@@ -51,7 +89,6 @@ export default function AdminQueriesPage() {
         if (!selectedQuery || !replyText.trim()) return;
 
         setIsSending(true);
-
         try {
             const res = await fetch('/api/reply', {
                 method: 'POST',
@@ -67,14 +104,18 @@ export default function AdminQueriesPage() {
 
             const data = await res.json();
             if (data.success) {
-                replyToQuery(selectedQuery.id, replyText);
+                await fetch('/api/admin/data', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ table: 'queries', action: 'update', data: { replied: true }, match: { id: selectedQuery.id } })
+                });
+                setQueries(prev => prev.map(q => q.id === selectedQuery.id ? { ...q, replied: true } : q));
                 toast.success('Respuesta enviada directamente al cliente.');
                 setSelectedQuery(null);
             } else {
                 toast.error(`Error: ${data.error}`);
             }
         } catch (err) {
-            console.error('Fetch error:', err);
             toast.error('Error enviando la respuesta.');
         } finally {
             setIsSending(false);
@@ -83,9 +124,19 @@ export default function AdminQueriesPage() {
 
     return (
         <div className="space-y-8">
-            <div>
-                <h1 className="text-2xl font-bold text-stone-900">Consultas</h1>
-                <p className="text-stone-500">Mensajes recibidos a través del formulario de contacto.</p>
+            <div className="flex items-start justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold text-stone-900">Consultas</h1>
+                    <p className="text-stone-500">Mensajes recibidos a través del formulario de contacto.</p>
+                </div>
+                <button
+                    onClick={fetchQueries}
+                    className="flex items-center gap-2 text-sm text-stone-500 hover:text-primary transition-colors border border-stone-200 rounded-lg px-3 py-2"
+                    title="Actualizar consultas"
+                >
+                    <RefreshCw size={15} className={isLoading ? 'animate-spin' : ''} />
+                    Actualizar
+                </button>
             </div>
 
             {/* Search and Filters */}
@@ -124,66 +175,72 @@ export default function AdminQueriesPage() {
             </div>
 
             {/* Queries Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 italic font-light not-italic">
-                {filteredQueries.map((query) => (
-                    <div
-                        key={query.id}
-                        onClick={() => handleOpenQuery(query)}
-                        className={`group bg-white p-4 rounded-xl shadow-sm border transition-all cursor-pointer hover:border-primary/50 flex flex-col gap-3 ${query.read ? 'border-stone-100' : 'border-primary/20 bg-primary/5 ring-1 ring-primary/10'
-                            }`}
-                    >
-                        <div className="flex items-start justify-between gap-4">
-                            <div className="flex items-center gap-3">
-                                <div className={`h-10 w-10 flex items-center justify-center rounded-lg transition-colors flex-shrink-0 ${query.read ? 'bg-stone-100 text-stone-500 group-hover:bg-primary group-hover:text-white' : 'bg-primary text-white '}`}>
-                                    <User size={20} />
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-stone-900 line-clamp-1 text-sm">{query.name}</h3>
-                                    <p className="text-xs text-stone-500">{query.email}</p>
+            {isLoading ? (
+                <div className="flex justify-center items-center py-20">
+                    <div className="w-8 h-8 border-4 border-stone-200 border-t-primary rounded-full animate-spin" />
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+                    {filteredQueries.map((query) => (
+                        <div
+                            key={query.id}
+                            onClick={() => handleOpenQuery(query)}
+                            className={`group bg-white p-4 rounded-xl shadow-sm border transition-all cursor-pointer hover:border-primary/50 flex flex-col gap-3 ${query.read ? 'border-stone-100' : 'border-primary/20 bg-primary/5 ring-1 ring-primary/10'
+                                }`}
+                        >
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="flex items-center gap-3">
+                                    <div className={`h-10 w-10 flex items-center justify-center rounded-lg transition-colors flex-shrink-0 ${query.read ? 'bg-stone-100 text-stone-500 group-hover:bg-primary group-hover:text-white' : 'bg-primary text-white '}`}>
+                                        <User size={20} />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-stone-900 line-clamp-1 text-sm">{query.name}</h3>
+                                        <p className="text-xs text-stone-500">{query.email}</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="py-2 border-y border-stone-100">
-                            <div className="flex items-center justify-between mb-1">
-                                <p className="text-sm font-bold text-stone-900">{query.subject}</p>
-                                <div className="text-stone-400 text-[10px] flex flex-col items-end">
-                                    <div className="flex items-center gap-1">
-                                        <Clock size={12} />
-                                        <span>{query.date}</span>
+                            <div className="py-2 border-y border-stone-100">
+                                <div className="flex items-center justify-between mb-1">
+                                    <p className="text-sm font-bold text-stone-900">{query.subject}</p>
+                                    <div className="text-stone-400 text-[10px] flex flex-col items-end">
+                                        <div className="flex items-center gap-1">
+                                            <Clock size={12} />
+                                            <span>{query.date}</span>
+                                        </div>
+                                        {query.created_at && (
+                                            <span className="text-[10px] text-primary/70 italic mt-0.5">{getTimeAgo(query.created_at)}</span>
+                                        )}
                                     </div>
-                                    {query.created_at && (
-                                        <span className="text-[10px] text-primary/70 italic mt-0.5">{getTimeAgo(query.created_at)}</span>
+                                </div>
+                                <p className="text-sm text-stone-600 line-clamp-2 italic">"{query.message}"</p>
+                            </div>
+
+                            <div className="flex justify-between items-center text-xs">
+                                <div className="flex gap-2">
+                                    {!query.read && (
+                                        <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full font-medium">Nuevo</span>
+                                    )}
+                                    {query.replied && (
+                                        <span className="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
+                                            <Check size={10} /> Respondido
+                                        </span>
                                     )}
                                 </div>
+                                <button className="text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 px-3 py-1 rounded-full transition-colors">Ver mensaje →</button>
                             </div>
-                            <p className="text-sm text-stone-600 line-clamp-2 italic">"{query.message}"</p>
                         </div>
+                    ))}
 
-                        <div className="flex justify-between items-center text-xs">
-                            <div className="flex gap-2">
-                                {!query.read && (
-                                    <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full font-medium">Nuevo</span>
-                                )}
-                                {query.replied && (
-                                    <span className="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
-                                        <Check size={10} /> Respondido
-                                    </span>
-                                )}
-                            </div>
-                            <button className="text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 px-3 py-1 rounded-full transition-colors">Ver mensaje →</button>
+                    {filteredQueries.length === 0 && !isLoading && (
+                        <div className="col-span-full flex flex-col items-center justify-center py-20 text-center bg-white rounded-2xl border border-stone-100">
+                            <MessageSquare className="h-12 w-12 text-stone-200 mb-4" />
+                            <h3 className="text-lg font-medium text-stone-900">No hay consultas</h3>
+                            <p className="text-stone-500">Aún no hay mensajes, o prueba con otro término.</p>
                         </div>
-                    </div>
-                ))}
-
-                {filteredQueries.length === 0 && (
-                    <div className="col-span-full flex flex-col items-center justify-center py-20 text-center bg-white rounded-2xl border border-stone-100">
-                        <MessageSquare className="h-12 w-12 text-stone-200 mb-4" />
-                        <h3 className="text-lg font-medium text-stone-900">No hay consultas</h3>
-                        <p className="text-stone-500">Prueba con otro término de búsqueda.</p>
-                    </div>
-                )}
-            </div>
+                    )}
+                </div>
+            )}
 
             {/* Query Modal */}
             {selectedQuery && (
