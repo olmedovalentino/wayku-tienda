@@ -630,7 +630,7 @@ export default function CheckoutPage() {
                                     </div>
                             {appliedDiscount > 0 && (
                                 <div className="flex justify-between text-green-600 font-bold uppercase tracking-wider text-xs">
-                                    <dt>Descuento (5%)</dt>
+                                    <dt>Descuento ({appliedDiscount}%)</dt>
                                     <dd>-${discountAmount.toLocaleString()}</dd>
                                 </div>
                             )}
