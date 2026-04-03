@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/Button';
 import { Ticket, Plus, Trash2, Power, Percent, CheckCircle, XCircle, Clock, X, AlertTriangle } from 'lucide-react';
 
@@ -19,13 +18,13 @@ interface Toast { id: string; type: ToastType; message: string; }
 
 const DURATION_OPTIONS = [
     { label: 'Sin expiración', value: null },
-    { label: '1 hora', value: 1 / 24 },
-    { label: '6 horas', value: 6 / 24 },
-    { label: '1 día', value: 1 },
-    { label: '3 días', value: 3 },
-    { label: '7 días', value: 7 },
-    { label: '15 días', value: 15 },
-    { label: '30 días', value: 30 },
+    { label: '1 hora',   value: 1 / 24 },
+    { label: '6 horas',  value: 6 / 24 },
+    { label: '1 día',    value: 1 },
+    { label: '3 días',   value: 3 },
+    { label: '7 días',   value: 7 },
+    { label: '15 días',  value: 15 },
+    { label: '30 días',  value: 30 },
 ];
 
 function ToastNotification({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) {
@@ -35,15 +34,14 @@ function ToastNotification({ toast, onDismiss }: { toast: Toast; onDismiss: () =
     }, [onDismiss]);
 
     const config = {
-        success: { icon: CheckCircle, bg: 'bg-white', border: 'border-green-200', iconColor: 'text-green-500', bar: 'bg-green-500' },
-        error:   { icon: XCircle,    bg: 'bg-white', border: 'border-red-200',   iconColor: 'text-red-500',   bar: 'bg-red-500' },
-        warning: { icon: AlertTriangle, bg: 'bg-white', border: 'border-orange-200', iconColor: 'text-orange-500', bar: 'bg-orange-500' },
+        success: { icon: CheckCircle,   border: 'border-green-200',  iconColor: 'text-green-500',  bar: 'bg-green-500' },
+        error:   { icon: XCircle,       border: 'border-red-200',    iconColor: 'text-red-500',    bar: 'bg-red-500' },
+        warning: { icon: AlertTriangle, border: 'border-orange-200', iconColor: 'text-orange-500', bar: 'bg-orange-500' },
     }[toast.type];
-
     const Icon = config.icon;
 
     return (
-        <div className={`relative flex items-start gap-3 rounded-2xl shadow-xl border ${config.border} ${config.bg} px-4 pt-4 pb-3 w-80 overflow-hidden animate-in slide-in-from-right-4 fade-in duration-300`}>
+        <div className={`relative flex items-start gap-3 rounded-2xl shadow-xl border ${config.border} bg-white px-4 pt-4 pb-3 w-80 overflow-hidden animate-in slide-in-from-right-4 fade-in duration-300`}>
             <div className={`absolute bottom-0 left-0 h-0.5 w-full ${config.bar} origin-left`}
                 style={{ animation: 'shrink 4s linear forwards' }} />
             <Icon size={20} className={`mt-0.5 flex-shrink-0 ${config.iconColor}`} />
@@ -57,9 +55,7 @@ function ToastNotification({ toast, onDismiss }: { toast: Toast; onDismiss: () =
 
 function getExpiryLabel(expiresAt: string | null): string {
     if (!expiresAt) return '∞ Sin expiración';
-    const now = new Date();
-    const exp = new Date(expiresAt);
-    const diffMs = exp.getTime() - now.getTime();
+    const diffMs = new Date(expiresAt).getTime() - Date.now();
     if (diffMs <= 0) return 'Expirado';
     const diffH = Math.floor(diffMs / 3600000);
     const diffD = Math.floor(diffMs / 86400000);
@@ -68,8 +64,7 @@ function getExpiryLabel(expiresAt: string | null): string {
 }
 
 function isExpired(expiresAt: string | null): boolean {
-    if (!expiresAt) return false;
-    return new Date(expiresAt) <= new Date();
+    return !!expiresAt && new Date(expiresAt) <= new Date();
 }
 
 export default function CouponsPage() {
@@ -92,49 +87,46 @@ export default function CouponsPage() {
         setToasts(prev => prev.filter(t => t.id !== id));
     }, []);
 
-    const loadCoupons = async () => {
-        if (!supabase) return;
+    const loadCoupons = useCallback(async () => {
         try {
-            const { data, error } = await supabase
-                .from('coupons')
-                .select('*')
-                .order('created_at', { ascending: false });
-            if (error) throw error;
-            setCoupons(data || []);
+            const res = await fetch('/api/admin/coupons');
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            setCoupons(data);
         } catch {
             showToast('error', 'Error al cargar los cupones.');
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [showToast]);
 
-    useEffect(() => { loadCoupons(); }, []);
+    useEffect(() => { loadCoupons(); }, [loadCoupons]);
 
     const handleCreateCoupon = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newCode.trim() || !supabase) return;
-
+        if (!newCode.trim()) return;
         setIsSubmitting(true);
         try {
             const expires_at = newDuration !== null
                 ? new Date(Date.now() + newDuration * 24 * 3600 * 1000).toISOString()
                 : null;
 
-            const { error } = await supabase
-                .from('coupons')
-                .insert([{
+            const res = await fetch('/api/admin/coupons', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
                     code: newCode.toUpperCase().replace(/\s+/g, ''),
                     discount_percentage: newDiscount,
                     is_active: true,
-                    expires_at
-                }]);
+                    expires_at,
+                }),
+            });
+            const data = await res.json();
 
-            if (error) {
-                if (error.code === '23505') {
-                    showToast('warning', 'Ese código ya existe. Usá otro nombre.');
-                } else {
-                    throw error;
-                }
+            if (res.status === 409) {
+                showToast('warning', 'Ese código ya existe. Usá otro nombre.');
+            } else if (!res.ok) {
+                throw new Error(data.error);
             } else {
                 showToast('success', `Cupón ${newCode.toUpperCase()} creado con éxito.`);
                 setNewCode('');
@@ -143,32 +135,31 @@ export default function CouponsPage() {
                 loadCoupons();
             }
         } catch {
-            showToast('error', 'Error inesperado. Revisá la conexión con Supabase.');
+            showToast('error', 'Error inesperado al crear el cupón.');
         } finally {
             setIsSubmitting(false);
         }
     };
 
     const toggleStatus = async (id: string, currentStatus: boolean) => {
-        if (!supabase) return;
         try {
-            const { error } = await supabase
-                .from('coupons')
-                .update({ is_active: !currentStatus })
-                .eq('id', id);
-            if (error) throw error;
+            const res = await fetch('/api/admin/coupons', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, is_active: !currentStatus }),
+            });
+            if (!res.ok) throw new Error();
             setCoupons(prev => prev.map(c => c.id === id ? { ...c, is_active: !currentStatus } : c));
-            showToast('success', currentStatus ? 'Cupón apagado correctamente.' : 'Cupón activado correctamente.');
+            showToast('success', currentStatus ? 'Cupón apagado.' : 'Cupón activado.');
         } catch {
             showToast('error', 'No se pudo cambiar el estado del cupón.');
         }
     };
 
     const deleteCoupon = async (id: string) => {
-        if (!supabase) return;
         try {
-            const { error } = await supabase.from('coupons').delete().eq('id', id);
-            if (error) throw error;
+            const res = await fetch(`/api/admin/coupons?id=${id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error();
             setCoupons(prev => prev.filter(c => c.id !== id));
             showToast('success', 'Cupón eliminado.');
         } catch {
@@ -226,7 +217,7 @@ export default function CouponsPage() {
                         <Plus size={18} className="text-primary" /> Nuevo Cupón
                     </h2>
                     <form onSubmit={handleCreateCoupon} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-                        <div className="lg:col-span-1">
+                        <div>
                             <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">Código</label>
                             <input
                                 type="text"
@@ -242,8 +233,7 @@ export default function CouponsPage() {
                             <div className="relative">
                                 <input
                                     type="number"
-                                    min="1"
-                                    max="100"
+                                    min="1" max="100"
                                     required
                                     value={newDiscount}
                                     onChange={(e) => setNewDiscount(Number(e.target.value))}
@@ -260,9 +250,7 @@ export default function CouponsPage() {
                                 className="w-full rounded-xl border border-stone-200 px-3 py-2.5 bg-stone-50 focus:bg-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all text-sm cursor-pointer"
                             >
                                 {DURATION_OPTIONS.map(opt => (
-                                    <option key={String(opt.value)} value={String(opt.value)}>
-                                        {opt.label}
-                                    </option>
+                                    <option key={String(opt.value)} value={String(opt.value)}>{opt.label}</option>
                                 ))}
                             </select>
                         </div>
@@ -302,9 +290,7 @@ export default function CouponsPage() {
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className="flex items-center gap-2">
                                                         <Ticket size={15} className={effectivelyActive ? 'text-primary' : 'text-stone-300'} />
-                                                        <span className="font-bold text-stone-900 tracking-wider font-mono text-sm">
-                                                            {coupon.code}
-                                                        </span>
+                                                        <span className="font-bold text-stone-900 tracking-wider font-mono text-sm">{coupon.code}</span>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
@@ -314,8 +300,7 @@ export default function CouponsPage() {
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${expired ? 'text-red-500' : 'text-stone-500'}`}>
-                                                        <Clock size={12} />
-                                                        {getExpiryLabel(coupon.expires_at)}
+                                                        <Clock size={12} /> {getExpiryLabel(coupon.expires_at)}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
