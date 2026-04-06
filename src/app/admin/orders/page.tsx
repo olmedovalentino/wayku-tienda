@@ -35,6 +35,7 @@ export default function AdminOrdersPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('Todos');
+    const [sortOrder, setSortOrder] = useState('recent');
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [confirmAction, setConfirmAction] = useState<string | null>(null);
 
@@ -54,8 +55,15 @@ export default function AdminOrdersPage() {
         }
     }, []);
 
-    // Orders sorted newest-first
+    // Orders sorting logic
     const sortedOrders = [...orders].sort((a, b) => {
+        if (sortOrder === 'total_high') {
+            return (b.total || 0) - (a.total || 0);
+        }
+        if (sortOrder === 'total_low') {
+            return (a.total || 0) - (b.total || 0);
+        }
+
         let timeA = 0; let timeB = 0;
         if (a.created_at) timeA = new Date(a.created_at).getTime();
         if (b.created_at) timeB = new Date(b.created_at).getTime();
@@ -136,6 +144,15 @@ export default function AdminOrdersPage() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
+                <select
+                    value={sortOrder}
+                    onChange={(e) => setSortOrder(e.target.value)}
+                    className="w-full sm:w-auto px-4 py-2 bg-stone-50 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary text-sm font-medium text-stone-700"
+                >
+                    <option value="recent">Más recientes</option>
+                    <option value="total_high">Mayor total</option>
+                    <option value="total_low">Menor total</option>
+                </select>
                 <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}

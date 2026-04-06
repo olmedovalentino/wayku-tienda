@@ -8,7 +8,6 @@ import {
     Plus,
     Trash2,
     Calendar,
-    Download,
     Check,
     Send,
     X
@@ -32,6 +31,8 @@ export default function AdminSubscribersPage() {
     const [campaignSubject, setCampaignSubject] = useState('');
     const [campaignMessage, setCampaignMessage] = useState('');
     const [isSendingCampaign, setIsSendingCampaign] = useState(false);
+    const [targetType, setTargetType] = useState<'all' | 'selected'>('all');
+    const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
 
     useEffect(() => {
         const fetchSubscribers = async () => {
@@ -57,20 +58,6 @@ export default function AdminSubscribersPage() {
         }
     };
 
-    const handleExport = () => {
-        const csvContent = "data:text/csv;charset=utf-8," 
-            + "Email,Fecha de suscripcion\n"
-            + subscribers.map(s => `${s.email},${s.created_at || 'Desconocida'}`).join("\n");
-        
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "subscriptores_wayku.csv");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
-
     const handleSendCampaign = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!campaignSubject || !campaignMessage) return;
@@ -80,7 +67,11 @@ export default function AdminSubscribersPage() {
             const res = await fetch('/api/campaign', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ subject: campaignSubject, message: campaignMessage })
+                body: JSON.stringify({ 
+                    subject: campaignSubject, 
+                    message: campaignMessage,
+                    targetEmails: targetType === 'all' ? 'all' : selectedEmails
+                })
             });
             const data = await res.json();
             if (data.success) {
@@ -110,10 +101,6 @@ export default function AdminSubscribersPage() {
                     <Button onClick={() => setIsCampaignModalOpen(true)} className="flex items-center gap-2 bg-primary text-white shadow-md shadow-primary/20 hover:bg-primary/90">
                         <Mail size={18} />
                         Crear Campaña
-                    </Button>
-                    <Button onClick={handleExport} variant="outline" className="flex items-center gap-2 border-green-500 text-green-700 hover:bg-green-50">
-                        <Download size={18} />
-                        Exportar CSV
                     </Button>
                 </div>
             </div>
@@ -200,7 +187,9 @@ export default function AdminSubscribersPage() {
                         <div className="flex items-center justify-between p-6 border-b border-stone-100">
                             <div>
                                 <h2 className="text-xl font-bold text-stone-900">Nueva Campaña de Email</h2>
-                                <p className="text-sm text-stone-500">Se enviará un correo a las {subscribers.length} suscripciones activas.</p>
+                                <p className="text-sm text-stone-500">
+                                    {targetType === 'all' ? `Se enviará un correo a las ${subscribers.length} suscripciones activas.` : `Se enviará un correo a ${selectedEmails.length} suscripciones seleccionadas.`}
+                                </p>
                             </div>
                             <button onClick={() => setIsCampaignModalOpen(false)} className="text-stone-400 hover:text-stone-900 transition-colors">
                                 <X size={24} />
@@ -209,6 +198,43 @@ export default function AdminSubscribersPage() {
 
                         <form onSubmit={handleSendCampaign} className="p-6 space-y-6">
                             <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-stone-700">Destinatarios</label>
+                                    <div className="flex gap-4 mb-2">
+                                        <label className="flex items-center gap-2 cursor-pointer">
+                                            <input type="radio" name="targetType" checked={targetType === 'all'} onChange={() => setTargetType('all')} />
+                                            <span className="text-sm">Todos los suscriptores ({subscribers.length})</span>
+                                        </label>
+                                        <label className="flex items-center gap-2 cursor-pointer">
+                                            <input type="radio" name="targetType" checked={targetType === 'selected'} onChange={() => setTargetType('selected')} />
+                                            <span className="text-sm">Seleccionar...</span>
+                                        </label>
+                                    </div>
+                                    
+                                    {targetType === 'selected' && (
+                                        <div className="mt-2 max-h-40 overflow-y-auto border border-stone-200 rounded-xl p-3 space-y-2 bg-stone-50">
+                                            {subscribers.map((sub, idx) => (
+                                                <label key={idx} className="flex items-center gap-2 cursor-pointer hover:bg-stone-100 p-1 rounded-md transition-colors">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        checked={selectedEmails.includes(sub.email)}
+                                                        onChange={(e) => {
+                                                            if (e.target.checked) {
+                                                                setSelectedEmails(prev => [...prev, sub.email]);
+                                                            } else {
+                                                                setSelectedEmails(prev => prev.filter(email => email !== sub.email));
+                                                            }
+                                                        }}
+                                                        className="rounded text-primary focus:ring-primary"
+                                                    />
+                                                    <span className="text-sm text-stone-700">{sub.email}</span>
+                                                </label>
+                                            ))}
+                                            {subscribers.length === 0 && <span className="text-sm text-stone-500">No hay suscriptores</span>}
+                                        </div>
+                                    )}
+                                </div>
+
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-stone-700">Asunto del correo</label>
                                     <input

@@ -11,7 +11,7 @@ export async function POST(req: Request) {
         if (!session || session.value !== 'authenticated') {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
-        const { subject, message } = await req.json();
+        const { subject, message, targetEmails } = await req.json();
 
         if (!subject || !message) {
             return NextResponse.json({ error: 'Subject and message are required' }, { status: 400 });
@@ -21,14 +21,23 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Mail config missing in env' }, { status: 500 });
         }
 
-        // Fetch subscribers
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-        const supabase = createClient(supabaseUrl, supabaseKey);
+        // Fetch subscribers or use selected emails
+        let emails: string[] = [];
+        
+        if (targetEmails === 'all') {
+            const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+            const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+            const supabase = createClient(supabaseUrl, supabaseKey);
 
-        const { data: subscribers, error } = await supabase.from('subscribers').select('email');
-        if (error || !subscribers || subscribers.length === 0) {
-            return NextResponse.json({ error: 'No subscribers found' }, { status: 400 });
+            const { data: subscribers, error } = await supabase.from('subscribers').select('email');
+            if (error || !subscribers || subscribers.length === 0) {
+                return NextResponse.json({ error: 'No subscribers found' }, { status: 400 });
+            }
+            emails = subscribers.map(s => s.email);
+        } else if (Array.isArray(targetEmails) && targetEmails.length > 0) {
+            emails = targetEmails;
+        } else {
+            return NextResponse.json({ error: 'No target emails specified' }, { status: 400 });
         }
 
         const transporter = nodemailer.createTransport({
@@ -40,7 +49,7 @@ export async function POST(req: Request) {
         });
 
         // Use BCC for mass email privacy
-        const emails = subscribers.map(s => s.email).join(', ');
+        const bccEmails = emails.join(', ');
 
         const htmlTemplate = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #FAFAF9; padding: 40px; border-radius: 12px; border: 1px solid #E5E5E5;">
@@ -63,12 +72,12 @@ export async function POST(req: Request) {
 
         await transporter.sendMail({
             from: `"Waykú Iluminación" <${process.env.EMAIL_USER}>`,
-            bcc: emails, 
+            bcc: bccEmails, 
             subject: subject,
             html: htmlTemplate,
         });
 
-        return NextResponse.json({ success: true, sentCount: subscribers.length });
+        return NextResponse.json({ success: true, sentCount: emails.length });
     } catch (error: any) {
         console.error('Error enviando campaña:', error);
         return NextResponse.json({ error: 'Failed to send campaign' }, { status: 500 });

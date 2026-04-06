@@ -33,6 +33,7 @@ export default function AdminQueriesPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedQuery, setSelectedQuery] = useState<Query | null>(null);
     const [statusFilter, setStatusFilter] = useState('todas');
+    const [sortOrder, setSortOrder] = useState('recent');
     const [replyText, setReplyText] = useState('');
     const [isSending, setIsSending] = useState(false);
 
@@ -55,7 +56,7 @@ export default function AdminQueriesPage() {
 
     const sortedQueries = [...queries]
         .filter(q => q.name !== 'Sistema Newsletter')
-        .sort((a, b) => b.id - a.id);
+        .sort((a, b) => sortOrder === 'recent' ? b.id - a.id : a.id - b.id);
 
     const filteredQueries = sortedQueries.filter(query => {
         const matchesSearch = query.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -149,7 +150,15 @@ export default function AdminQueriesPage() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+                    <select
+                        value={sortOrder}
+                        onChange={(e) => setSortOrder(e.target.value)}
+                        className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-stone-50 border border-stone-200 text-stone-600 transition-all focus:ring-primary focus:border-primary"
+                    >
+                        <option value="recent">Más recientes</option>
+                        <option value="oldest">Más antiguas</option>
+                    </select>
                     {[{v:'todas', label:'Todas'}, {v:'pendientes', label:'Pendientes'}, {v:'respondidas', label:'Respondidas'}].map(opt => (
                         <button
                             key={opt.v}
@@ -214,9 +223,13 @@ export default function AdminQueriesPage() {
                                     {!query.read && (
                                         <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full font-medium">Nuevo</span>
                                     )}
-                                    {query.replied && (
+                                    {query.replied ? (
                                         <span className="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
                                             <Check size={10} /> Respondido
+                                        </span>
+                                    ) : (
+                                        <span className="bg-orange-100 text-orange-700 text-[10px] px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
+                                            <Clock size={10} /> Pendiente
                                         </span>
                                     )}
                                 </div>

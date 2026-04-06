@@ -10,8 +10,8 @@ import { CheckCircle, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 
 function SuccessContent() {
-    const { clearCart, items } = useCart();
-    const { updateProduct, products, updateOrderStatus } = useApp();
+    const { clearCart } = useCart();
+    const { updateOrderStatus } = useApp();
     const [isProcessed, setIsProcessed] = useState(false);
     const searchParams = useSearchParams();
 
@@ -33,7 +33,6 @@ function SuccessContent() {
             // Ya no dependemos de que hayan items en el cart, para soportar reloads.
             if (status === 'approved' && orderId) {
                 updateOrderStatus(orderId, 'Pago acreditado');
-                console.log("Order checked out successfully:", orderId);
             } else if (method === 'transfer' && orderId) {
                 updateOrderStatus(orderId, 'Pedido recibido');
             }
