@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Product } from '@/lib/products';
+import { Product, slugify } from '@/lib/products';
 import { Button } from '@/components/ui/Button';
 
 interface ProductCardProps {
@@ -9,7 +9,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
     return (
-        <Link href={`/productos/${product.id}`} className="group block">
+        <Link href={`/productos/${slugify(product.name)}`} className="group block">
             <div className="relative aspect-square overflow-hidden rounded-xl bg-stone-100">
                 <Image
                     src={product.images[0]}

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import Image from 'next/image';
 import { useEffect } from 'react';
 import Link from 'next/link';
+import { slugify } from '@/lib/products';
 
 export function FavoritesDrawer() {
     const { favorites, isOpen, closeFavorites, removeFavorite } = useFavorites();
@@ -64,7 +65,7 @@ export function FavoritesDrawer() {
                                 {favorites.map((item) => (
                                     <div key={item.id} className="flex gap-4">
                                         <Link
-                                            href={`/productos/${item.id}`}
+                                            href={`/productos/${slugify(item.name)}`}
                                             onClick={closeFavorites}
                                             className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-stone-200 hover:opacity-75 transition-opacity"
                                         >
@@ -80,7 +81,7 @@ export function FavoritesDrawer() {
                                             <div>
                                                 <div className="flex justify-between text-base font-medium text-stone-900">
                                                     <Link
-                                                        href={`/productos/${item.id}`}
+                                                        href={`/productos/${slugify(item.name)}`}
                                                         onClick={closeFavorites}
                                                         className="hover:text-primary transition-colors"
                                                     >
@@ -92,7 +93,7 @@ export function FavoritesDrawer() {
                                             </div>
                                             <div className="flex flex-1 items-end justify-between text-sm">
                                                 <Link
-                                                    href={`/productos/${item.id}`}
+                                                    href={`/productos/${slugify(item.name)}`}
                                                     onClick={closeFavorites}
                                                 >
                                                     <Button variant="outline" size="sm">

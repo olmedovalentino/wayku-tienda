@@ -6,6 +6,7 @@ import { useApp } from '@/context/AppContext';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { slugify } from '@/lib/products';
 
 
 interface SearchModalProps {
@@ -45,9 +46,9 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         : [];
 
 
-    const handleLinkClick = (id: string) => {
+    const handleLinkClick = (product: { id: string; name: string }) => {
         onClose();
-        router.push(`/productos/${id}`);
+        router.push(`/productos/${slugify(product.name)}`);
     }
 
     if (!isOpen) return null;
@@ -92,7 +93,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                 {filteredProducts.map((product) => (
                                     <button
                                         key={product.id}
-                                        onClick={() => handleLinkClick(product.id)}
+                                        onClick={() => handleLinkClick(product)}
                                         className="flex items-center gap-4 rounded-lg p-2 text-left transition-colors hover:bg-stone-50"
                                     >
                                         <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border border-stone-200">

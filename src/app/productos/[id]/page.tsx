@@ -10,6 +10,7 @@ import { useCart } from '@/context/CartContext';
 import { useFavorites } from '@/context/FavoritesContext';
 import { useAuth } from '@/context/AuthContext';
 import { useState, useEffect, useMemo } from 'react';
+import { slugify, findBySlug } from '@/lib/products';
 
 export default function ProductPage() {
     const params = useParams();
@@ -17,7 +18,8 @@ export default function ProductPage() {
     const { user } = useAuth();
 
     const decodedId = params?.id ? decodeURIComponent(params.id as string) : '';
-    const product = products.find((p) => p.id === decodedId);
+    // Support both slug (e.g. "amai") and raw id for backwards compatibility
+    const product = findBySlug(products, decodedId) ?? products.find((p) => p.id === decodedId);
     
     // Default to the first ones, then we'll adjust in useEffect if needed
     const [selectedMaterial, setSelectedMaterial] = useState<'guayubira' | 'roble' | 'palo-santo'>('roble');
@@ -571,7 +573,7 @@ export default function ProductPage() {
                         <div className="lg:col-span-8 w-full">
                             <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-6 sm:grid sm:grid-cols-3 sm:gap-6 sm:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                                 {similarProducts.map((similarProduct) => (
-                                    <Link key={similarProduct.id} href={`/productos/${similarProduct.id}`} className="group block min-w-[70vw] sm:min-w-0 snap-center shrink-0">
+                                    <Link key={similarProduct.id} href={`/productos/${slugify(similarProduct.name)}`} className="group block min-w-[70vw] sm:min-w-0 snap-center shrink-0">
                                         <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#F9F5F0]">
                                             <Image
                                                 src={similarProduct.images[0]}

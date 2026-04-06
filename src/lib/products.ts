@@ -19,6 +19,21 @@ export interface Product {
     variants?: StockVariant[];
 }
 
+// Converts a product name to a URL-friendly slug
+// e.g. "Amaí" -> "amai", "Palo Santo" -> "palo-santo"
+export function slugify(name: string): string {
+    return name
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // remove diacritics (tildes, etc.)
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '');
+}
+
+// Find a product by its slug (name-based)
+export function findBySlug(productList: Product[], slug: string): Product | undefined {
+    return productList.find(p => slugify(p.name) === slug);
+}
 
 
 export const products: Product[] = [

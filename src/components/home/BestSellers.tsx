@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui/Button';
+import { slugify } from '@/lib/products';
 
 export function BestSellers() {
     const { products } = useApp();
@@ -22,7 +23,7 @@ export function BestSellers() {
                     <div className="lg:col-span-8 w-full">
                         <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-6 sm:grid sm:grid-cols-3 sm:gap-6 sm:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                             {featured.map((product) => (
-                                <Link key={product.id} href={`/productos/${product.id}`} className="group block min-w-[70vw] sm:min-w-0 snap-center shrink-0">
+                                <Link key={product.id} href={`/productos/${slugify(product.name)}`} className="group block min-w-[70vw] sm:min-w-0 snap-center shrink-0">
                                     <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#F9F5F0]">
                                         <Image
                                             src={product.images[0]}
