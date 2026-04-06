@@ -14,7 +14,7 @@ export default function CheckoutFailurePage() {
                     Por favor, intenta nuevamente con otro medio de pago.
                 </p>
                 <Link
-                    href="/checkout"
+                    href="/finalizar-compra"
                     className="inline-block w-full bg-stone-900 text-white px-8 py-4 text-sm tracking-widest uppercase hover:bg-stone-800 transition-colors"
                 >
                     Volver al Checkout

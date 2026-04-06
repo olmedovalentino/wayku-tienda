@@ -29,7 +29,7 @@ export function Hero() {
                         Hechas a mano con maderas nobles y materiales sostenibles.
                     </p>
                     <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-                        <Link href="/story">
+                        <Link href="/historia">
                             <Button variant="outline" size="lg" className="min-w-[200px] border-white text-white hover:bg-white hover:text-stone-900">
                                 Conocénos
                             </Button>

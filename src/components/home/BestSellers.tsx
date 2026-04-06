@@ -22,7 +22,7 @@ export function BestSellers() {
                     <div className="lg:col-span-8 w-full">
                         <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-6 sm:grid sm:grid-cols-3 sm:gap-6 sm:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                             {featured.map((product) => (
-                                <Link key={product.id} href={`/products/${product.id}`} className="group block min-w-[70vw] sm:min-w-0 snap-center shrink-0">
+                                <Link key={product.id} href={`/productos/${product.id}`} className="group block min-w-[70vw] sm:min-w-0 snap-center shrink-0">
                                     <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#F9F5F0]">
                                         <Image
                                             src={product.images[0]}
@@ -46,7 +46,7 @@ export function BestSellers() {
                             Nuestras lámparas más vendidas combinan diseño moderno, materiales nobles y una esencia cálida que transforma cualquier espacio.
                         </p>
                         <div className="mt-10">
-                            <Link href="/products">
+                            <Link href="/productos">
                                 <Button variant="outline" size="md" className="rounded-full gap-2 hover:bg-[#5E6F5E] hover:text-white hover:border-[#5E6F5E]">
                                     Ver más
                                     <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />

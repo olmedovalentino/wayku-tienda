@@ -132,7 +132,7 @@ function SuccessContent() {
                         </Button>
                     </a>
                 ) : (
-                    <Link href="/products">
+                    <Link href="/productos">
                         <Button className="px-8 py-6 text-lg">Seguir comprando</Button>
                     </Link>
                 )}

@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/admin/', '/checkout/', '/account/'],
+      disallow: ['/admin/', '/finalizar-compra/', '/cuenta/'],
     },
     sitemap: 'https://waykulamparas.com/sitemap.xml',
   };

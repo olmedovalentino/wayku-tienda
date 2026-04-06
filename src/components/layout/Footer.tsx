@@ -33,7 +33,7 @@ export function Footer() {
                         <h3 className="text-sm font-semibold text-stone-900">Soporte</h3>
                         <ul className="mt-4 space-y-2">
                             <li>
-                                <Link href="/contact" className="text-sm text-stone-500 hover:text-primary">
+                                <Link href="/contacto" className="text-sm text-stone-500 hover:text-primary">
                                     Contacto
                                 </Link>
                             </li>
@@ -96,10 +96,10 @@ export function Footer() {
                         &copy; {new Date().getFullYear()} Waykú. Todos los derechos reservados.
                     </p>
                     <div className="flex gap-4">
-                        <Link href="/terms" className="text-xs text-stone-400 hover:text-primary transition-colors">
+                        <Link href="/terminos" className="text-xs text-stone-400 hover:text-primary transition-colors">
                             Términos y Condiciones
                         </Link>
-                        <Link href="/privacy" className="text-xs text-stone-400 hover:text-primary transition-colors">
+                        <Link href="/privacidad" className="text-xs text-stone-400 hover:text-primary transition-colors">
                             Política de Privacidad
                         </Link>
                     </div>

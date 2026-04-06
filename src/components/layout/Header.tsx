@@ -48,14 +48,14 @@ export function Header() {
                     </Link>
                     <div className="group relative flex items-center h-full">
                         <Link
-                            href="/products"
+                            href="/productos"
                             className="text-sm font-medium text-stone-600 transition-colors group-hover:text-primary"
                         >
                             Catálogo
                         </Link>
                         <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 hidden group-hover:block w-48">
                             <div className="bg-white border border-stone-100 rounded-xl shadow-lg p-2 flex flex-col gap-1">
-                                <Link href="/products" className="px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 hover:text-primary rounded-lg transition-colors">Ver todo</Link>
+                                <Link href="/productos" className="px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 hover:text-primary rounded-lg transition-colors">Ver todo</Link>
                                 <Link href="/products?category=pendant" className="px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 hover:text-primary rounded-lg transition-colors">Colgantes</Link>
                                 <Link href="/products?category=table" className="px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 hover:text-primary rounded-lg transition-colors">De Mesa</Link>
                                 <Link href="/products?category=floor" className="px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 hover:text-primary rounded-lg transition-colors">De Pie</Link>
@@ -64,13 +64,13 @@ export function Header() {
                         </div>
                     </div>
                     <Link
-                        href="/story"
+                        href="/historia"
                         className="text-sm font-medium text-stone-600 transition-colors hover:text-primary"
                     >
                         Sobre nosotros
                     </Link>
                     <Link
-                        href="/contact"
+                        href="/contacto"
                         className="text-sm font-medium text-stone-600 transition-colors hover:text-primary"
                     >
                         Contacto
@@ -117,7 +117,7 @@ export function Header() {
                             <LogOut size={20} className="text-primary group-hover:text-red-500 transition-colors" />
                         </button>
                     ) : (
-                        <Link href="/login" className="p-1 sm:p-2 transition-colors hover:text-primary">
+                        <Link href="/ingresar" className="p-1 sm:p-2 transition-colors hover:text-primary">
                             <UserIcon size={20} />
                         </Link>
                     )}
@@ -142,7 +142,7 @@ export function Header() {
                             </button>
                             {isCatalogOpen && (
                                 <div className="flex flex-col space-y-4 pl-4 pt-4 border-l-2 border-stone-100 ml-2 mt-2 mb-2">
-                                    <Link href="/products" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary text-sm font-medium">Ver Todo</Link>
+                                    <Link href="/productos" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary text-sm font-medium">Ver Todo</Link>
                                     <Link href="/products?category=pendant" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary text-sm font-medium">Colgantes</Link>
                                     <Link href="/products?category=table" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary text-sm font-medium">De Mesa</Link>
                                     <Link href="/products?category=floor" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary text-sm font-medium">De Pie</Link>
@@ -151,14 +151,14 @@ export function Header() {
                             )}
                         </div>
                         <Link
-                            href="/story"
+                            href="/historia"
                             onClick={() => setIsMenuOpen(false)}
                             className="text-base font-medium text-stone-600 hover:text-primary"
                         >
                             Sobre nosotros
                         </Link>
                         <Link
-                            href="/contact"
+                            href="/contacto"
                             onClick={() => setIsMenuOpen(false)}
                             className="text-base font-medium text-stone-600 hover:text-primary"
                         >

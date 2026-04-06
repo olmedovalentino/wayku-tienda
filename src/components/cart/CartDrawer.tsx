@@ -141,7 +141,7 @@ export function CartDrawer() {
                                     size="lg"
                                     onClick={() => {
                                         closeCart();
-                                        window.location.href = '/checkout';
+                                        window.location.href = '/finalizar-compra';
                                     }}
                                 >
                                     Finalizar compra

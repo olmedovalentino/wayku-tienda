@@ -29,7 +29,7 @@ export const products: Product[] = [
         price: 220000,
         category: 'pendant',
         material: 'roble',
-        images: ['/products/pendant-kitchen.png', '/products/pendant-detail.png'],
+        images: ['/productos/pendant-kitchen.png', '/productos/pendant-detail.png'],
         inStock: true,
         stockCount: 15,
         variants: [
@@ -48,7 +48,7 @@ export const products: Product[] = [
         price: 120000,
         category: 'table',
         material: 'guayubira',
-        images: ['/products/table-lamp.png'],
+        images: ['/productos/table-lamp.png'],
         inStock: true,
         variants: [
             { material: 'roble', stock: 2 },
@@ -63,7 +63,7 @@ export const products: Product[] = [
         price: 80000,
         category: 'wall',
         material: 'palo-santo',
-        images: ['/products/wall-sconce.png'],
+        images: ['/productos/wall-sconce.png'],
         inStock: true,
         stockCount: 12
     },
@@ -75,7 +75,7 @@ export const products: Product[] = [
         price: 200000,
         category: 'pendant',
         material: 'guayubira',
-        images: ['/products/unui.png'],
+        images: ['/productos/unui.png'],
         inStock: true,
         stockCount: 10
     },

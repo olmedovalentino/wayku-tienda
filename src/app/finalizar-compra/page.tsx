@@ -84,7 +84,7 @@ export default function CheckoutPage() {
         return (
             <div className="flex min-h-[60vh] flex-col items-center justify-center px-4">
                 <h1 className="text-2xl font-bold text-stone-900">Tu carrito está vacío</h1>
-                <Link href="/products" className="mt-4 text-primary hover:underline">
+                <Link href="/productos" className="mt-4 text-primary hover:underline">
                     Volver a la tienda
                 </Link>
             </div>
@@ -240,7 +240,7 @@ export default function CheckoutPage() {
 
             // For transfer, we just go to success page with a flag
             clearCart();
-            router.push(`/checkout/success?method=transfer&name=${formData.firstName}&total=${total}&order_id=${orderId}`);
+            router.push(`/finalizar-compra/success?method=transfer&name=${formData.firstName}&total=${total}&order_id=${orderId}`);
             return;
         }
 

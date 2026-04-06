@@ -47,7 +47,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
     const handleLinkClick = (id: string) => {
         onClose();
-        router.push(`/products/${id}`);
+        router.push(`/productos/${id}`);
     }
 
     if (!isOpen) return null;

@@ -21,7 +21,7 @@ function ProductsContent() {
         if (catId) {
             router.push(`/products?category=${catId}`, { scroll: false });
         } else {
-            router.push('/products', { scroll: false });
+            router.push('/productos', { scroll: false });
         }
     };
     const [sortBy, setSortBy] = useState<SortOption>('relevance');

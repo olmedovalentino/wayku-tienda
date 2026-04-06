@@ -171,7 +171,7 @@ export default function ProductPage() {
     return (
         <div className="mx-auto max-w-7xl px-0 lg:px-8 py-4 lg:py-16">
             <Link
-                href="/products"
+                href="/productos"
                 className="mb-6 px-4 lg:px-0 inline-flex items-center gap-2 text-sm font-medium text-stone-500 hover:text-primary"
             >
                 <ArrowLeft size={16} /> Volver a la tienda
@@ -555,7 +555,7 @@ export default function ProductPage() {
                         ) : (
                             <div className="text-center py-6">
                                 <p className="text-stone-600 text-sm mb-4">Debes iniciar sesión para dejar una reseña.</p>
-                                <Link href="/login">
+                                <Link href="/ingresar">
                                     <Button variant="outline" size="sm">Iniciar Sesión</Button>
                                 </Link>
                             </div>
@@ -571,7 +571,7 @@ export default function ProductPage() {
                         <div className="lg:col-span-8 w-full">
                             <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-6 sm:grid sm:grid-cols-3 sm:gap-6 sm:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                                 {similarProducts.map((similarProduct) => (
-                                    <Link key={similarProduct.id} href={`/products/${similarProduct.id}`} className="group block min-w-[70vw] sm:min-w-0 snap-center shrink-0">
+                                    <Link key={similarProduct.id} href={`/productos/${similarProduct.id}`} className="group block min-w-[70vw] sm:min-w-0 snap-center shrink-0">
                                         <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#F9F5F0]">
                                             <Image
                                                 src={similarProduct.images[0]}
@@ -593,7 +593,7 @@ export default function ProductPage() {
                                 Descubre otras piezas de nuestra colección que complementan perfectamente este diseño.
                             </p>
                             <div className="mt-10">
-                                <Link href="/products">
+                                <Link href="/productos">
                                     <Button variant="outline" size="md" className="rounded-full gap-2 hover:bg-[#5E6F5E] hover:text-white hover:border-[#5E6F5E]">
                                         Ver más
                                     </Button>

@@ -9,7 +9,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
     return (
-        <Link href={`/products/${product.id}`} className="group block">
+        <Link href={`/productos/${product.id}`} className="group block">
             <div className="relative aspect-square overflow-hidden rounded-xl bg-stone-100">
                 <Image
                     src={product.images[0]}

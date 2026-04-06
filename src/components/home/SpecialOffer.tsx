@@ -24,7 +24,7 @@ export function SpecialOffer() {
                     {!user ? (
                         <>
                             <p className="text-base mb-8 text-white">Regístrate ahora y obtén 5% de descuento en tu primera compra.</p>
-                            <Link href="/register">
+                            <Link href="/registro">
                                 <Button
                                     size="md"
                                     className="bg-[#5E6F5E] hover:bg-[#4a584a] text-white"
@@ -36,7 +36,7 @@ export function SpecialOffer() {
                     ) : (
                         <>
                             <p className="text-base mb-8 text-white">Obtén 5% de descuento usando el código <strong className="bg-[#5E6F5E] px-2 py-1 rounded">PRIMERACOMPRA5</strong></p>
-                            <Link href="/products">
+                            <Link href="/productos">
                                 <Button
                                     size="md"
                                     className="bg-[#5E6F5E] hover:bg-[#4a584a] text-white"

@@ -32,7 +32,7 @@ export function StorySection() {
                         </p>
                     </div>
                     <div className="mt-10">
-                        <Link href="/story">
+                        <Link href="/historia">
                             <Button variant="outline">Conoce Más Sobre Nosotros</Button>
                         </Link>
                     </div>

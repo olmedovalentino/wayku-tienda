@@ -13,7 +13,7 @@ export default function LoginPage() {
         e.preventDefault();
         setIsLoading(true);
         await new Promise(resolve => setTimeout(resolve, 1500));
-        router.push('/account');
+        router.push('/cuenta');
     };
 
     return (
@@ -25,7 +25,7 @@ export default function LoginPage() {
                     </h2>
                     <p className="mt-2 text-sm text-stone-600">
                         ¿No tienes cuenta?{' '}
-                        <Link href="/account/register" className="font-medium text-primary hover:text-primary/80 hover:underline">
+                        <Link href="/cuenta/register" className="font-medium text-primary hover:text-primary/80 hover:underline">
                             Regístrate gratis
                         </Link>
                     </p>

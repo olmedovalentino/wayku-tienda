@@ -50,7 +50,7 @@ export default function AccountPage() {
                                     <Heart size={18} /> Lista de Deseos
                                 </button>
                                 <div className="h-px bg-stone-100 my-4"></div>
-                                <Link href="/account/login">
+                                <Link href="/cuenta/login">
                                     <button className="flex items-center gap-3 w-full px-4 py-2 rounded-md text-red-500 hover:bg-red-50 transition-colors">
                                         <LogOut size={18} /> Cerrar Sesión
                                     </button>
@@ -68,7 +68,7 @@ export default function AccountPage() {
                                 <h1 className="font-serif text-2xl text-stone-900">Hola, Valentino</h1>
                                 <p className="text-stone-500 mt-1">Es bueno verte de nuevo.</p>
                             </div>
-                            <Link href="/products">
+                            <Link href="/productos">
                                 <Button variant="outline">Ir a la tienda</Button>
                             </Link>
                         </div>
