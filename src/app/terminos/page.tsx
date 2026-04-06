@@ -11,7 +11,7 @@ export default function TermsPage() {
 
                     <h2 className="text-xl font-semibold text-stone-900 mt-8">1. Introducción</h2>
                     <p>
-                        Bienvenido a Waykú. Al acceder y utilizar nuestro sitio web (waykuarg.com / wayku.com.ar / wayku-tienda.vercel.app), 
+                        Bienvenido a Waykú. Al acceder y utilizar nuestro sitio web (wayku.ar), 
                         aceptas cumplir y estar sujeto a los siguientes términos y condiciones de uso.
                     </p>
 
@@ -31,7 +31,7 @@ export default function TermsPage() {
 
                     <h2 className="text-xl font-semibold text-stone-900 mt-8">4. Política de Precios y Pagos</h2>
                     <p>
-                        Todos los precios están expresados en Pesos Argentinos (ARS) e incluyen IVA. Nos reservamos el derecho de modificar 
+                        Todos los precios están expresados en Pesos Argentinos (ARS) y representan el valor final del producto. Nos reservamos el derecho de modificar 
                         los precios en cualquier momento. Los pagos se procesan de forma segura a través de Mercado Pago o mediante 
                         Transferencia Bancaria directa.
                     </p>
@@ -51,7 +51,7 @@ export default function TermsPage() {
 
                     <h2 className="text-xl font-semibold text-stone-900 mt-8">7. Contacto</h2>
                     <p>
-                        Para cualquier consulta legal sobre estos términos, por favor escríbenos a: <strong>waykuargentina@gmail.com</strong>
+                        Para cualquier consulta legal sobre estos términos, por favor escríbenos a: <strong><a href="mailto:waykuargentina@gmail.com" className="text-primary hover:underline">waykuargentina@gmail.com</a></strong>
                     </p>
                 </div>
             </div>

@@ -38,12 +38,12 @@ export function Footer() {
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/contact#faqs" className="text-sm text-stone-500 hover:text-primary">
+                                <Link href="/contacto#faqs" className="text-sm text-stone-500 hover:text-primary">
                                     Preguntas Frecuentes
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/contact#shipping" className="text-sm text-stone-500 hover:text-primary">
+                                <Link href="/contacto#shipping" className="text-sm text-stone-500 hover:text-primary">
                                     Envíos y Devoluciones
                                 </Link>
                             </li>

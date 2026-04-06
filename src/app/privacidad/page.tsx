@@ -33,7 +33,7 @@ export default function PrivacyPage() {
                     <p>
                         Si decides suscribirte a nuestro newsletter o creas una cuenta en nuestro sitio, podremos enviarte 
                         ocasionalmente correos con novedades sobre nuevas lámparas o descuentos. Puedes darte de baja de esta lista en 
-                        cualquier momento solicitándolo a <strong>waykuargentina@gmail.com</strong>.
+                        cualquier momento solicitándolo a <strong><a href="mailto:waykuargentina@gmail.com" className="text-primary hover:underline">waykuargentina@gmail.com</a></strong>.
                     </p>
 
                     <h2 className="text-xl font-semibold text-stone-900 mt-8">5. Cookies</h2>
