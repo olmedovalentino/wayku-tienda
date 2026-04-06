@@ -14,14 +14,15 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://wayku.ar'),
   title: "Waykú | Lámparas Artesanales y Diseño de Autor",
   description: "Iluminación de diseño en madera natural y cerámica. Creamos lámparas artesanales, sustentables, únicas y exclusivas para transformar tus espacios. Hechas a mano en Córdoba, Argentina.",
-  keywords: ["lámparas de madera", "lámparas artesanales", "diseño de autor", "iluminación sustentable", "decoración de interiores", "lámparas nórdicas", "diseño argentino"],
+  keywords: ["lámparas de madera", "lámparas artesanales", "diseño de autor", "iluminación sustentable", "decoración de interiores", "lámparas nórdicas", "diseño argentino", "lámparas córdoba"],
   openGraph: {
     title: "Waykú | Lámparas Artesanales",
     description: "Iluminación de diseño hecha a mano con madera natural y cerámica para transformar tus espacios.",
-    url: "https://waykulámparas.com",
-    siteName: "Waykú Lámparas",
+    url: "https://wayku.ar",
+    siteName: "Waykú",
     locale: "es_AR",
     type: "website",
   },
@@ -33,7 +34,10 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
-  }
+  },
+  alternates: {
+    canonical: "https://wayku.ar",
+  },
 };
 
 export default function RootLayout({
