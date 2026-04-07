@@ -1,92 +1,81 @@
 import { NextResponse } from 'next/server';
 
 // ============================================================
-// TABLA DE ENVÍOS POR ZONA — Waykú
-// Calculada con peso volumétrico real de cada producto
-// Divisor Andreani: 4000
-//
-// Productos:
-//   Amaí  → 40x25x25 cm = 25.000 cm³ → 6,25 kg volumétrico (3 kg real)
-//   Nami  → 30x30x25 cm = 22.500 cm³ → 5,63 kg volumétrico (3 kg real)
-//   Ará   → 30x20x15 cm =  9.000 cm³ → 2,25 kg volumétrico (2 kg real)
-//
-// Tier LIVIANO (≤ 3 kg vol): aplica a Ará
-// Tier PESADO  (> 3 kg vol): aplica a Amaí y Nami
-//
-// Margen de seguridad ~25-30% sobre costo real de Andreani desde Córdoba
-// Actualización: Abril 2025
+// TABLA DE ENVÍOS POR ZONA Y PESO VOLUMÉTRICO — Waykú
+// Cálculo exacto usando las dimensiones reales de las cajas
 // ============================================================
 
-interface Zona {
-    label: string;
-    desde: number;
-    hasta: number;
-    precioLiviano: number;   // Ará-sized (~2.25 kg vol)
-    precioPesado: number;    // Amaí/Nami-sized (~6 kg vol)
-    dias: string;
-}
-
-const ZONAS: Zona[] = [
-    // CÓRDOBA
-    { label: 'Córdoba Capital y Gran Córdoba',  desde: 5000, hasta: 5009, precioLiviano: 10000, precioPesado: 15000, dias: '1-2 días hábiles' },
-    { label: 'Córdoba Provincia (Interior)',    desde: 5100, hasta: 5999, precioLiviano: 15000, precioPesado: 22000, dias: '2-3 días hábiles' },
+const ZONAS: { label: string; desde: number; hasta: number; base_precio: number; dias: string }[] = [
+    // CÓRDOBA Y OTRAS CERCANAS
+    { label: 'Córdoba Capital y Gran Córdoba', desde: 5000, hasta: 5009, base_precio: 6000, dias: '1-2 días hábiles' },
+    { label: 'Córdoba Provincia (Interior)', desde: 5100, hasta: 5999, base_precio: 10000, dias: '2-3 días hábiles' },
 
     // BUENOS AIRES
-    { label: 'CABA',                            desde: 1000, hasta: 1499, precioLiviano: 20000, precioPesado: 29000, dias: '3-5 días hábiles' },
-    { label: 'Gran Buenos Aires',               desde: 1500, hasta: 1999, precioLiviano: 22000, precioPesado: 31000, dias: '3-5 días hábiles' },
-    { label: 'Buenos Aires Interior',           desde: 6000, hasta: 8999, precioLiviano: 26000, precioPesado: 36000, dias: '4-6 días hábiles' },
+    { label: 'CABA', desde: 1000, hasta: 1499, base_precio: 16000, dias: '3-4 días hábiles' },
+    { label: 'GBA (Gran Buenos Aires)', desde: 1500, hasta: 1999, base_precio: 18000, dias: '3-5 días hábiles' },
+    { label: 'Buenos Aires (Interior)', desde: 6000, hasta: 8999, base_precio: 20000, dias: '4-6 días hábiles' },
 
     // CENTRO
-    { label: 'Santa Fe Capital y Rosario',     desde: 2000, hasta: 2009, precioLiviano: 18000, precioPesado: 25000, dias: '2-4 días hábiles' },
-    { label: 'Santa Fe Provincia',             desde: 2010, hasta: 2999, precioLiviano: 20000, precioPesado: 27000, dias: '3-5 días hábiles' },
-    { label: 'Entre Ríos',                     desde: 3100, hasta: 3299, precioLiviano: 21000, precioPesado: 28000, dias: '3-5 días hábiles' },
-    { label: 'Mendoza',                        desde: 5500, hasta: 5599, precioLiviano: 23000, precioPesado: 32000, dias: '4-6 días hábiles' },
-    { label: 'San Luis',                       desde: 5700, hasta: 5799, precioLiviano: 21000, precioPesado: 29000, dias: '3-5 días hábiles' },
-    { label: 'La Rioja',                       desde: 5300, hasta: 5399, precioLiviano: 22000, precioPesado: 30000, dias: '4-6 días hábiles' },
-    { label: 'San Juan',                       desde: 5400, hasta: 5499, precioLiviano: 23000, precioPesado: 31000, dias: '4-6 días hábiles' },
+    { label: 'Santa Fe Capital y Rosario', desde: 2000, hasta: 2009, base_precio: 16000, dias: '2-4 días hábiles' },
+    { label: 'Santa Fe Provincia', desde: 2010, hasta: 2999, base_precio: 18000, dias: '3-5 días hábiles' },
+    { label: 'Entre Ríos', desde: 3100, hasta: 3299, base_precio: 19000, dias: '3-5 días hábiles' },
+    { label: 'San Luis / La Rioja / San Juan', desde: 5300, hasta: 5799, base_precio: 20000, dias: '3-6 días hábiles' },
+    { label: 'Mendoza', desde: 5500, hasta: 5599, base_precio: 20000, dias: '4-6 días hábiles' },
 
-    // NORTE
-    { label: 'Tucumán',                        desde: 4000, hasta: 4099, precioLiviano: 24000, precioPesado: 33000, dias: '4-6 días hábiles' },
-    { label: 'Salta',                          desde: 4400, hasta: 4499, precioLiviano: 26000, precioPesado: 36000, dias: '5-7 días hábiles' },
-    { label: 'Jujuy',                          desde: 4600, hasta: 4699, precioLiviano: 27000, precioPesado: 37000, dias: '5-7 días hábiles' },
-    { label: 'Catamarca',                      desde: 4700, hasta: 4799, precioLiviano: 24000, precioPesado: 33000, dias: '4-6 días hábiles' },
-    { label: 'Santiago del Estero',            desde: 4200, hasta: 4299, precioLiviano: 23000, precioPesado: 32000, dias: '4-6 días hábiles' },
-    { label: 'Misiones',                       desde: 3300, hasta: 3399, precioLiviano: 29000, precioPesado: 40000, dias: '5-8 días hábiles' },
-    { label: 'Corrientes',                     desde: 3400, hasta: 3499, precioLiviano: 27000, precioPesado: 37000, dias: '5-7 días hábiles' },
-    { label: 'Chaco',                          desde: 3500, hasta: 3599, precioLiviano: 28000, precioPesado: 38000, dias: '5-7 días hábiles' },
-    { label: 'Formosa',                        desde: 3600, hasta: 3699, precioLiviano: 30000, precioPesado: 42000, dias: '6-8 días hábiles' },
+    // NOA Y NEA
+    { label: 'Santiago del Estero / Tucumán / Catamarca', desde: 4000, hasta: 4299, base_precio: 22000, dias: '4-6 días hábiles' },
+    { label: 'Salta / Jujuy', desde: 4400, hasta: 4699, base_precio: 24000, dias: '5-7 días hábiles' },
+    { label: 'Misiones / Corrientes / Chaco / Formosa', desde: 3300, hasta: 3699, base_precio: 24000, dias: '5-8 días hábiles' },
+    { label: 'Catamarca', desde: 4700, hasta: 4799, base_precio: 22000, dias: '4-6 días hábiles' },
 
-    // LA PAMPA + PATAGONIA
-    { label: 'La Pampa',                       desde: 6300, hasta: 6399, precioLiviano: 24000, precioPesado: 33000, dias: '4-6 días hábiles' },
-    { label: 'Neuquén',                        desde: 8300, hasta: 8399, precioLiviano: 31000, precioPesado: 43000, dias: '6-8 días hábiles' },
-    { label: 'Río Negro',                      desde: 8400, hasta: 8499, precioLiviano: 31000, precioPesado: 43000, dias: '6-8 días hábiles' },
-    { label: 'Chubut',                         desde: 9000, hasta: 9099, precioLiviano: 38000, precioPesado: 53000, dias: '6-9 días hábiles' },
-    { label: 'Santa Cruz',                     desde: 9200, hasta: 9299, precioLiviano: 45000, precioPesado: 63000, dias: '7-10 días hábiles' },
-    { label: 'Tierra del Fuego',               desde: 9410, hasta: 9499, precioLiviano: 55000, precioPesado: 76000, dias: '8-12 días hábiles' },
+    // PATAGONIA
+    { label: 'La Pampa', desde: 6300, hasta: 6399, base_precio: 22000, dias: '4-6 días hábiles' },
+    { label: 'Neuquén / Río Negro', desde: 8300, hasta: 8499, base_precio: 28000, dias: '6-8 días hábiles' },
+    { label: 'Chubut', desde: 9000, hasta: 9099, base_precio: 30000, dias: '6-9 días hábiles' },
+    { label: 'Santa Cruz', desde: 9200, hasta: 9299, base_precio: 35000, dias: '7-10 días hábiles' },
+    { label: 'Tierra del Fuego', desde: 9410, hasta: 9499, base_precio: 45000, dias: '8-12 días hábiles' },
 ];
 
-// Dimensiones conocidas de cada producto para calcular peso volumétrico
-// Divisor Andreani = 4000
-const PRODUCT_VOL_WEIGHTS: Record<string, number> = {
-    'amai':  (40 * 25 * 25) / 4000,  // 6.25 kg
-    'nami':  (30 * 30 * 25) / 4000,  // 5.63 kg
-    'ara':   (30 * 20 * 15) / 4000,  // 2.25 kg
-    'ará':   (30 * 20 * 15) / 4000,
-};
-
-const FALLBACK_VOL_WEIGHT = 6.25; // Si no conocemos el producto, asumimos el peor caso
-const SURCHARGE_POR_UNIDAD_EXTRA = 10000; // Por cada lámpara adicional en el pedido
+// El precio base incluye hasta 3kg. Cada kg extra sale esto:
+const COSTO_POR_KG_EXTRA = 2200;
 
 function getZona(cp: number) {
     return ZONAS.find(z => cp >= z.desde && cp <= z.hasta);
 }
 
-function getVolWeight(name: string): number {
-    const key = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    for (const [product, vol] of Object.entries(PRODUCT_VOL_WEIGHTS)) {
-        if (key.includes(product)) return vol;
-    }
-    return FALLBACK_VOL_WEIGHT;
+// Calcula el peso a tarifar (el mayor entre peso real y peso volumétrico A x B x C / 4000)
+function calcularPesoTarifable(items: any[]) {
+    let pesoTotal = 0;
+    
+    items.forEach(item => {
+        const nombre = item.name.toLowerCase();
+        let pesoReal = 3;
+        let volumenCm3 = 15000; // default
+
+        if (nombre.includes('amaí') || nombre.includes('amai')) {
+            pesoReal = 3;
+            volumenCm3 = 25 * 40 * 25; // 25000
+        } else if (nombre.includes('nami')) {
+            pesoReal = 3;
+            volumenCm3 = 25 * 30 * 30; // 22500
+        } else if (nombre.includes('ará') || nombre.includes('ara')) {
+            pesoReal = 2;
+            volumenCm3 = 15 * 30 * 20; // 9000
+        } else {
+            pesoReal = 3;
+            volumenCm3 = 20000;
+        }
+
+        // Peso volumétrico = Volumen(cm3) / 4000 (fórmula estándar couriers argentinos)
+        const pesoVolumetrico = volumenCm3 / 4000;
+        
+        // Se cobra el mayor
+        const pesoCobrado = Math.max(pesoReal, pesoVolumetrico);
+        
+        pesoTotal += pesoCobrado * item.quantity;
+    });
+
+    return Math.ceil(pesoTotal); // Redondeamos para arriba al kg entero más cercano
 }
 
 export async function POST(req: Request) {
@@ -100,47 +89,30 @@ export async function POST(req: Request) {
 
         const cp = parseInt(postalCode.replace(/\D/g, ''), 10);
 
-        if (isNaN(cp) || postalCode.replace(/\D/g, '').length < 4) {
+        if (isNaN(cp) || postalCode.length < 4) {
             return NextResponse.json({ error: 'Código postal inválido. Ingresá al menos 4 dígitos.' }, { status: 400 });
         }
 
-        // Calcular el peso volumétrico máximo entre los productos del carrito
-        // (el más pesado domina el precio del envío)
-        let maxVolWeight = 0;
-        let totalUnits = 0;
-
-        if (items && items.length > 0) {
-            for (const item of items) {
-                const vol = getVolWeight(item.name);
-                if (vol > maxVolWeight) maxVolWeight = vol;
-                totalUnits += item.quantity;
-            }
-        } else {
-            maxVolWeight = FALLBACK_VOL_WEIGHT;
-            totalUnits = 1;
-        }
-
-        const isPesado = maxVolWeight > 3; // Umbral: Ará ≤ 3kg vol, Amaí/Nami > 3kg vol
-        const surcharge = Math.max(0, totalUnits - 1) * SURCHARGE_POR_UNIDAD_EXTRA;
-
         const zona = getZona(cp);
+        const pesoTotalKg = calcularPesoTarifable(items);
+        const kgExtras = Math.max(0, pesoTotalKg - 3); // Base incluye 3kg
+        
+        const recargoPorPeso = kgExtras * COSTO_POR_KG_EXTRA;
 
         if (!zona) {
-            // CP no identificado → precio máximo para no perder plata
-            const basePrice = isPesado ? 70000 : 50000;
-            await new Promise(resolve => setTimeout(resolve, 600));
+            // Fallback
             return NextResponse.json({
                 success: true,
-                cost: basePrice + surcharge,
-                zona: 'Zona alejada o no identificada',
-                estimatedDays: '8-14 días hábiles',
-                note: 'Precio estimado. Para localidades pequeñas o zonas rurales el costo podría ajustarse.'
+                cost: 35000 + recargoPorPeso,
+                zona: 'Patagonia / Localidad Alejada',
+                estimatedDays: '8-12 días hábiles',
+                note: 'Precio estimado basado en volumen.'
             });
         }
 
-        const basePrice = isPesado ? zona.precioPesado : zona.precioLiviano;
-        const finalCost = basePrice + surcharge;
+        const finalCost = zona.base_precio + recargoPorPeso;
 
+        // Pequeño delay
         await new Promise(resolve => setTimeout(resolve, 600));
 
         return NextResponse.json({
@@ -148,12 +120,6 @@ export async function POST(req: Request) {
             cost: finalCost,
             zona: zona.label,
             estimatedDays: zona.dias,
-            debug: {
-                maxVolWeight: `${maxVolWeight.toFixed(2)} kg volumétrico`,
-                tier: isPesado ? 'Pesado (Amaí/Nami)' : 'Liviano (Ará)',
-                totalUnits,
-                surcharge
-            }
         });
 
     } catch (error) {
