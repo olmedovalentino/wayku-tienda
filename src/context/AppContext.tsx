@@ -217,7 +217,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 setOrders(prev => [newO as any, ...prev]);
                 if (supabase) {
                     try {
-                        await supabase.from('orders').insert(newO);
+                        const { shippingCost, ...dbOrder } = newO as any;
+                        const { error } = await supabase.from('orders').insert(dbOrder);
+                        if (error) console.error('Supabase DB error', error);
                     } catch (e) {
                         console.error('Failed to insert order', e);
                     }

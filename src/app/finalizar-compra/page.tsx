@@ -84,7 +84,17 @@ export default function CheckoutPage() {
         );
     }
 
-    if (items.length === 0 && !isProcessing) {
+    if (isProcessing) {
+        return (
+            <div className="flex min-h-[60vh] flex-col items-center justify-center px-4">
+                <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                <h2 className="mt-6 text-xl font-medium text-stone-800 tracking-tight">Procesando tu pedido...</h2>
+                <p className="mt-2 text-sm text-stone-500 text-center">Por favor, no cierres ni recargues esta ventana.</p>
+            </div>
+        );
+    }
+
+    if (items.length === 0) {
         return (
             <div className="flex min-h-[60vh] flex-col items-center justify-center px-4">
                 <h1 className="text-2xl font-bold text-stone-900">Tu carrito está vacío</h1>
