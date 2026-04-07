@@ -7,37 +7,37 @@ import { NextResponse } from 'next/server';
 
 const ZONAS: { label: string; desde: number; hasta: number; base_precio: number; dias: string }[] = [
     // CÓRDOBA Y OTRAS CERCANAS
-    { label: 'Córdoba Capital y Gran Córdoba', desde: 5000, hasta: 5009, base_precio: 6000, dias: '1-2 días hábiles' },
-    { label: 'Córdoba Provincia (Interior)', desde: 5100, hasta: 5999, base_precio: 10000, dias: '2-3 días hábiles' },
+    { label: 'Córdoba Capital y Gran Córdoba', desde: 5000, hasta: 5009, base_precio: 9000, dias: '1-2 días hábiles' },
+    { label: 'Córdoba Provincia (Interior)', desde: 5100, hasta: 5999, base_precio: 12000, dias: '2-3 días hábiles' },
 
     // BUENOS AIRES
-    { label: 'CABA', desde: 1000, hasta: 1499, base_precio: 16000, dias: '3-4 días hábiles' },
-    { label: 'GBA (Gran Buenos Aires)', desde: 1500, hasta: 1999, base_precio: 18000, dias: '3-5 días hábiles' },
-    { label: 'Buenos Aires (Interior)', desde: 6000, hasta: 8999, base_precio: 20000, dias: '4-6 días hábiles' },
+    { label: 'CABA', desde: 1000, hasta: 1499, base_precio: 22000, dias: '3-4 días hábiles' },
+    { label: 'GBA (Gran Buenos Aires)', desde: 1500, hasta: 1999, base_precio: 24000, dias: '3-5 días hábiles' },
+    { label: 'Buenos Aires (Interior)', desde: 6000, hasta: 8999, base_precio: 26000, dias: '4-6 días hábiles' },
 
     // CENTRO
-    { label: 'Santa Fe Capital y Rosario', desde: 2000, hasta: 2009, base_precio: 16000, dias: '2-4 días hábiles' },
-    { label: 'Santa Fe Provincia', desde: 2010, hasta: 2999, base_precio: 18000, dias: '3-5 días hábiles' },
-    { label: 'Entre Ríos', desde: 3100, hasta: 3299, base_precio: 19000, dias: '3-5 días hábiles' },
-    { label: 'San Luis / La Rioja / San Juan', desde: 5300, hasta: 5799, base_precio: 20000, dias: '3-6 días hábiles' },
-    { label: 'Mendoza', desde: 5500, hasta: 5599, base_precio: 20000, dias: '4-6 días hábiles' },
+    { label: 'Santa Fe Capital y Rosario', desde: 2000, hasta: 2009, base_precio: 20000, dias: '2-4 días hábiles' },
+    { label: 'Santa Fe Provincia', desde: 2010, hasta: 2999, base_precio: 22000, dias: '3-5 días hábiles' },
+    { label: 'Entre Ríos', desde: 3100, hasta: 3299, base_precio: 22000, dias: '3-5 días hábiles' },
+    { label: 'San Luis / La Rioja / San Juan', desde: 5300, hasta: 5799, base_precio: 24000, dias: '3-6 días hábiles' },
+    { label: 'Mendoza', desde: 5500, hasta: 5599, base_precio: 24000, dias: '4-6 días hábiles' },
 
     // NOA Y NEA
-    { label: 'Santiago del Estero / Tucumán / Catamarca', desde: 4000, hasta: 4299, base_precio: 22000, dias: '4-6 días hábiles' },
-    { label: 'Salta / Jujuy', desde: 4400, hasta: 4699, base_precio: 24000, dias: '5-7 días hábiles' },
-    { label: 'Misiones / Corrientes / Chaco / Formosa', desde: 3300, hasta: 3699, base_precio: 24000, dias: '5-8 días hábiles' },
-    { label: 'Catamarca', desde: 4700, hasta: 4799, base_precio: 22000, dias: '4-6 días hábiles' },
+    { label: 'Santiago del Estero / Tucumán / Catamarca', desde: 4000, hasta: 4299, base_precio: 28000, dias: '4-6 días hábiles' },
+    { label: 'Catamarca', desde: 4700, hasta: 4799, base_precio: 28000, dias: '4-6 días hábiles' },
+    { label: 'Salta / Jujuy', desde: 4400, hasta: 4699, base_precio: 28000, dias: '5-7 días hábiles' },
+    { label: 'Misiones / Corrientes / Chaco / Formosa', desde: 3300, hasta: 3699, base_precio: 30000, dias: '5-8 días hábiles' },
 
     // PATAGONIA
-    { label: 'La Pampa', desde: 6300, hasta: 6399, base_precio: 22000, dias: '4-6 días hábiles' },
-    { label: 'Neuquén / Río Negro', desde: 8300, hasta: 8499, base_precio: 28000, dias: '6-8 días hábiles' },
-    { label: 'Chubut', desde: 9000, hasta: 9099, base_precio: 30000, dias: '6-9 días hábiles' },
-    { label: 'Santa Cruz', desde: 9200, hasta: 9299, base_precio: 35000, dias: '7-10 días hábiles' },
-    { label: 'Tierra del Fuego', desde: 9410, hasta: 9499, base_precio: 45000, dias: '8-12 días hábiles' },
+    { label: 'La Pampa', desde: 6300, hasta: 6399, base_precio: 26000, dias: '4-6 días hábiles' },
+    { label: 'Neuquén / Río Negro', desde: 8300, hasta: 8499, base_precio: 32000, dias: '6-8 días hábiles' },
+    { label: 'Chubut', desde: 9000, hasta: 9099, base_precio: 38000, dias: '6-9 días hábiles' },
+    { label: 'Santa Cruz', desde: 9200, hasta: 9299, base_precio: 44000, dias: '7-10 días hábiles' },
+    { label: 'Tierra del Fuego', desde: 9410, hasta: 9499, base_precio: 52000, dias: '8-12 días hábiles' },
 ];
 
 // El precio base incluye hasta 3kg. Cada kg extra sale esto:
-const COSTO_POR_KG_EXTRA = 2200;
+const COSTO_POR_KG_EXTRA = 3500;
 
 function getZona(cp: number) {
     return ZONAS.find(z => cp >= z.desde && cp <= z.hasta);
@@ -103,7 +103,7 @@ export async function POST(req: Request) {
             // Fallback
             return NextResponse.json({
                 success: true,
-                cost: 35000 + recargoPorPeso,
+                cost: 45000 + recargoPorPeso,
                 zona: 'Patagonia / Localidad Alejada',
                 estimatedDays: '8-12 días hábiles',
                 note: 'Precio estimado basado en volumen.'
