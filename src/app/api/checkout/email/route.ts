@@ -70,8 +70,11 @@ export async function POST(req: Request) {
             </div>
             
             <div style="font-size: 14px; color: #57534e; text-align: center;">
-                <p>Si elegiste Transferencia Bancaria, recordá enviar el comprobante por WhatsApp.</p>
-                <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://wayku-tienda.vercel.app'}" style="display: inline-block; background-color: #5E6F5E; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin-top: 15px;">Ir a la tienda</a>
+                ${order.paymentMethod === 'transfer' ? `
+                    <p style="margin-bottom: 20px;">Recordá enviar el comprobante de transferencia por WhatsApp para gestionar tu pedido.</p>
+                    <a href="https://wa.me/5493513844333?text=Hola,%20adjunto%20comprobante%20del%20pedido%20${order.id}" style="display: inline-block; background-color: #25D366; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-bottom: 10px; margin-right: 8px;">📲 Enviar comprobante</a>
+                ` : ''}
+                <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.wayku.ar'}" style="display: inline-block; background-color: #5E6F5E; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; ${order.paymentMethod === 'transfer' ? 'margin-bottom: 10px;' : 'margin-top: 15px;'}">Ir a la tienda</a>
             </div>
         </div>
         `;

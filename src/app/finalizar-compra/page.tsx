@@ -84,7 +84,7 @@ export default function CheckoutPage() {
         );
     }
 
-    if (items.length === 0) {
+    if (items.length === 0 && !isProcessing) {
         return (
             <div className="flex min-h-[60vh] flex-col items-center justify-center px-4">
                 <h1 className="text-2xl font-bold text-stone-900">Tu carrito está vacío</h1>
@@ -227,6 +227,7 @@ export default function CheckoutPage() {
         };
 
         if (paymentMethod === 'transfer') {
+            setIsProcessing(true);
             // Descontar inventario antes de redirigir (reserva de stock)
             await Promise.all(items.map(async (item) => {
                 const currentProduct = products.find((p: any) => p.id === item.id);
