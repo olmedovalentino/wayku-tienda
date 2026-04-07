@@ -70,7 +70,7 @@ interface AppContextType {
     replyToQuery: (id: number, response: string) => void;
     subscribeToNewsletter: (email: string) => void;
     addReview: (review: Omit<Review, 'id' | 'date'>) => void;
-    addOrder: (order: Omit<Order, 'date' | 'status'> | Omit<Order, 'id' | 'date' | 'status'> & { id?: string }) => void;
+    addOrder: (order: Omit<Order, 'date' | 'status'> | Omit<Order, 'id' | 'date' | 'status'> & { id?: string }) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -212,10 +212,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
                     }
                 }
             },
-            addOrder: (order) => {
+            addOrder: async (order) => {
                 const newO = { ...order, date: new Date().toLocaleDateString(), status: 'Pedido recibido' };
                 setOrders(prev => [newO as any, ...prev]);
-                if (supabase) supabase.from('orders').insert(newO).then();
+                if (supabase) {
+                    try {
+                        await supabase.from('orders').insert(newO);
+                    } catch (e) {
+                        console.error('Failed to insert order', e);
+                    }
+                }
             },
             addQuery: async (q) => {
                 const newQ = { ...q, date: new Date().toLocaleDateString(), read: false };

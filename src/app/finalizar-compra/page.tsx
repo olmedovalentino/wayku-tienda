@@ -239,10 +239,10 @@ export default function CheckoutPage() {
                 }
             }));
             
-            addOrder(orderData);
+            await addOrder(orderData);
 
             // Send confirmation email
-            fetch('/api/checkout/email', {
+            await fetch('/api/checkout/email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(orderData)
@@ -250,7 +250,7 @@ export default function CheckoutPage() {
 
             // For transfer, we just go to success page with a flag
             clearCart();
-            router.push(`/finalizar-compra/success?method=transfer&name=${formData.firstName}&total=${total}&order_id=${orderId}`);
+            router.push(`/finalizar-compra/exito?method=transfer&name=${formData.firstName}&total=${total}&order_id=${orderId}`);
             return;
         }
 
@@ -270,10 +270,10 @@ export default function CheckoutPage() {
             }));
 
             // Save order to state even for Card (it will be "Pendiente")
-            addOrder(orderData);
+            await addOrder(orderData);
 
             // Send confirmation email
-            fetch('/api/checkout/email', {
+            await fetch('/api/checkout/email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(orderData)
