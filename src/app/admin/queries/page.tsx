@@ -220,9 +220,7 @@ export default function AdminQueriesPage() {
 
                             <div className="flex justify-between items-center text-xs">
                                 <div className="flex gap-2">
-                                    {!query.read && (
-                                        <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full font-medium">Nuevo</span>
-                                    )}
+
                                     {query.replied ? (
                                         <span className="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
                                             <Check size={10} /> Respondido

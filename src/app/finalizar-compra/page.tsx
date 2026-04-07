@@ -56,8 +56,15 @@ export default function CheckoutPage() {
             const hasPastOrders = orders.some(o => o.email?.toLowerCase() === user.email?.toLowerCase());
             
             if (!hasPastOrders && appliedDiscount === 0) {
-                setAppliedDiscount(10);
-                setCouponCode('PRIMERACOMPRA10');
+                import('@supabase/supabase-js').then(({createClient}) => {
+                    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+                    supabase.from('coupons').select('is_active').eq('code', 'PRIMERACOMPRA10').single().then(({data}) => {
+                        if (data && data.is_active) {
+                            setAppliedDiscount(10);
+                            setCouponCode('PRIMERACOMPRA10');
+                        }
+                    });
+                });
             }
         }
     }, [user, orders, appliedDiscount]);
@@ -112,18 +119,7 @@ export default function CheckoutPage() {
             return;
         }
 
-        // Special hardcoded fallback or from DB
-        if (couponCode.toUpperCase() === 'PRIMERACOMPRA10') {
-            const hasPastOrders = orders.some(o => o.email?.toLowerCase() === formData.email?.toLowerCase());
-            if (hasPastOrders) {
-                setCouponError('Este cupón es solo para tu primera compra.');
-                setAppliedDiscount(0);
-            } else {
-                setAppliedDiscount(10);
-                setCouponError('');
-            }
-            return;
-        }
+
 
         try {
             // Import supabase dynamically if not in component scope, wait we can just import it at the top
@@ -147,6 +143,14 @@ export default function CheckoutPage() {
                 setCouponError('Este cupón ya venció');
                 setAppliedDiscount(0);
             } else {
+                if (couponCode.toUpperCase() === 'PRIMERACOMPRA10') {
+                    const hasPastOrders = orders.some(o => o.email?.toLowerCase() === formData.email?.toLowerCase());
+                    if (hasPastOrders) {
+                        setCouponError('Este cupón es solo para tu primera compra.');
+                        setAppliedDiscount(0);
+                        return;
+                    }
+                }
                 setAppliedDiscount(data.discount_percentage);
                 setCouponError('');
             }
