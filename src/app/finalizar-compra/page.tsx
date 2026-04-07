@@ -56,8 +56,8 @@ export default function CheckoutPage() {
             const hasPastOrders = orders.some(o => o.email?.toLowerCase() === user.email?.toLowerCase());
             
             if (!hasPastOrders && appliedDiscount === 0) {
-                setAppliedDiscount(5);
-                setCouponCode('PRIMERACOMPRA5');
+                setAppliedDiscount(10);
+                setCouponCode('PRIMERACOMPRA10');
             }
         }
     }, [user, orders, appliedDiscount]);
@@ -103,13 +103,13 @@ export default function CheckoutPage() {
         }
 
         // Special hardcoded fallback or from DB
-        if (couponCode.toUpperCase() === 'PRIMERACOMPRA5') {
+        if (couponCode.toUpperCase() === 'PRIMERACOMPRA10') {
             const hasPastOrders = orders.some(o => o.email?.toLowerCase() === formData.email?.toLowerCase());
             if (hasPastOrders) {
                 setCouponError('Este cupón es solo para tu primera compra.');
                 setAppliedDiscount(0);
             } else {
-                setAppliedDiscount(5);
+                setAppliedDiscount(10);
                 setCouponError('');
             }
             return;
