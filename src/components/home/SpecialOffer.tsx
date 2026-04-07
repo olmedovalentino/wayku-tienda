@@ -23,7 +23,7 @@ export function SpecialOffer() {
                     
                     {!user ? (
                         <>
-                            <p className="text-base mb-8 text-white">Regístrate ahora y obtén 5% de descuento en tu primera compra.</p>
+                            <p className="text-base mb-8 text-white">Regístrate ahora y obtén 10% de descuento en tu primera compra.</p>
                             <Link href="/registro">
                                 <Button
                                     size="md"
