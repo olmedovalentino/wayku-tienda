@@ -27,7 +27,7 @@ export default function EnviosPage() {
                                 </li>
                                 <li className="flex items-center gap-2">
                                     <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                                    <span><strong>Envío Gratis:</strong> En compras superiores a $200.000.</span>
+                                    <span><strong>Envío Gratis:</strong> En compras superiores a $250.000.</span>
                                 </li>
                             </ul>
                         </div>

@@ -22,6 +22,8 @@ export default function CheckoutPage() {
     const [shippingCost, setShippingCost] = useState<number | null>(null);
     const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
     const [shippingError, setShippingError] = useState('');
+    const [shippingZona, setShippingZona] = useState('');
+    const [shippingDays, setShippingDays] = useState('');
     const [checkoutToast, setCheckoutToast] = useState<{message: string, type: 'error' | 'success'} | null>(null);
 
     const [formData, setFormData] = useState({
@@ -61,8 +63,10 @@ export default function CheckoutPage() {
     }, [user, orders, appliedDiscount]);
 
     useEffect(() => {
-        if (subtotal >= 200000) {
+        if (subtotal >= 250000) {
             setShippingCost(0);
+            setShippingZona('Envío gratis');
+            setShippingDays('');
         }
     }, [subtotal]);
 
@@ -149,13 +153,17 @@ export default function CheckoutPage() {
             return;
         }
 
-        if (subtotal >= 200000) {
+        if (subtotal >= 250000) {
             setShippingCost(0);
+            setShippingZona('Envío gratis');
+            setShippingDays('');
             return;
         }
 
         setIsCalculatingShipping(true);
         setShippingError('');
+        setShippingZona('');
+        setShippingDays('');
         try {
             const res = await fetch('/api/shipping/quote', {
                 method: 'POST',
@@ -171,9 +179,11 @@ export default function CheckoutPage() {
                 setShippingCost(null);
             } else {
                 setShippingCost(data.cost);
+                setShippingZona(data.zona || '');
+                setShippingDays(data.estimatedDays || '');
             }
         } catch (err) {
-            setShippingError('Error al contactar con el correo');
+            setShippingError('Error al calcular el envío. Intentá de nuevo.');
         } finally {
             setIsCalculatingShipping(false);
         }
@@ -451,9 +461,19 @@ export default function CheckoutPage() {
                                             </div>
                                             {shippingError && <p className="mt-1 text-xs text-red-500">{shippingError}</p>}
                                             {shippingCost !== null && (
-                                                <div className="mt-2 p-3 bg-green-50 border border-green-100 rounded-md flex items-center gap-2">
-                                                    <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                                                    <span className="text-sm font-medium text-green-800">Costo de envío a domicilio: ${shippingCost.toLocaleString()}</span>
+                                                <div className="mt-2 p-3 bg-green-50 border border-green-100 rounded-md space-y-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="h-2 w-2 rounded-full bg-green-500 shrink-0"></div>
+                                                        <span className="text-sm font-medium text-green-800">
+                                                            {shippingCost === 0 ? '¡Envío gratis!' : `Costo de envío: $${shippingCost.toLocaleString()}`}
+                                                        </span>
+                                                    </div>
+                                                    {shippingZona && shippingCost > 0 && (
+                                                        <p className="text-xs text-green-700 pl-4">📍 {shippingZona}</p>
+                                                    )}
+                                                    {shippingDays && shippingCost > 0 && (
+                                                        <p className="text-xs text-green-700 pl-4">🕐 Entrega estimada: {shippingDays}</p>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>
