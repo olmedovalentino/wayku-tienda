@@ -71,10 +71,10 @@ export async function POST(req: Request) {
             
             <div style="font-size: 14px; color: #57534e; text-align: center;">
                 ${order.paymentMethod === 'transfer' ? `
-                    <p style="margin-bottom: 20px;">Recordá enviar el comprobante de transferencia por WhatsApp para gestionar tu pedido.</p>
-                    <a href="https://wa.me/5493513844333?text=Hola,%20adjunto%20comprobante%20del%20pedido%20${order.id}" style="display: inline-block; background-color: #25D366; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-bottom: 10px; margin-right: 8px;">📲 Enviar comprobante</a>
+                    <p style="margin-bottom: 24px;">Por favor, enviá el comprobante de transferencia haciendo clic a continuación para que procesemos tu pago.</p>
+                    <a href="https://wa.me/5493513844333?text=Hola,%20adjunto%20comprobante%20del%20pedido%20${order.id}" style="display: inline-block; background-color: #5E6F5E; color: white; padding: 12px 28px; text-decoration: none; border-radius: 4px; font-weight: 500; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 12px; margin-right: 12px; border: 1px solid #5E6F5E;">Enviar Comprobante</a>
                 ` : ''}
-                <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.wayku.ar'}" style="display: inline-block; background-color: #5E6F5E; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; ${order.paymentMethod === 'transfer' ? 'margin-bottom: 10px;' : 'margin-top: 15px;'}">Ir a la tienda</a>
+                <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.wayku.ar'}" style="display: inline-block; background-color: transparent; color: #57534E; padding: 12px 28px; text-decoration: none; border-radius: 4px; font-weight: 500; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: 1px solid #D6D3D1; ${order.paymentMethod === 'transfer' ? 'margin-bottom: 12px;' : 'margin-top: 15px;'}">Volver a la tienda</a>
             </div>
         </div>
         `;
