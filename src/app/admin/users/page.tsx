@@ -177,7 +177,7 @@ export default function UsersAdminPage() {
     );
 
     const deleteUser = async (id: string) => {
-        if (confirm('¿Estás seguro de que deseas eliminar este usuario? Podrá volver a registrarse con el mismo email.')) {
+        if (confirm('¿Estás seguro de que deseas eliminar permanentemente este usuario? Se cerrará su sesión y toda su cuenta será borrada.')) {
             try {
                 const res = await fetch(`/api/admin/users?id=${id}`, { method: 'DELETE' });
                 if (!res.ok) throw new Error('Error al eliminar');

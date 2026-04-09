@@ -41,11 +41,11 @@ export async function DELETE(req: Request) {
 
         const admin = getSupabaseAdmin();
 
-        // 1. Delete from Supabase Auth (this is what prevents re-registration)
+        // 1. Delete from Supabase Auth (this is what prevents re-registration or surviving sessions)
         const { error: authError } = await admin.auth.admin.deleteUser(id);
         if (authError) {
             console.error('Auth delete error:', authError);
-            // Don't fail hard — still try to clean up the profile table
+            return NextResponse.json({ error: 'No se pudo eliminar el acceso del usuario en auth.users' }, { status: 500 });
         }
 
         // 2. Delete from public users table (in case cascade didn't handle it)
