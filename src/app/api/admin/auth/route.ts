@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { createAdminSessionToken } from '@/lib/admin-session';
 
 export async function POST(request: Request) {
     try {
@@ -10,11 +11,14 @@ export async function POST(request: Request) {
         if (!adminUser || !adminPass) {
             return NextResponse.json({ success: false, error: 'Configuración de servidor incompleta (Variables de Entorno faltantes)' }, { status: 500 });
         }
+        if (!process.env.ADMIN_SESSION_SECRET) {
+            return NextResponse.json({ success: false, error: 'Falta ADMIN_SESSION_SECRET' }, { status: 500 });
+        }
 
         if (username === adminUser && password === adminPass) {
             // Set an HttpOnly cookie
             const cookieStore = await cookies();
-            cookieStore.set('admin_session', 'authenticated', {
+            cookieStore.set('admin_session', createAdminSessionToken(username), {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'strict',

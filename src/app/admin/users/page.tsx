@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { User, Mail, Shield, Trash2, Search, Package, MessageSquare, Star, ChevronDown, ChevronUp } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
 import { useApp } from '@/context/AppContext';
 
 interface RegisteredUser {
@@ -153,15 +152,15 @@ export default function UsersAdminPage() {
     }, []);
 
     const fetchUsers = async () => {
-        if (!supabase) return;
         try {
-            const { data, error } = await supabase.from('users').select('*');
-            if (error) {
-                console.error("Error fetching users from Supabase:", error);
+            const res = await fetch('/api/admin/users');
+            if (!res.ok) {
+                console.error('Error fetching users from admin API');
                 return;
             }
+            const data = (await res.json()) as Array<RegisteredUser & { full_name?: string }>;
             if (data) {
-                const mappedUsers = data.map(u => ({
+                const mappedUsers = data.map((u) => ({
                     ...u,
                     name: u.full_name || u.name || 'Usuario sin nombre'
                 }));
@@ -178,13 +177,16 @@ export default function UsersAdminPage() {
     );
 
     const deleteUser = async (id: string) => {
-        if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
-            if (!supabase) return;
-            await supabase.from('users').delete().eq('id', id);
-            setUsers(users.filter(u => u.id !== id));
-            const localUsers = JSON.parse(localStorage.getItem('wayku_registered_users') || '[]');
-            const updatedLocal = localUsers.filter((u: any) => u.id !== id);
-            localStorage.setItem('wayku_registered_users', JSON.stringify(updatedLocal));
+        if (confirm('¿Estás seguro de que deseas eliminar este usuario? Podrá volver a registrarse con el mismo email.')) {
+            try {
+                const res = await fetch(`/api/admin/users?id=${id}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Error al eliminar');
+                setUsers(users.filter(u => u.id !== id));
+                const localUsers = JSON.parse(localStorage.getItem('wayku_registered_users') || '[]');
+                localStorage.setItem('wayku_registered_users', JSON.stringify(localUsers.filter((u: any) => u.id !== id)));
+            } catch (e) {
+                alert('No se pudo eliminar el usuario. Intentá de nuevo.');
+            }
         }
     };
 

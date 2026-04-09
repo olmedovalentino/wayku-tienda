@@ -16,6 +16,8 @@ const nextConfig: NextConfig = {
       { source: '/faq', destination: '/preguntas-frecuentes', permanent: true },
       { source: '/checkout', destination: '/finalizar-compra', permanent: true },
       { source: '/checkout/success', destination: '/finalizar-compra/exito', permanent: true },
+      { source: '/checkout/failure', destination: '/finalizar-compra/failure', permanent: true },
+      { source: '/checkout/pending', destination: '/finalizar-compra/pending', permanent: true },
     ];
   },
   images: {

@@ -1,8 +1,19 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { cookies } from 'next/headers';
+import { isValidAdminSessionToken } from '@/lib/admin-session';
+
+async function ensureAdminSession() {
+    const cookieStore = await cookies();
+    const session = cookieStore.get('admin_session')?.value;
+    return isValidAdminSessionToken(session);
+}
 
 export async function GET() {
     try {
+        if (!(await ensureAdminSession())) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
         // Use service role key to bypass RLS, fallback to anon if missing
         const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -26,8 +37,16 @@ export async function GET() {
 
 export async function POST(req: Request) {
     try {
+        if (!(await ensureAdminSession())) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         const body = await req.json();
         const { table, action, match, data } = body;
+        const allowedTables = new Set(['orders', 'queries']);
+        const allowedActions = new Set(['update', 'delete']);
+        if (!allowedTables.has(table) || !allowedActions.has(action)) {
+            return NextResponse.json({ error: 'Invalid admin operation' }, { status: 400 });
+        }
         
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
         const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;

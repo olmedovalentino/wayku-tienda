@@ -23,7 +23,7 @@ export async function POST(request: Request) {
         const protocol = request.headers.get('x-forwarded-proto') || 'http';
 
         // Clean baseUrl: Priority to origin, then host, then env, then fallback.
-        let baseUrl = process.env.NEXT_PUBLIC_URL || origin || `${protocol}://${host}` || 'http://localhost:3000';
+        let baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_URL || origin || `${protocol}://${host}` || 'http://localhost:3000';
 
         // Remove trailing slash if present
         baseUrl = baseUrl.replace(/\/$/, '');

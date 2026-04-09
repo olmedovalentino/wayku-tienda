@@ -2,13 +2,14 @@ import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+import { isValidAdminSessionToken } from '@/lib/admin-session';
 
 export async function POST(req: Request) {
     try {
         const cookieStore = await cookies();
         const session = cookieStore.get('admin_session');
         
-        if (!session || session.value !== 'authenticated') {
+        if (!session || !isValidAdminSessionToken(session.value)) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
         const { subject, message, targetEmails } = await req.json();
@@ -26,7 +27,7 @@ export async function POST(req: Request) {
         
         if (targetEmails === 'all') {
             const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-            const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+            const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
             const supabase = createClient(supabaseUrl, supabaseKey);
 
             const { data: subscribers, error } = await supabase.from('subscribers').select('email');
@@ -60,7 +61,7 @@ export async function POST(req: Request) {
             <div style="font-size: 15px; line-height: 1.6; color: #57534e; white-space: pre-wrap;">${message}</div>
             
             <div style="text-align: center; margin-top: 40px; margin-bottom: 20px;">
-                <a href="${process.env.NEXT_PUBLIC_URL || 'https://wayku-tienda.vercel.app'}" style="background-color: #5E6F5E; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 500; font-size: 14px;">Visitar la Tienda</a>
+                <a href="${process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_URL || 'https://www.wayku.ar'}" style="background-color: #5E6F5E; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 500; font-size: 14px;">Visitar la Tienda</a>
             </div>
             
             <hr style="border: none; border-top: 1px solid #E5E5E5; margin-top: 40px; margin-bottom: 20px;">
