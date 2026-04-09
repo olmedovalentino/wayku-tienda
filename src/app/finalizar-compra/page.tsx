@@ -56,15 +56,21 @@ export default function CheckoutPage() {
             const hasPastOrders = orders.some(o => o.email?.toLowerCase() === user.email?.toLowerCase());
             
             if (!hasPastOrders && appliedDiscount === 0) {
-                import('@supabase/supabase-js').then(({createClient}) => {
-                    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
-                    supabase.from('coupons').select('is_active').eq('code', 'PRIMERACOMPRA10').single().then(({data}) => {
-                        if (data && data.is_active) {
-                            setAppliedDiscount(10);
+                fetch('/api/coupons/validate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: 'PRIMERACOMPRA10', email: user.email }),
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.valid) {
+                            setAppliedDiscount(data.discountPercentage || 10);
                             setCouponCode('PRIMERACOMPRA10');
                         }
+                    })
+                    .catch(() => {
+                        // Silent fallback: coupon stays unapplied if validation fails.
                     });
-                });
             }
         }
     }, [user, orders, appliedDiscount]);
@@ -122,38 +128,21 @@ export default function CheckoutPage() {
 
 
         try {
-            // Import supabase dynamically if not in component scope, wait we can just import it at the top
-            // assuming it's available via context or we can use fetch
-            const { createClient } = await import('@supabase/supabase-js');
-            const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+            const res = await fetch('/api/coupons/validate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: couponCode, email: formData.email }),
+            });
+            const data = await res.json();
 
-            const { data, error } = await supabase
-                .from('coupons')
-                .select('discount_percentage, is_active, expires_at')
-                .eq('code', couponCode.toUpperCase())
-                .single();
-
-            if (error || !data) {
-                setCouponError('Código inválido o no encontrado');
+            if (!res.ok || !data.valid) {
+                setCouponError(data.error || 'Código inválido');
                 setAppliedDiscount(0);
-            } else if (!data.is_active) {
-                setCouponError('El cupón está desactivado');
-                setAppliedDiscount(0);
-            } else if (data.expires_at && new Date(data.expires_at) <= new Date()) {
-                setCouponError('Este cupón ya venció');
-                setAppliedDiscount(0);
-            } else {
-                if (couponCode.toUpperCase() === 'PRIMERACOMPRA10') {
-                    const hasPastOrders = orders.some(o => o.email?.toLowerCase() === formData.email?.toLowerCase());
-                    if (hasPastOrders) {
-                        setCouponError('Este cupón es solo para tu primera compra.');
-                        setAppliedDiscount(0);
-                        return;
-                    }
-                }
-                setAppliedDiscount(data.discount_percentage);
-                setCouponError('');
+                return;
             }
+
+            setAppliedDiscount(data.discountPercentage);
+            setCouponError('');
         } catch (e) {
             setCouponError('Error al validar el cupón');
             setAppliedDiscount(0);

@@ -1,6 +1,27 @@
 import crypto from 'crypto';
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
+
+function parseSignature(signature: string) {
+    const parts = signature.split(',');
+    let ts = '';
+    let hash = '';
+    for (const part of parts) {
+        const [key, value] = part.split('=');
+        if (key === 'ts') ts = value;
+        if (key === 'v1') hash = value;
+    }
+    return { ts, hash };
+}
+
+function signatureMatches(manifest: string, providedHash: string, secret: string) {
+    if (!providedHash) return false;
+    const generatedHash = crypto.createHmac('sha256', secret).update(manifest).digest('hex');
+    const providedBuffer = Buffer.from(providedHash, 'hex');
+    const generatedBuffer = Buffer.from(generatedHash, 'hex');
+    if (providedBuffer.length !== generatedBuffer.length) return false;
+    return crypto.timingSafeEqual(providedBuffer, generatedBuffer);
+}
 
 // Helper to handle both GET (verification) and POST (webhooks) from MP
 export async function POST(request: Request) {
@@ -16,23 +37,15 @@ export async function POST(request: Request) {
         const xRequestId = request.headers.get('x-request-id');
         const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
 
-        if (secret && xSignature && xRequestId && id) {
-            const parts = xSignature.split(',');
-            let ts = '';
-            let hash = '';
-            parts.forEach(part => {
-                const [key, value] = part.split('=');
-                if (key === 'ts') ts = value;
-                else if (key === 'v1') hash = value;
-            });
+        if (!secret || !xSignature || !xRequestId || !id) {
+            return new NextResponse('Missing webhook signature data', { status: 401 });
+        }
 
-            const manifest = `id:${id};request-id:${xRequestId};ts:${ts};`;
-            const generatedHash = crypto.createHmac('sha256', secret).update(manifest).digest('hex');
-            
-            if (generatedHash !== hash) {
-                console.error('Webhook signature verification failed');
-                return new NextResponse('Invalid signature', { status: 403 });
-            }
+        const { ts, hash } = parseSignature(xSignature);
+        const manifest = `id:${id};request-id:${xRequestId};ts:${ts};`;
+        if (!signatureMatches(manifest, hash, secret)) {
+            console.error('Webhook signature verification failed');
+            return new NextResponse('Invalid signature', { status: 403 });
         }
 
         if (topic === 'payment' && id) {
@@ -52,7 +65,7 @@ export async function POST(request: Request) {
 
                 if (orderId && status === 'approved') {
                     // Update in our DB
-                    const { error } = await supabase!
+                    const { error } = await getSupabaseAdmin()
                         .from('orders')
                         .update({ status: 'Pago acreditado' })
                         .eq('id', orderId);

@@ -1,13 +1,7 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { isValidAdminSessionToken } from '@/lib/admin-session';
-
-function getAdmin() {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-    return createClient(url, key);
-}
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 async function ensureAdminSession() {
     const cookieStore = await cookies();
@@ -21,7 +15,7 @@ export async function GET() {
         if (!(await ensureAdminSession())) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
-        const { data, error } = await getAdmin()
+        const { data, error } = await getSupabaseAdmin()
             .from('coupons')
             .select('*')
             .order('created_at', { ascending: false });
@@ -39,7 +33,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
         const body = await req.json();
-        const { data, error } = await getAdmin()
+        const { data, error } = await getSupabaseAdmin()
             .from('coupons')
             .insert([body])
             .select()
@@ -62,7 +56,7 @@ export async function PATCH(req: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
         const { id, ...updates } = await req.json();
-        const { data, error } = await getAdmin()
+        const { data, error } = await getSupabaseAdmin()
             .from('coupons')
             .update(updates)
             .eq('id', id)
@@ -84,7 +78,7 @@ export async function DELETE(req: Request) {
         const { searchParams } = new URL(req.url);
         const id = searchParams.get('id');
         if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
-        const { error } = await getAdmin().from('coupons').delete().eq('id', id);
+        const { error } = await getSupabaseAdmin().from('coupons').delete().eq('id', id);
         if (error) throw error;
         return NextResponse.json({ success: true });
     } catch (e: any) {

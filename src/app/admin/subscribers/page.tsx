@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
 import {
     Search,
     Mail,
@@ -36,10 +35,9 @@ export default function AdminSubscribersPage() {
 
     useEffect(() => {
         const fetchSubscribers = async () => {
-            if (supabase) {
-                const { data, error } = await supabase.from('subscribers').select('*').order('created_at', { ascending: false });
-                if (data) setSubscribers(data);
-            }
+            const res = await fetch('/api/admin/subscribers');
+            const data = await res.json();
+            if (res.ok) setSubscribers(data);
             setIsLoading(false);
         };
         fetchSubscribers();
@@ -51,8 +49,8 @@ export default function AdminSubscribersPage() {
 
     const handleDelete = async (email: string) => {
         if (confirm(`¿Eliminar a ${email} de la lista?`)) {
-            if (supabase) {
-                await supabase.from('subscribers').delete().eq('email', email);
+            const res = await fetch(`/api/admin/subscribers?email=${encodeURIComponent(email)}`, { method: 'DELETE' });
+            if (res.ok) {
                 setSubscribers(prev => prev.filter(s => s.email !== email));
             }
         }

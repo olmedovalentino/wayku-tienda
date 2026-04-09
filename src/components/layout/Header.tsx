@@ -56,10 +56,10 @@ export function Header() {
                         <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 hidden group-hover:block w-48">
                             <div className="bg-white border border-stone-100 rounded-xl shadow-lg p-2 flex flex-col gap-1">
                                 <Link href="/productos" className="px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 hover:text-primary rounded-lg transition-colors">Ver todo</Link>
-                                <Link href="/products?category=pendant" className="px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 hover:text-primary rounded-lg transition-colors">Colgantes</Link>
-                                <Link href="/products?category=table" className="px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 hover:text-primary rounded-lg transition-colors">De Mesa</Link>
-                                <Link href="/products?category=floor" className="px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 hover:text-primary rounded-lg transition-colors">De Pie</Link>
-                                <Link href="/products?category=wall" className="px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 hover:text-primary rounded-lg transition-colors">Apliques</Link>
+                                <Link href="/productos?category=pendant" className="px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 hover:text-primary rounded-lg transition-colors">Colgantes</Link>
+                                <Link href="/productos?category=table" className="px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 hover:text-primary rounded-lg transition-colors">De Mesa</Link>
+                                <Link href="/productos?category=floor" className="px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 hover:text-primary rounded-lg transition-colors">De Pie</Link>
+                                <Link href="/productos?category=wall" className="px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 hover:text-primary rounded-lg transition-colors">Apliques</Link>
                             </div>
                         </div>
                     </div>
@@ -143,10 +143,10 @@ export function Header() {
                             {isCatalogOpen && (
                                 <div className="flex flex-col space-y-4 pl-4 pt-4 border-l-2 border-stone-100 ml-2 mt-2 mb-2">
                                     <Link href="/productos" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary text-sm font-medium">Ver Todo</Link>
-                                    <Link href="/products?category=pendant" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary text-sm font-medium">Colgantes</Link>
-                                    <Link href="/products?category=table" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary text-sm font-medium">De Mesa</Link>
-                                    <Link href="/products?category=floor" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary text-sm font-medium">De Pie</Link>
-                                    <Link href="/products?category=wall" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary text-sm font-medium">Apliques</Link>
+                                    <Link href="/productos?category=pendant" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary text-sm font-medium">Colgantes</Link>
+                                    <Link href="/productos?category=table" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary text-sm font-medium">De Mesa</Link>
+                                    <Link href="/productos?category=floor" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary text-sm font-medium">De Pie</Link>
+                                    <Link href="/productos?category=wall" onClick={() => setIsMenuOpen(false)} className="text-stone-500 hover:text-primary text-sm font-medium">Apliques</Link>
                                 </div>
                             )}
                         </div>

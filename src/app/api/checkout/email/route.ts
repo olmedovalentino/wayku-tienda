@@ -1,9 +1,22 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import { enforceRateLimit, getClientIp } from '@/lib/rate-limit';
 
 export async function POST(req: Request) {
     try {
+        const ip = getClientIp(req);
+        const rate = enforceRateLimit(`checkout-email:${ip}`, 8, 60_000);
+        if (!rate.allowed) {
+            return NextResponse.json(
+                { error: `Too many requests. Retry in ${rate.retryAfterSeconds}s.` },
+                { status: 429 }
+            );
+        }
+
         const order = await req.json();
+        if (!order?.email || !order?.id || !Array.isArray(order?.details)) {
+            return NextResponse.json({ error: 'Invalid order payload' }, { status: 400 });
+        }
 
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
             console.error('Mail config missing in env');

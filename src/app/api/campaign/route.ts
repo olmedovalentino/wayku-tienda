@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
-import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { isValidAdminSessionToken } from '@/lib/admin-session';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 export async function POST(req: Request) {
     try {
@@ -26,9 +26,7 @@ export async function POST(req: Request) {
         let emails: string[] = [];
         
         if (targetEmails === 'all') {
-            const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-            const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-            const supabase = createClient(supabaseUrl, supabaseKey);
+            const supabase = getSupabaseAdmin();
 
             const { data: subscribers, error } = await supabase.from('subscribers').select('email');
             if (error || !subscribers || subscribers.length === 0) {

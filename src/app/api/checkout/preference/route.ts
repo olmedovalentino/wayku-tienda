@@ -1,11 +1,24 @@
 import { NextResponse } from 'next/server';
 import { client } from '@/lib/mercadopago';
 import { Preference } from 'mercadopago';
+import { enforceRateLimit, getClientIp } from '@/lib/rate-limit';
 
 export async function POST(request: Request) {
     try {
+        const ip = getClientIp(request);
+        const rate = enforceRateLimit(`checkout-preference:${ip}`, 20, 60_000);
+        if (!rate.allowed) {
+            return NextResponse.json(
+                { error: `Too many requests. Retry in ${rate.retryAfterSeconds}s.` },
+                { status: 429 }
+            );
+        }
+
         const body = await request.json();
         const { items, payer, couponDiscount, orderId } = body;
+        if (!Array.isArray(items) || items.length === 0 || !payer?.email) {
+            return NextResponse.json({ error: 'Invalid checkout payload' }, { status: 400 });
+        }
 
         // Apply discount if exists
         const totalItems = items.map((item: any) => ({
@@ -56,8 +69,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json({
             id: result.id,
-            init_point: result.init_point,
-            debug: { baseUrl }
+            init_point: result.init_point
         });
 
 

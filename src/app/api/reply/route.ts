@@ -1,8 +1,26 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import { cookies } from 'next/headers';
+import { isValidAdminSessionToken } from '@/lib/admin-session';
+import { enforceRateLimit, getClientIp } from '@/lib/rate-limit';
 
 export async function POST(req: Request) {
     try {
+        const cookieStore = await cookies();
+        const session = cookieStore.get('admin_session')?.value;
+        if (!isValidAdminSessionToken(session)) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const ip = getClientIp(req);
+        const rate = enforceRateLimit(`reply:${ip}`, 30, 60_000);
+        if (!rate.allowed) {
+            return NextResponse.json(
+                { error: `Too many requests. Retry in ${rate.retryAfterSeconds}s.` },
+                { status: 429 }
+            );
+        }
+
         const { email, subject, message, name, originalMessage } = await req.json();
 
         if (!email || !subject || !message) {

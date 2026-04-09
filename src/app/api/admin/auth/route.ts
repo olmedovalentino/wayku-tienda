@@ -1,9 +1,19 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createAdminSessionToken } from '@/lib/admin-session';
+import { enforceRateLimit, getClientIp } from '@/lib/rate-limit';
 
 export async function POST(request: Request) {
     try {
+        const ip = getClientIp(request);
+        const rate = enforceRateLimit(`admin-login:${ip}`, 20, 60_000);
+        if (!rate.allowed) {
+            return NextResponse.json(
+                { success: false, error: `Demasiados intentos. Reintenta en ${rate.retryAfterSeconds}s.` },
+                { status: 429 }
+            );
+        }
+
         const { username, password } = await request.json();
         const adminUser = process.env.ADMIN_USERNAME;
         const adminPass = process.env.ADMIN_PASSWORD;
