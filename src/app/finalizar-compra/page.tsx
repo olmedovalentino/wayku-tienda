@@ -5,7 +5,7 @@ import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { useRouter } from 'next/navigation';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -40,6 +40,11 @@ export default function CheckoutPage() {
 
     const [shippingMethod, setShippingMethod] = useState<'shipping' | 'pickup'>('shipping');
     const [paymentMethod, setPaymentMethod] = useState<'card' | 'transfer'>('card');
+    const checkoutTokenRef = useRef<string>(
+        (typeof crypto !== 'undefined' && crypto.randomUUID)
+            ? crypto.randomUUID()
+            : `token-${Date.now()}`
+    );
 
     const router = useRouter();
 
@@ -232,6 +237,7 @@ export default function CheckoutPage() {
                     shippingCost: shippingMethod === 'shipping' ? shippingCost : 0,
                     couponCode: couponCode.trim() ? couponCode : null,
                     notes: formData.notes,
+                    checkoutToken: checkoutTokenRef.current,
                 }),
             });
             const orderData = await orderResponse.json();

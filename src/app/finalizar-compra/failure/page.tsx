@@ -1,7 +1,27 @@
+'use client';
+
 import Link from 'next/link';
 import { XCircle } from 'lucide-react';
+import { Suspense, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 
-export default function CheckoutFailurePage() {
+function FailureContent() {
+    const searchParams = useSearchParams();
+    const didReleaseRef = useRef(false);
+    const orderId = searchParams.get('order_id');
+
+    useEffect(() => {
+        if (!orderId || didReleaseRef.current) return;
+        didReleaseRef.current = true;
+        fetch('/api/checkout/release-stock', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orderId }),
+        }).catch(() => {
+            // Non-blocking best effort.
+        });
+    }, [orderId]);
+
     return (
         <div className="min-h-screen py-20 px-4 bg-stone-50 flex items-center justify-center">
             <div className="max-w-md w-full bg-white rounded-2xl p-8 text-center shadow-sm border border-stone-100">
@@ -21,5 +41,13 @@ export default function CheckoutFailurePage() {
                 </Link>
             </div>
         </div>
+    );
+}
+
+export default function CheckoutFailurePage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Cargando...</div>}>
+            <FailureContent />
+        </Suspense>
     );
 }

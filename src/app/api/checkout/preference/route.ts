@@ -67,9 +67,9 @@ export async function POST(request: Request) {
                     surname: String(order.customer || '').split(' ').slice(1).join(' ') || '',
                 },
                 back_urls: {
-                    success: `${baseUrl}/checkout/success`,
-                    failure: `${baseUrl}/checkout/failure`,
-                    pending: `${baseUrl}/checkout/pending`,
+                    success: `${baseUrl}/checkout/success?order_id=${encodeURIComponent(order.id)}`,
+                    failure: `${baseUrl}/checkout/failure?order_id=${encodeURIComponent(order.id)}`,
+                    pending: `${baseUrl}/checkout/pending?order_id=${encodeURIComponent(order.id)}`,
                 },
                 // Only use auto_return if on HTTPS, as Mercado Pago rejects HTTP domains
                 auto_return: baseUrl.startsWith('https://') ? 'approved' : undefined,

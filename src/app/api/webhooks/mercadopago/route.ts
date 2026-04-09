@@ -62,18 +62,59 @@ export async function POST(request: Request) {
                 // Standard MP structure has external_reference with our orderId
                 const orderId = paymentInfo.external_reference;
                 const status = paymentInfo.status; // 'approved', 'pending', 'rejected', etc.
+                const amount = Number(paymentInfo.transaction_amount || 0);
+                const currency = String(paymentInfo.currency_id || '');
 
-                if (orderId && status === 'approved') {
-                    // Update in our DB
-                    const { error } = await getSupabaseAdmin()
+                if (orderId) {
+                    const admin = getSupabaseAdmin();
+                    const { data: order } = await admin
                         .from('orders')
-                        .update({ status: 'Pago acreditado' })
-                        .eq('id', orderId);
+                        .select('id, total, status')
+                        .eq('id', orderId)
+                        .single();
+                    if (!order) return new NextResponse('OK', { status: 200 });
 
-                    if (error) {
-                        console.error('Error updating order status in DB:', error);
-                    } else {
-                        console.log(`Successfully updated order ${orderId} to Pago acreditado`);
+                    if (status === 'approved') {
+                        if (currency !== 'ARS' || Math.abs(Number(order.total || 0) - amount) > 1) {
+                            console.error('Payment amount mismatch for order', orderId, { amount, currency, expected: order.total });
+                            return new NextResponse('Amount mismatch', { status: 422 });
+                        }
+                        const { error } = await admin
+                            .from('orders')
+                            .update({ status: 'Pago acreditado' })
+                            .eq('id', orderId);
+                        if (error) {
+                            console.error('Error updating order status in DB:', error);
+                        } else {
+                            console.log(`Successfully updated order ${orderId} to Pago acreditado`);
+                        }
+                    }
+
+                    if (status === 'rejected' || status === 'cancelled') {
+                        const { data: fullOrder } = await admin
+                            .from('orders')
+                            .select('status, details')
+                            .eq('id', orderId)
+                            .single();
+                        if (fullOrder && fullOrder.status !== 'Cancelado' && fullOrder.status !== 'Pago acreditado') {
+                            const details = Array.isArray(fullOrder.details) ? fullOrder.details : [];
+                            for (const detail of details) {
+                                if (!detail?.productId || !detail?.quantity) continue;
+                                const { data: p } = await admin
+                                    .from('products')
+                                    .select('stockCount')
+                                    .eq('id', detail.productId)
+                                    .single();
+                                if (p && typeof p.stockCount === 'number') {
+                                    const restored = p.stockCount + Number(detail.quantity || 0);
+                                    await admin
+                                        .from('products')
+                                        .update({ stockCount: restored, inStock: restored > 0 })
+                                        .eq('id', detail.productId);
+                                }
+                            }
+                            await admin.from('orders').update({ status: 'Cancelado' }).eq('id', orderId);
+                        }
                     }
                 }
             }

@@ -32,6 +32,7 @@ export async function POST(request: Request) {
             shippingCost,
             couponCode,
             notes,
+            checkoutToken,
         } = body as {
             items: CheckoutItemInput[];
             payer: Record<string, string>;
@@ -40,6 +41,7 @@ export async function POST(request: Request) {
             shippingCost?: number;
             couponCode?: string;
             notes?: string;
+            checkoutToken?: string;
         };
 
         if (!Array.isArray(items) || items.length === 0) {
@@ -155,7 +157,14 @@ export async function POST(request: Request) {
             ? Math.max(0, Number(shippingCost || 0))
             : 0;
         const total = Math.max(0, subtotal - discountAmount + safeShipping);
-        const orderId = `ORD-${Date.now()}`;
+        const normalizedToken = String(checkoutToken || '')
+            .trim()
+            .replace(/[^a-zA-Z0-9_-]/g, '')
+            .slice(0, 64);
+        if (!normalizedToken) {
+            return NextResponse.json({ error: 'Missing checkout token' }, { status: 400 });
+        }
+        const orderId = `ORD-${normalizedToken}`;
 
         const orderToInsert = {
             id: orderId,
@@ -173,25 +182,76 @@ export async function POST(request: Request) {
                 : null,
             city: shippingMethod === 'shipping' ? `${payer.city}, ${payer.province}` : null,
             postalCode: shippingMethod === 'shipping' ? payer.postalCode : null,
-            details: validatedDetails.map(({ productId, ...detail }) => detail),
+            details: validatedDetails,
         };
 
         const { error: orderError } = await admin.from('orders').insert(orderToInsert);
         if (orderError) {
+            // Idempotency: if order already exists for this token, return it.
+            const { data: existing } = await admin.from('orders').select('*').eq('id', orderId).single();
+            if (existing) {
+                return NextResponse.json({
+                    success: true,
+                    order: {
+                        ...existing,
+                        shippingCost: safeShipping,
+                        discountPercentage,
+                        couponCode: normalizedCoupon || null,
+                    },
+                });
+            }
             return NextResponse.json({ error: 'No se pudo crear el pedido' }, { status: 500 });
         }
 
-        // Reserve stock server-side.
+        // Reserve stock with optimistic compare-and-set retries.
+        const reserved: Array<{ productId: string; quantity: number }> = [];
         for (const detail of validatedDetails) {
-            const product = productMap.get(detail.productId);
-            if (!product || typeof product.stockCount !== 'number') continue;
-            const newStock = Math.max(0, product.stockCount - detail.quantity);
-            const { error: stockError } = await admin
-                .from('products')
-                .update({ stockCount: newStock, inStock: newStock > 0 })
-                .eq('id', detail.productId);
-            if (stockError) {
-                console.error('Stock update failed for', detail.productId, stockError);
+            let reservedOk = false;
+            for (let i = 0; i < 3; i += 1) {
+                const { data: latest, error: latestErr } = await admin
+                    .from('products')
+                    .select('stockCount')
+                    .eq('id', detail.productId)
+                    .single();
+                if (latestErr || !latest || typeof latest.stockCount !== 'number') break;
+                if (latest.stockCount < detail.quantity) break;
+
+                const newStock = latest.stockCount - detail.quantity;
+                const { data: updated, error: updateErr } = await admin
+                    .from('products')
+                    .update({ stockCount: newStock, inStock: newStock > 0 })
+                    .eq('id', detail.productId)
+                    .eq('stockCount', latest.stockCount)
+                    .select('id')
+                    .maybeSingle();
+                if (!updateErr && updated) {
+                    reserved.push({ productId: detail.productId, quantity: detail.quantity });
+                    reservedOk = true;
+                    break;
+                }
+            }
+
+            if (!reservedOk) {
+                // Rollback partial stock reservations and cancel this order.
+                for (const rollback of reserved) {
+                    const { data: back } = await admin
+                        .from('products')
+                        .select('stockCount')
+                        .eq('id', rollback.productId)
+                        .single();
+                    if (back && typeof back.stockCount === 'number') {
+                        const restored = back.stockCount + rollback.quantity;
+                        await admin
+                            .from('products')
+                            .update({ stockCount: restored, inStock: restored > 0 })
+                            .eq('id', rollback.productId);
+                    }
+                }
+                await admin.from('orders').update({ status: 'Cancelado' }).eq('id', orderId);
+                return NextResponse.json(
+                    { error: `No hay stock suficiente para ${detail.name}` },
+                    { status: 409 }
+                );
             }
         }
 

@@ -2,7 +2,6 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useCart } from '@/context/CartContext';
-import { useApp } from '@/context/AppContext';
 import { useSearchParams } from 'next/navigation';
 
 import { Button } from '@/components/ui/Button';
@@ -11,7 +10,6 @@ import Link from 'next/link';
 
 function SuccessContent() {
     const { clearCart } = useCart();
-    const { updateOrderStatus } = useApp();
     const [isProcessed, setIsProcessed] = useState(false);
     const searchParams = useSearchParams();
 
@@ -21,27 +19,16 @@ function SuccessContent() {
     
     // Mercado Pago params
     const status = searchParams.get('status');
-    const paymentId = searchParams.get('payment_id');
     const externalReference = searchParams.get('external_reference');
     const orderIdParam = searchParams.get('order_id');
 
     useEffect(() => {
-        const orderId = externalReference || orderIdParam;
-        
         if (!isProcessed && (status === 'approved' || method === 'transfer')) {
-            // Marcar pedido como pagado/procesando si viene de MercadoPago (Card)
-            // Ya no dependemos de que hayan items en el cart, para soportar reloads.
-            if (status === 'approved' && orderId) {
-                updateOrderStatus(orderId, 'Pago acreditado');
-            } else if (method === 'transfer' && orderId) {
-                updateOrderStatus(orderId, 'Pedido recibido');
-            }
-            
             // clearCart ya se llamó en checkout/page.tsx, pero lo llamamos por las dudas
             clearCart();
             setIsProcessed(true);
         }
-    }, [isProcessed, status, method, externalReference, orderIdParam, updateOrderStatus, clearCart]);
+    }, [isProcessed, status, method, externalReference, orderIdParam, clearCart]);
 
     return (
         <div className="flex min-h-[80vh] flex-col items-center justify-center px-4 py-12 text-center max-w-4xl mx-auto">
