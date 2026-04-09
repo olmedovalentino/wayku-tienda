@@ -48,13 +48,14 @@ export async function proxy(request: NextRequest) {
     const pathname = request.nextUrl.pathname;
     const isAdminPage = pathname.startsWith('/admin');
     const isAdminApi = pathname.startsWith('/api/admin');
+    const isAdminAuthApi = pathname === '/api/admin/auth';
     const isAdminLogin = pathname === '/admin/login';
     const isAuthorized = await hasValidAdminSession(request);
 
     if (isAdminPage && !isAdminLogin && !isAuthorized) {
         return NextResponse.redirect(new URL('/admin/login', request.url));
     }
-    if (isAdminApi && !isAuthorized) {
+    if (isAdminApi && !isAdminAuthApi && !isAuthorized) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
