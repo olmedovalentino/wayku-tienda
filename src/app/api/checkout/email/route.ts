@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { enforceRateLimit, getClientIp } from '@/lib/rate-limit';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 export async function POST(req: Request) {
     try {
@@ -13,9 +14,19 @@ export async function POST(req: Request) {
             );
         }
 
-        const order = await req.json();
-        if (!order?.email || !order?.id || !Array.isArray(order?.details)) {
+        const payload = await req.json();
+        const orderId = String(payload?.id || '').trim();
+        if (!orderId) {
             return NextResponse.json({ error: 'Invalid order payload' }, { status: 400 });
+        }
+
+        const { data: order, error: orderError } = await getSupabaseAdmin()
+            .from('orders')
+            .select('*')
+            .eq('id', orderId)
+            .single();
+        if (orderError || !order || !order.email || !Array.isArray(order.details)) {
+            return NextResponse.json({ error: 'Order not found' }, { status: 404 });
         }
 
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { client } from '@/lib/mercadopago';
 import { Preference } from 'mercadopago';
 import { enforceRateLimit, getClientIp } from '@/lib/rate-limit';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 export async function POST(request: Request) {
     try {
@@ -15,18 +16,32 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json();
-        const { items, payer, couponDiscount, orderId } = body;
-        if (!Array.isArray(items) || items.length === 0 || !payer?.email) {
+        const { orderId } = body;
+        if (!orderId) {
             return NextResponse.json({ error: 'Invalid checkout payload' }, { status: 400 });
         }
 
-        // Apply discount if exists
-        const totalItems = items.map((item: any) => ({
-            id: item.id,
+        const admin = getSupabaseAdmin();
+        const { data: order, error: orderError } = await admin
+            .from('orders')
+            .select('id, email, customer, details, total')
+            .eq('id', orderId)
+            .single();
+        if (orderError || !order) {
+            return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+        }
+
+        const details = Array.isArray(order.details) ? order.details : [];
+        if (details.length === 0) {
+            return NextResponse.json({ error: 'Order has no items' }, { status: 400 });
+        }
+
+        const totalItems = details.map((item: any, index: number) => ({
+            id: `${order.id}-${index}`,
             title: item.name,
-            unit_price: Number(item.price) * (1 - (couponDiscount / 100)),
+            unit_price: Number(item.price),
             quantity: Number(item.quantity),
-            currency_id: 'ARS'
+            currency_id: 'ARS',
         }));
 
         // Determine Base URL correctly
@@ -47,9 +62,9 @@ export async function POST(request: Request) {
             body: {
                 items: totalItems,
                 payer: {
-                    email: payer.email,
-                    name: payer.firstName,
-                    surname: payer.lastName,
+                    email: order.email,
+                    name: String(order.customer || '').split(' ')[0] || '',
+                    surname: String(order.customer || '').split(' ').slice(1).join(' ') || '',
                 },
                 back_urls: {
                     success: `${baseUrl}/checkout/success`,
@@ -59,7 +74,7 @@ export async function POST(request: Request) {
                 // Only use auto_return if on HTTPS, as Mercado Pago rejects HTTP domains
                 auto_return: baseUrl.startsWith('https://') ? 'approved' : undefined,
                 binary_mode: true,
-                external_reference: orderId || `ORDER-${Date.now()}`,
+                external_reference: order.id,
             }
         });
 

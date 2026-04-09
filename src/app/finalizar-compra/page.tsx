@@ -11,7 +11,7 @@ import Link from 'next/link';
 
 export default function CheckoutPage() {
     const { items, subtotal, clearCart, isInitialized } = useCart();
-    const { updateProduct, products, addOrder, orders } = useApp();
+    const { orders } = useApp();
     const { user } = useAuth();
 
     const [isProcessing, setIsProcessing] = useState(false);
@@ -201,101 +201,63 @@ export default function CheckoutPage() {
             return;
         }
 
-        const orderId = `ORD-${Date.now()}`;
-
-        // Create the order object to be saved in state
-        const orderData = {
-            id: orderId,
-            customer: `${formData.firstName} ${formData.lastName}`,
-            email: formData.email,
-            total: total,
-            items: items.reduce((acc, item) => acc + item.quantity, 0),
-            shippingMethod,
-            paymentMethod,
-            phone: formData.phone,
-            address: shippingMethod === 'shipping' ? (formData.notes ? `${formData.address} | Notas: ${formData.notes}` : formData.address) : undefined,
-            city: shippingMethod === 'shipping' ? `${formData.city}, ${formData.province}` : undefined,
-            postalCode: shippingMethod === 'shipping' ? formData.postalCode : undefined,
-            details: items.map(item => ({
-                name: item.name,
-                price: item.price,
-                quantity: item.quantity,
-                material: item.selectedMaterial,
-                size: item.selectedSize,
-                shade: item.shadeType,
-                cable: item.cableColor,
-                canopy: item.canopyColor
-            })),
-            shippingCost: shippingMethod === 'shipping' ? shippingCost : 0,
-        };
-
-        if (paymentMethod === 'transfer') {
-            setIsProcessing(true);
-            // Descontar inventario antes de redirigir (reserva de stock)
-            await Promise.all(items.map(async (item) => {
-                const currentProduct = products.find((p: any) => p.id === item.id);
-                if (currentProduct && currentProduct.stockCount !== undefined) {
-                    const newStock = Math.max(0, currentProduct.stockCount - item.quantity);
-                    await updateProduct(item.id, {
-                        stockCount: newStock,
-                        inStock: newStock > 0
-                    });
-                }
-            }));
-            
-            await addOrder(orderData);
-
-            // Send confirmation email
-            await fetch('/api/checkout/email', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(orderData)
-            }).catch(console.error);
-
-            // For transfer, we just go to success page with a flag
-            clearCart();
-            router.push(`/finalizar-compra/exito?method=transfer&name=${formData.firstName}&total=${total}&order_id=${orderId}`);
-            return;
-        }
-
         setIsProcessing(true);
 
         try {
-            // Descontar inventario antes de redirigir (reserva de stock)
-            await Promise.all(items.map(async (item) => {
-                const currentProduct = products.find((p: any) => p.id === item.id);
-                if (currentProduct && currentProduct.stockCount !== undefined) {
-                    const newStock = Math.max(0, currentProduct.stockCount - item.quantity);
-                    await updateProduct(item.id, {
-                        stockCount: newStock,
-                        inStock: newStock > 0
-                    });
-                }
-            }));
-
-            // Save order to state even for Card (it will be "Pendiente")
-            await addOrder(orderData);
-
-            // Send confirmation email
-            await fetch('/api/checkout/email', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(orderData)
-            }).catch(console.error);
-
-            const response = await fetch('/api/checkout/preference', {
+            const orderResponse = await fetch('/api/checkout/create-order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     items: items.map(item => ({
                         id: item.id,
-                        name: item.name,
-                        price: item.price,
-                        quantity: item.quantity
+                        quantity: item.quantity,
+                        selectedMaterial: item.selectedMaterial,
+                        selectedSize: item.selectedSize,
+                        shadeType: item.shadeType,
+                        cableColor: item.cableColor,
+                        canopyColor: item.canopyColor,
                     })),
-                    payer: formData,
-                    couponDiscount: appliedDiscount,
-                    orderId: orderId
+                    payer: {
+                        email: formData.email,
+                        firstName: formData.firstName,
+                        lastName: formData.lastName,
+                        phone: formData.phone,
+                        address: formData.address,
+                        city: formData.city,
+                        province: formData.province,
+                        postalCode: formData.postalCode,
+                    },
+                    shippingMethod,
+                    paymentMethod,
+                    shippingCost: shippingMethod === 'shipping' ? shippingCost : 0,
+                    couponCode: couponCode.trim() ? couponCode : null,
+                    notes: formData.notes,
+                }),
+            });
+            const orderData = await orderResponse.json();
+            if (!orderResponse.ok || !orderData?.order) {
+                throw new Error(orderData?.error || 'No se pudo crear el pedido');
+            }
+
+            if (paymentMethod === 'transfer') {
+                await fetch('/api/checkout/email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData.order),
+                }).catch(console.error);
+
+                clearCart();
+                router.push(
+                    `/finalizar-compra/exito?method=transfer&name=${formData.firstName}&total=${orderData.order.total}&order_id=${orderData.order.id}`
+                );
+                return;
+            }
+
+            const response = await fetch('/api/checkout/preference', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    orderId: orderData.order.id,
                 })
             });
 
