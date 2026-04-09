@@ -129,6 +129,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }, [items, user, isLoaded, isMounted]);
 
     const addItem = (p: any, m: any, s: any, shade: any, cable: any, canopy: any) => {
+        let maxStock = typeof p.stockCount === 'number' ? p.stockCount : Infinity;
+        if (p.variants && p.variants.length > 0) {
+            const variant = p.variants.find((v: any) => v.material === m && v.size === s);
+            if (variant && typeof variant.stock === 'number') maxStock = variant.stock;
+            else if (!s) {
+                const variantNoSize = p.variants.find((v: any) => v.material === m);
+                if (variantNoSize && typeof variantNoSize.stock === 'number') maxStock = variantNoSize.stock;
+            }
+        }
+
+        let limitReached = false;
+
         setItems(prev => {
             const exists = prev.find(i =>
                 i.id === p.id &&
@@ -138,11 +150,28 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 i.cableColor === cable &&
                 i.canopyColor === canopy
             );
-            if (exists) return prev.map(i => i === exists ? { ...i, quantity: i.quantity + 1 } : i);
+            if (exists) {
+                if (exists.quantity >= maxStock) {
+                    limitReached = true;
+                    return prev;
+                }
+                return prev.map(i => i === exists ? { ...i, quantity: exists.quantity + 1 } : i);
+            }
+            if (1 > maxStock) {
+                limitReached = true;
+                return prev;
+            }
             return [...prev, { ...p, quantity: 1, selectedMaterial: m, selectedSize: s, shadeType: shade, cableColor: cable, canopyColor: canopy }];
         });
-        setToastMessage(`Agregado al carrito`);
-        setTimeout(() => setToastMessage(null), 3000);
+        
+        setTimeout(() => {
+            if (limitReached) {
+                setToastMessage(`Stock máximo alcanzado para ${p.name}`);
+            } else {
+                setToastMessage(`Agregado al carrito`);
+            }
+            setTimeout(() => setToastMessage(null), 3000);
+        }, 0);
     };
 
     return (
@@ -152,7 +181,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
             closeCart: () => setIsOpen(false),
             addItem,
             removeItem: (idx) => setItems(prev => prev.filter((_, i) => i !== idx)),
-            updateItemQuantity: (idx, quantity) => setItems(prev => prev.map((item, i) => i === idx ? { ...item, quantity: Math.max(1, quantity) } : item)),
+            updateItemQuantity: (idx, quantity) => setItems(prev => prev.map((item, i) => {
+                if (i !== idx) return item;
+                let maxStock = typeof item.stockCount === 'number' ? item.stockCount : Infinity;
+                if (item.variants && item.variants.length > 0) {
+                    const variant = item.variants.find((v: any) => v.material === item.selectedMaterial && v.size === item.selectedSize);
+                    if (variant && typeof variant.stock === 'number') maxStock = variant.stock;
+                    else if (!item.selectedSize) {
+                        const variantNoSize = item.variants.find((v: any) => v.material === item.selectedMaterial);
+                        if (variantNoSize && typeof variantNoSize.stock === 'number') maxStock = variantNoSize.stock;
+                    }
+                }
+                return { ...item, quantity: Math.min(Math.max(1, quantity), maxStock) };
+            })),
             clearCart: () => setItems([]),
             subtotal: items.reduce((t, i) => t + (i.price * i.quantity), 0),
             isInitialized: isMounted,

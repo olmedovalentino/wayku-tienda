@@ -39,7 +39,7 @@ export async function POST(req: Request) {
         if (normalizedCode === 'PRIMERACOMPRA10') {
             const normalizedEmail = String(email || '').trim().toLowerCase();
             if (!normalizedEmail) {
-                return NextResponse.json({ valid: false, error: 'El email es requerido para este cupón' }, { status: 400 });
+                return NextResponse.json({ valid: false, error: 'Debes iniciar sesión para usar este cupón.' }, { status: 400 });
             }
 
             const { count, error: countError } = await admin
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
                 return NextResponse.json({ valid: false, error: 'No se pudo validar primera compra' }, { status: 500 });
             }
             if ((count || 0) > 0) {
-                return NextResponse.json({ valid: false, error: 'Este cupón es solo para tu primera compra.' }, { status: 400 });
+                return NextResponse.json({ valid: false, error: 'Este cupón es exclusivo para tu primera compra (ya registramos pedidos anteriores con tu email).' }, { status: 400 });
             }
         }
 

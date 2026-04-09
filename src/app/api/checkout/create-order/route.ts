@@ -145,7 +145,7 @@ export async function POST(request: Request) {
                     return NextResponse.json({ error: 'No se pudo validar primera compra' }, { status: 500 });
                 }
                 if ((count || 0) > 0) {
-                    return NextResponse.json({ error: 'Este cupón es solo para tu primera compra.' }, { status: 400 });
+                    return NextResponse.json({ error: 'Este cupón es exclusivo para tu primera compra (ya registramos pedidos anteriores con tu email).' }, { status: 400 });
                 }
             }
 
