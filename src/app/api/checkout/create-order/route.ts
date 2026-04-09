@@ -15,7 +15,7 @@ type CheckoutItemInput = {
 export async function POST(request: Request) {
     try {
         const ip = getClientIp(request);
-        const rate = enforceRateLimit(`checkout-create-order:${ip}`, 12, 60_000);
+        const rate = await enforceRateLimit(`checkout-create-order:${ip}`, 12, 60_000);
         if (!rate.allowed) {
             return NextResponse.json(
                 { error: `Too many requests. Retry in ${rate.retryAfterSeconds}s.` },
@@ -203,36 +203,51 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'No se pudo crear el pedido' }, { status: 500 });
         }
 
-        // Reserve stock with optimistic compare-and-set retries.
-        const reserved: Array<{ productId: string; quantity: number }> = [];
-        for (const detail of validatedDetails) {
-            let reservedOk = false;
-            for (let i = 0; i < 3; i += 1) {
-                const { data: latest, error: latestErr } = await admin
-                    .from('products')
-                    .select('stockCount')
-                    .eq('id', detail.productId)
-                    .single();
-                if (latestErr || !latest || typeof latest.stockCount !== 'number') break;
-                if (latest.stockCount < detail.quantity) break;
+        // Prefer DB-atomic reservation if SQL function exists.
+        const stockPayload = validatedDetails.map(d => ({
+            productId: d.productId,
+            quantity: d.quantity,
+        }));
+        const { data: reservedAtomic, error: atomicErr } = await admin.rpc('reserve_stock_atomic', {
+            items: stockPayload,
+        });
 
-                const newStock = latest.stockCount - detail.quantity;
-                const { data: updated, error: updateErr } = await admin
-                    .from('products')
-                    .update({ stockCount: newStock, inStock: newStock > 0 })
-                    .eq('id', detail.productId)
-                    .eq('stockCount', latest.stockCount)
-                    .select('id')
-                    .maybeSingle();
-                if (!updateErr && updated) {
-                    reserved.push({ productId: detail.productId, quantity: detail.quantity });
-                    reservedOk = true;
+        let reservationOk = reservedAtomic === true;
+        if (!reservationOk && atomicErr) {
+            // Fallback to optimistic compare-and-set when RPC is unavailable.
+            const reserved: Array<{ productId: string; quantity: number }> = [];
+            reservationOk = true;
+            for (const detail of validatedDetails) {
+                let reservedOk = false;
+                for (let i = 0; i < 3; i += 1) {
+                    const { data: latest, error: latestErr } = await admin
+                        .from('products')
+                        .select('stockCount')
+                        .eq('id', detail.productId)
+                        .single();
+                    if (latestErr || !latest || typeof latest.stockCount !== 'number') break;
+                    if (latest.stockCount < detail.quantity) break;
+
+                    const newStock = latest.stockCount - detail.quantity;
+                    const { data: updated, error: updateErr } = await admin
+                        .from('products')
+                        .update({ stockCount: newStock, inStock: newStock > 0 })
+                        .eq('id', detail.productId)
+                        .eq('stockCount', latest.stockCount)
+                        .select('id')
+                        .maybeSingle();
+                    if (!updateErr && updated) {
+                        reserved.push({ productId: detail.productId, quantity: detail.quantity });
+                        reservedOk = true;
+                        break;
+                    }
+                }
+                if (!reservedOk) {
+                    reservationOk = false;
                     break;
                 }
             }
-
-            if (!reservedOk) {
-                // Rollback partial stock reservations and cancel this order.
+            if (!reservationOk) {
                 for (const rollback of reserved) {
                     const { data: back } = await admin
                         .from('products')
@@ -247,12 +262,15 @@ export async function POST(request: Request) {
                             .eq('id', rollback.productId);
                     }
                 }
-                await admin.from('orders').update({ status: 'Cancelado' }).eq('id', orderId);
-                return NextResponse.json(
-                    { error: `No hay stock suficiente para ${detail.name}` },
-                    { status: 409 }
-                );
             }
+        }
+
+        if (!reservationOk) {
+            await admin.from('orders').update({ status: 'Cancelado' }).eq('id', orderId);
+            return NextResponse.json(
+                { error: 'No hay stock suficiente para uno o más productos.' },
+                { status: 409 }
+            );
         }
 
         return NextResponse.json({

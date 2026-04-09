@@ -10,7 +10,7 @@ type DetailRow = {
 export async function POST(request: Request) {
     try {
         const ip = getClientIp(request);
-        const rate = enforceRateLimit(`checkout-release-stock:${ip}`, 20, 60_000);
+        const rate = await enforceRateLimit(`checkout-release-stock:${ip}`, 20, 60_000);
         if (!rate.allowed) {
             return NextResponse.json(
                 { error: `Too many requests. Retry in ${rate.retryAfterSeconds}s.` },
@@ -43,19 +43,29 @@ export async function POST(request: Request) {
         }
 
         const details = Array.isArray(order.details) ? (order.details as DetailRow[]) : [];
-        for (const detail of details) {
-            if (!detail.productId || !detail.quantity || detail.quantity <= 0) continue;
-            const { data: product } = await admin
-                .from('products')
-                .select('stockCount')
-                .eq('id', detail.productId)
-                .single();
-            if (!product || typeof product.stockCount !== 'number') continue;
-            const restored = product.stockCount + detail.quantity;
-            await admin
-                .from('products')
-                .update({ stockCount: restored, inStock: restored > 0 })
-                .eq('id', detail.productId);
+        const itemsPayload = details
+            .filter(d => d.productId && d.quantity && d.quantity > 0)
+            .map(d => ({ productId: d.productId, quantity: d.quantity }));
+
+        const { data: releasedAtomic, error: releaseErr } = await admin.rpc('release_stock_atomic', {
+            items: itemsPayload,
+        });
+
+        if (!(releasedAtomic === true) || releaseErr) {
+            for (const detail of details) {
+                if (!detail.productId || !detail.quantity || detail.quantity <= 0) continue;
+                const { data: product } = await admin
+                    .from('products')
+                    .select('stockCount')
+                    .eq('id', detail.productId)
+                    .single();
+                if (!product || typeof product.stockCount !== 'number') continue;
+                const restored = product.stockCount + detail.quantity;
+                await admin
+                    .from('products')
+                    .update({ stockCount: restored, inStock: restored > 0 })
+                    .eq('id', detail.productId);
+            }
         }
 
         await admin.from('orders').update({ status: 'Cancelado' }).eq('id', normalizedOrderId);

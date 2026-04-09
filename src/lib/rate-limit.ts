@@ -4,6 +4,8 @@ type Bucket = {
 };
 
 const buckets = new Map<string, Bucket>();
+let upstashLimiter: any = null;
+let upstashInitAttempted = false;
 
 export function getClientIp(request: Request): string {
     const forwardedFor = request.headers.get('x-forwarded-for');
@@ -13,11 +15,52 @@ export function getClientIp(request: Request): string {
     return 'unknown';
 }
 
-export function enforceRateLimit(
+async function getUpstashLimiter(limit: number, windowMs: number) {
+    if (upstashLimiter) return upstashLimiter;
+    if (upstashInitAttempted) return null;
+    upstashInitAttempted = true;
+
+    const url = process.env.UPSTASH_REDIS_REST_URL;
+    const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+    if (!url || !token) return null;
+
+    try {
+        const { Redis } = await import('@upstash/redis');
+        const { Ratelimit } = await import('@upstash/ratelimit');
+        const redis = new Redis({ url, token });
+        upstashLimiter = new Ratelimit({
+            redis,
+            limiter: Ratelimit.slidingWindow(limit, `${Math.ceil(windowMs / 1000)} s`),
+            analytics: false,
+            timeout: 1000,
+        });
+        return upstashLimiter;
+    } catch {
+        return null;
+    }
+}
+
+export async function enforceRateLimit(
     key: string,
     limit: number,
     windowMs: number
-): { allowed: boolean; retryAfterSeconds: number } {
+): Promise<{ allowed: boolean; retryAfterSeconds: number }> {
+    const limiter = await getUpstashLimiter(limit, windowMs);
+    if (limiter) {
+        try {
+            const result = await limiter.limit(key);
+            if (!result.success) {
+                return {
+                    allowed: false,
+                    retryAfterSeconds: Math.max(1, Math.ceil((result.reset - Date.now()) / 1000)),
+                };
+            }
+            return { allowed: true, retryAfterSeconds: 0 };
+        } catch {
+            // Fall through to in-memory limiter.
+        }
+    }
+
     const now = Date.now();
     const current = buckets.get(key);
 

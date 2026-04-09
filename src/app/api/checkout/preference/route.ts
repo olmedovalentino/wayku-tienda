@@ -7,7 +7,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin';
 export async function POST(request: Request) {
     try {
         const ip = getClientIp(request);
-        const rate = enforceRateLimit(`checkout-preference:${ip}`, 20, 60_000);
+        const rate = await enforceRateLimit(`checkout-preference:${ip}`, 20, 60_000);
         if (!rate.allowed) {
             return NextResponse.json(
                 { error: `Too many requests. Retry in ${rate.retryAfterSeconds}s.` },

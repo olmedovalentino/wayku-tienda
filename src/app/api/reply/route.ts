@@ -13,7 +13,7 @@ export async function POST(req: Request) {
         }
 
         const ip = getClientIp(req);
-        const rate = enforceRateLimit(`reply:${ip}`, 30, 60_000);
+        const rate = await enforceRateLimit(`reply:${ip}`, 30, 60_000);
         if (!rate.allowed) {
             return NextResponse.json(
                 { error: `Too many requests. Retry in ${rate.retryAfterSeconds}s.` },

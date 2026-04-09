@@ -5,7 +5,7 @@ import { enforceRateLimit, getClientIp } from '@/lib/rate-limit';
 export async function POST(req: Request) {
     try {
         const ip = getClientIp(req);
-        const rate = enforceRateLimit(`newsletter:${ip}`, 5, 60_000);
+        const rate = await enforceRateLimit(`newsletter:${ip}`, 5, 60_000);
         if (!rate.allowed) {
             return NextResponse.json(
                 { error: `Too many requests. Retry in ${rate.retryAfterSeconds}s.` },

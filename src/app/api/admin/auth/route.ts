@@ -6,7 +6,7 @@ import { enforceRateLimit, getClientIp } from '@/lib/rate-limit';
 export async function POST(request: Request) {
     try {
         const ip = getClientIp(request);
-        const rate = enforceRateLimit(`admin-login:${ip}`, 20, 60_000);
+        const rate = await enforceRateLimit(`admin-login:${ip}`, 20, 60_000);
         if (!rate.allowed) {
             return NextResponse.json(
                 { success: false, error: `Demasiados intentos. Reintenta en ${rate.retryAfterSeconds}s.` },
