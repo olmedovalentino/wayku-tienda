@@ -5,17 +5,16 @@ import { useApp, Order } from '@/context/AppContext';
 import { Button } from '@/components/ui/Button';
 import {
     Search,
-    Filter,
-    MoreVertical,
     X,
     Package,
     CheckCircle2,
     Clock,
     Truck,
     HelpCircle,
-    Printer,
     RefreshCw,
-    AlertTriangle
+    AlertTriangle,
+    MoreVertical,
+    Printer
 } from 'lucide-react';
 import { getTimeAgo } from '@/lib/time';
 
@@ -48,8 +47,8 @@ export default function AdminOrdersPage() {
             const res = await fetch('/api/admin/data');
             const data = await res.json();
             if (data.orders) setOrders(data.orders);
-        } catch (e) {
-            console.error('Error fetching orders:', e);
+        } catch (error) {
+            console.error('Error fetching orders:', error);
         } finally {
             setIsLoading(false);
         }
@@ -211,7 +210,7 @@ export default function AdminOrdersPage() {
                                     <td className="px-6 py-4">
                                         <select
                                             value={order.status}
-                                            onChange={(e) => updateOrderStatus(order.id, e.target.value as any)}
+                                            onChange={(e) => updateOrderStatus(order.id, e.target.value as Order['status'])}
                                             className={`px-2 py-0.5 rounded-full text-xs font-medium border-none focus:ring-0 cursor-pointer ${getStatusStyles(order.status)}`}
                                         >
                                             <option value="Pedido recibido">Pedido recibido</option>
@@ -286,7 +285,7 @@ export default function AdminOrdersPage() {
                         <div className="flex justify-between gap-2 items-center">
                             <select
                                 value={order.status}
-                                onChange={(e) => updateOrderStatus(order.id, e.target.value as any)}
+                                onChange={(e) => updateOrderStatus(order.id, e.target.value as Order['status'])}
                                 className={`flex-1 flex justify-center items-center px-2 py-1.5 rounded-lg text-xs font-medium border-none focus:ring-0 text-center uppercase tracking-wider ${getStatusStyles(order.status)}`}
                             >
                                 <option value="Pedido recibido">Recibido</option>
@@ -318,7 +317,7 @@ export default function AdminOrdersPage() {
                                     <AlertTriangle size={28} />
                                     </div>
                                     <h3 className="text-lg font-bold text-stone-900 mb-2">¿Cancelar pedido?</h3>
-                                    <p className="text-sm text-stone-500 mb-8">Esta acción cambiará el estado del pedido a 'Cancelado'.</p>
+                                    <p className="text-sm text-stone-500 mb-8">Esta acción cambiará el estado del pedido a &apos;Cancelado&apos;.</p>
                                     <div className="flex flex-col sm:flex-row gap-3">
                                     <Button className="flex-1 w-full bg-stone-100 text-stone-600 hover:bg-stone-200 border-transparent" variant="outline" onClick={() => setConfirmAction(null)}>Volver</Button>
                                     <Button className="flex-1 w-full bg-red-600 hover:bg-red-700 text-white" onClick={() => {

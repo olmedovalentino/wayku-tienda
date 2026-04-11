@@ -4,12 +4,10 @@ import { useState, useEffect } from 'react';
 import {
     Search,
     Mail,
-    Plus,
     Trash2,
-    Calendar,
-    Check,
     Send,
-    X
+    X,
+    Calendar
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { toast } from 'sonner';
@@ -35,10 +33,15 @@ export default function AdminSubscribersPage() {
 
     useEffect(() => {
         const fetchSubscribers = async () => {
-            const res = await fetch('/api/admin/subscribers');
-            const data = await res.json();
-            if (res.ok) setSubscribers(data);
-            setIsLoading(false);
+            try {
+                const res = await fetch('/api/admin/subscribers');
+                const data = await res.json();
+                if (res.ok) setSubscribers(data);
+            } catch (error) {
+                console.error('Error fetching subscribers:', error);
+            } finally {
+                setIsLoading(false);
+            }
         };
         fetchSubscribers();
     }, []);

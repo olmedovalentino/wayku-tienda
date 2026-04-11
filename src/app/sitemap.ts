@@ -5,17 +5,17 @@ import { products as initialProducts } from '@/lib/products';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://waykulamparas.com';
 
-  let activeProducts = initialProducts.filter(p => p.isVisible !== false);
+  let activeProducts: Array<{ id: string; updated_at?: string }> = initialProducts.filter(p => p.isVisible !== false);
   try {
     if (supabase) {
       const { data } = await supabase.from('products').select('id, updated_at, "isVisible"').eq('"isVisible"', true);
       if (data && data.length > 0) {
-        activeProducts = data as any;
+        activeProducts = data as Array<{ id: string; updated_at?: string }>;
       }
     }
-  } catch (e) {}
+  } catch {}
 
-  const productUrls: MetadataRoute.Sitemap = activeProducts.map((product: any) => ({
+  const productUrls: MetadataRoute.Sitemap = activeProducts.map((product) => ({
     url: `${baseUrl}/products/${product.id}`,
     lastModified: product.updated_at ? new Date(product.updated_at) : new Date(),
     changeFrequency: 'weekly',

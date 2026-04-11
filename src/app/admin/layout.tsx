@@ -72,7 +72,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // history = persistido en localStorage para que sobreviva refrescos
-    const [history, setHistory]   = useState<Notif[]>([]);
+    const [history, setHistory]   = useState<Notif[]>(() => {
+        if (typeof window === 'undefined') return [];
+        try {
+            const saved = localStorage.getItem('wayku_admin_notifs');
+            if (saved) {
+                const parsed = JSON.parse(saved) as Notif[];
+                return parsed.map(n => ({ ...n, time: new Date(n.time) }));
+            }
+        } catch {
+            // Silently fail on invalid localStorage data
+        }
+        return [];
+    });
     const [toasts, setToasts]     = useState<Notif[]>([]);
     const [showBell, setShowBell] = useState(false);
 
@@ -82,19 +94,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const bellRef  = useRef<HTMLButtonElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => { setIsAuthorized(true); }, []);
-
-    // Cargar historial desde localStorage al montar
+    // Verify admin authorization on mount
     useEffect(() => {
-        try {
-            const saved = localStorage.getItem('wayku_admin_notifs');
-            if (saved) {
-                const parsed = JSON.parse(saved) as Notif[];
-                // Convertir strings de fecha de vuelta a Date
-                setHistory(parsed.map(n => ({ ...n, time: new Date(n.time) })));
+        const verifyAuth = async () => {
+            try {
+                const res = await fetch('/api/admin/auth');
+                if (res.ok) {
+                    setIsAuthorized(true);
+                } else {
+                    router.push('/admin/login');
+                }
+            } catch {
+                router.push('/admin/login');
             }
-        } catch (e) {}
-    }, []);
+        };
+        if (pathname !== '/admin/login') verifyAuth();
+    }, [router, pathname]);
 
     // Cerrar dropdown al click afuera (excluyendo el botón Y el propio dropdown)
     useEffect(() => {
@@ -113,7 +128,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         const full: Notif = { ...notif, id, time: new Date() };
         setHistory(prev => {
             const next = [full, ...prev].slice(0, 50); // máximo 50
-            try { localStorage.setItem('wayku_admin_notifs', JSON.stringify(next)); } catch (e) {}
+            try { localStorage.setItem('wayku_admin_notifs', JSON.stringify(next)); } catch {
+                // Silently fail if localStorage unavailable
+            }
             return next;
         });
         setToasts(prev => [...prev, full]);
@@ -126,7 +143,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     const clearHistory = useCallback(() => {
         setHistory([]);
-        try { localStorage.removeItem('wayku_admin_notifs'); } catch (e) {}
+        try { localStorage.removeItem('wayku_admin_notifs'); } catch {
+            // Silently fail if localStorage unavailable
+        }
         setShowBell(false);
     }, []);
 
@@ -136,35 +155,57 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     useEffect(() => {
         if (!supabase || pathname === '/admin/login') return;
 
+        const handleOrderInsert = (payload: { new: Record<string, unknown> }) => {
+            const row = payload.new as Record<string, unknown>;
+            const rowId = `order-${row.id}`;
+            if (seenIds.current.has(rowId)) return;
+            seenIds.current.add(rowId);
+            addNotif({ type: 'order', title: '🛒 Nuevo Pedido', description: `${row.customer || row.email || 'Cliente'} — $${Number(row.total || 0).toLocaleString()}`, href: HREFS.order });
+        };
+
+        const handleQueryInsert = (payload: { new: Record<string, unknown> }) => {
+            const row = payload.new as Record<string, unknown>;
+            const rowId = `query-${row.id}`;
+            if (seenIds.current.has(rowId)) return;
+            seenIds.current.add(rowId);
+            addNotif({ type: 'query', title: '✉️ Nueva Consulta', description: `${row.name || 'Visitante'}: ${row.subject || ''}`, href: HREFS.query });
+        };
+
+        const handleSubscriberInsert = (payload: { new: Record<string, unknown> }) => {
+            const row = payload.new as Record<string, unknown>;
+            const subId = `sub-${row.id || row.email}`;
+            if (seenIds.current.has(subId)) return;
+            seenIds.current.add(subId);
+            addNotif({ type: 'subscriber', title: '📬 Nueva Suscripción', description: (row.email as string) || 'Email desconocido', href: HREFS.subscriber });
+        };
+
+        const handleUserInsert = (payload: { new: Record<string, unknown> }) => {
+            const row = payload.new as Record<string, unknown>;
+            const userId = `user-${row.id}`;
+            if (seenIds.current.has(userId)) return;
+            seenIds.current.add(userId);
+            addNotif({ type: 'user', title: '👤 Nuevo Usuario', description: `${row.full_name || row.name || 'Sin nombre'} — ${row.email || ''}`, href: HREFS.user });
+        };
+
         const channel = supabase
             .channel('admin-live')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, (payload) => {
-                const row = payload.new as any;
-                if (seenIds.current.has(`order-${row.id}`)) return;
-                seenIds.current.add(`order-${row.id}`);
-                addNotif({ type: 'order', title: '🛒 Nuevo Pedido', description: `${row.customer || row.email || 'Cliente'} — $${Number(row.total || 0).toLocaleString()}`, href: HREFS.order });
-            })
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'queries' }, (payload) => {
-                const row = payload.new as any;
-                if (seenIds.current.has(`query-${row.id}`)) return;
-                seenIds.current.add(`query-${row.id}`);
-                addNotif({ type: 'query', title: '✉️ Nueva Consulta', description: `${row.name || 'Visitante'}: ${row.subject || ''}`, href: HREFS.query });
-            })
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'subscribers' }, (payload) => {
-                const row = payload.new as any;
-                if (seenIds.current.has(`sub-${row.id || row.email}`)) return;
-                seenIds.current.add(`sub-${row.id || row.email}`);
-                addNotif({ type: 'subscriber', title: '📬 Nueva Suscripción', description: row.email || 'Email desconocido', href: HREFS.subscriber });
-            })
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'users' }, (payload) => {
-                const row = payload.new as any;
-                if (seenIds.current.has(`user-${row.id}`)) return;
-                seenIds.current.add(`user-${row.id}`);
-                addNotif({ type: 'user', title: '👤 Nuevo Usuario', description: `${row.full_name || row.name || 'Sin nombre'} — ${row.email || ''}`, href: HREFS.user });
-            })
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, handleOrderInsert)
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'queries' }, handleQueryInsert)
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'subscribers' }, handleSubscriberInsert)
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'users' }, handleUserInsert)
             .subscribe();
 
-        return () => { supabase?.removeChannel(channel); };
+        // Cleanup seenIds periodically to prevent memory leak
+        const cleanupInterval = setInterval(() => {
+            if (seenIds.current.size > 100) {
+                seenIds.current.clear();
+            }
+        }, 60000); // Clear every minute if size > 100
+
+        return () => {
+            supabase?.removeChannel(channel);
+            clearInterval(cleanupInterval);
+        };
     }, [addNotif, pathname]);
 
     const handleLogout = async () => {

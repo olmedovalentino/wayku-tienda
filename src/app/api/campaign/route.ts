@@ -77,7 +77,7 @@ export async function POST(req: Request) {
         });
 
         return NextResponse.json({ success: true, sentCount: emails.length });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Error enviando campaña:', error);
         return NextResponse.json({ error: 'Failed to send campaign' }, { status: 500 });
     }

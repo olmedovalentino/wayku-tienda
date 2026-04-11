@@ -32,7 +32,7 @@ export default function AdminLoginPage() {
                 setError(data.error || 'Usuario o contraseña incorrectos');
                 setIsLoading(false);
             }
-        } catch (e) {
+        } catch {
             setError('Error de conexión');
             setIsLoading(false);
         }

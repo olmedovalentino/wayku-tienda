@@ -3,6 +3,17 @@ import { cookies } from 'next/headers';
 import { isValidAdminSessionToken } from '@/lib/admin-session';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
+type SupabaseErrorLike = { message?: unknown; code?: unknown };
+
+function getErrorMessage(error: unknown): string {
+    if (error instanceof Error) return error.message;
+    if (typeof error === 'object' && error !== null && 'message' in error) {
+        const msg = (error as SupabaseErrorLike).message;
+        if (typeof msg === 'string') return msg;
+    }
+    return 'Unknown error';
+}
+
 async function ensureAdminSession() {
     const cookieStore = await cookies();
     const session = cookieStore.get('admin_session')?.value;
@@ -21,8 +32,8 @@ export async function GET() {
             .order('created_at', { ascending: false });
         if (error) throw error;
         return NextResponse.json(data);
-    } catch (e: any) {
-        return NextResponse.json({ error: e.message }, { status: 500 });
+    } catch (error: unknown) {
+        return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
     }
 }
 
@@ -40,10 +51,10 @@ export async function POST(req: Request) {
             .single();
         if (error) throw error;
         return NextResponse.json(data);
-    } catch (e: any) {
-        const isDuplicate = e.code === '23505';
+    } catch (error: unknown) {
+        const isDuplicate = typeof error === 'object' && error !== null && 'code' in error && (error as { code?: unknown }).code === '23505';
         return NextResponse.json(
-            { error: isDuplicate ? 'duplicate' : e.message },
+            { error: isDuplicate ? 'duplicate' : getErrorMessage(error) },
             { status: isDuplicate ? 409 : 500 }
         );
     }
@@ -64,8 +75,8 @@ export async function PATCH(req: Request) {
             .single();
         if (error) throw error;
         return NextResponse.json(data);
-    } catch (e: any) {
-        return NextResponse.json({ error: e.message }, { status: 500 });
+    } catch (error: unknown) {
+        return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
     }
 }
 
@@ -81,7 +92,7 @@ export async function DELETE(req: Request) {
         const { error } = await getSupabaseAdmin().from('coupons').delete().eq('id', id);
         if (error) throw error;
         return NextResponse.json({ success: true });
-    } catch (e: any) {
-        return NextResponse.json({ error: e.message }, { status: 500 });
+    } catch (error: unknown) {
+        return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
     }
 }

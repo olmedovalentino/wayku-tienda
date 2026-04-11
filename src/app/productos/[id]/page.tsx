@@ -4,7 +4,7 @@ import { useApp } from '@/context/AppContext';
 import { useParams, notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
-import { Check, Truck, Shield, ArrowLeft, Star, Heart, Hammer, PlusCircle, Clock, X } from 'lucide-react';
+import { Check, Truck, Shield, ArrowLeft, Star, Heart, Hammer, Clock, X } from 'lucide-react';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { useFavorites } from '@/context/FavoritesContext';
@@ -55,8 +55,8 @@ export default function ProductPage() {
         if (product?.variants && product.variants.length > 0 && !autoSelected) {
             const availableVariant = product.variants.find(v => v.stock > 0);
             if (availableVariant) {
-                if (availableVariant.material) setSelectedMaterial(availableVariant.material as any);
-                if (availableVariant.size) setSelectedSize(availableVariant.size as any);
+                if (availableVariant.material) setSelectedMaterial(availableVariant.material as 'guayubira' | 'roble' | 'palo-santo');
+                if (availableVariant.size) setSelectedSize(availableVariant.size as '1m' | '1.5m' | '2m');
             }
             setAutoSelected(true);
         }
@@ -106,19 +106,19 @@ export default function ProductPage() {
         return allMaterials;
     }, [product]);
 
-    const sizes = useMemo(() => {
+    const sizes = useMemo<{ id: '1m' | '1.5m' | '2m'; name: string }[]>(() => {
         if (product?.variants && product.variants.some(v => !!v.size)) {
             // Get unique sizes from variants
-            const uniqueSizes = Array.from(new Set(product.variants.map(v => v.size).filter(s => !!s)));
+            const uniqueSizes = Array.from(new Set(product.variants.map(v => v.size).filter((s): s is '1m' | '1.5m' | '2m' => !!s)));
             // Map to the format needed for buttons. 
             // Try to map known codes to nice names, otherwise pass through
-            const getName = (s: string) => {
+            const getName = (s: '1m' | '1.5m' | '2m') => {
                 if (s === '1m') return '1 metro';
                 if (s === '1.5m') return '1.5 metros';
                 if (s === '2m') return '2 metros';
                 return s;
             };
-            return uniqueSizes.map(s => ({ id: s as string, name: getName(s as string) }));
+            return uniqueSizes.map(s => ({ id: s, name: getName(s) }));
         }
 
         return [
@@ -306,7 +306,6 @@ export default function ProductPage() {
                                         return (
                                             <button
                                                 key={size.id}
-                                                // @ts-ignore
                                                 onClick={() => setSelectedSize(size.id)}
                                                 disabled={!isAvailable && !!product.variants}
                                                 className={`px-4 py-3 text-sm font-medium rounded-lg border-2 transition-colors
@@ -531,7 +530,7 @@ export default function ProductPage() {
                                                         const { createClient } = await import('@supabase/supabase-js');
                                                         const supabaseObj = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
                                                         const fileName = `review-${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-                                                        const { data, error } = await supabaseObj.storage.from('products').upload(fileName, file);
+                                                        const { data } = await supabaseObj.storage.from('products').upload(fileName, file);
                                                         
                                                         if (data) {
                                                             const { data: { publicUrl } } = supabaseObj.storage.from('products').getPublicUrl(fileName);
@@ -539,7 +538,7 @@ export default function ProductPage() {
                                                         } else {
                                                             alert('Error al subir la foto');
                                                         }
-                                                    } catch (err) {
+                                                    } catch {
                                                         alert('Hubo un problema procesando tu foto');
                                                     } finally {
                                                         setIsUploadingImage(false);

@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/Button';
 import { Package, User, Heart, LogOut } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { products } from '@/lib/products';
 
 export default function AccountPage() {
     // Mock user data

@@ -148,7 +148,7 @@ export default function CheckoutPage() {
 
             setAppliedDiscount(data.discountPercentage);
             setCouponError('');
-        } catch (e) {
+        } catch {
             setCouponError('Error al validar el cupón');
             setAppliedDiscount(0);
         }
@@ -190,7 +190,7 @@ export default function CheckoutPage() {
                 setShippingZona(data.zona || '');
                 setShippingDays(data.estimatedDays || '');
             }
-        } catch (err) {
+        } catch {
             setShippingError('Error al calcular el envío. Intentá de nuevo.');
         } finally {
             setIsCalculatingShipping(false);
@@ -275,9 +275,10 @@ export default function CheckoutPage() {
             } else {
                 throw new Error(data.error || 'Error al crear la preferencia de pago');
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error(error);
-            alert(error.message || 'Error al procesar el pago');
+            const message = error instanceof Error ? error.message : 'Error al procesar el pago';
+            alert(message);
         } finally {
             setIsProcessing(false);
         }

@@ -2,7 +2,6 @@
 
 import {
     ShoppingBag,
-    Users,
     ArrowUpRight,
     ArrowDownRight,
     DollarSign,

@@ -71,7 +71,7 @@ export async function POST(req: Request) {
         });
 
         return NextResponse.json({ success: true, message: 'Newsletter email sent successfully' });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Error enviando el email del newsletter:', error);
         return NextResponse.json({ error: 'Failed to send email' }, { status: 500 });
     }

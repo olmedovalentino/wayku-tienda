@@ -3,7 +3,6 @@
 import * as React from 'react';
 import { Search, X, ArrowRight } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { slugify } from '@/lib/products';
@@ -86,7 +85,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     <div className="max-h-[60vh] overflow-y-auto p-4">
                         {filteredProducts.length === 0 ? (
                             <div className="py-8 text-center text-stone-500">
-                                No encontramos productos para "{query}"
+                                No encontramos productos para &quot;{query}&quot;
                             </div>
                         ) : (
                             <div className="grid gap-4">

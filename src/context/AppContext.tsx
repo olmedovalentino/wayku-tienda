@@ -19,7 +19,16 @@ export interface Order {
     province?: string;
     postalCode?: string;
     phone?: string;
-    items_details?: any[];
+    items_details?: {
+        name: string;
+        price: number;
+        quantity: number;
+        material?: string;
+        size?: string;
+        shade?: string;
+        cable?: string;
+        canopy?: string;
+    }[];
     created_at?: string;
     details?: {
         name: string;
@@ -34,7 +43,7 @@ export interface Order {
 }
 
 export interface Query {
-    id: number;
+    id: string | number;
     name: string;
     email: string;
     subject: string;
@@ -62,7 +71,7 @@ interface AppContextType {
     queries: Query[];
     reviews: Review[];
     addProduct: (product: Omit<Product, 'id'>) => void;
-    updateProduct: (id: string, product: Partial<Product>) => Promise<{ error: any }>;
+    updateProduct: (id: string, product: Partial<Product>) => Promise<{ error: Error | null }>;
     deleteProduct: (id: string) => void;
     updateOrderStatus: (id: string, status: Order['status']) => void;
     addQuery: (query: Omit<Query, 'id' | 'date' | 'read'>) => void;
@@ -80,7 +89,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const [orders, setOrders] = useState<Order[]>([]);
     const [queries, setQueries] = useState<Query[]>([]);
     const [reviews, setReviews] = useState<Review[]>([]);
-    const [subscribers, setSubscribers] = useState<string[]>([]);
 
     useEffect(() => {
         const loadInitialData = async () => {
@@ -104,7 +112,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
                         return isNaN(ts) ? 0 : ts;
                     };
 
-                    const sortOrders = (ordersList: any[]) => {
+                    const sortOrders = (ordersList: Order[]) => {
                         return [...ordersList].sort((a, b) => {
                             let timeA = 0; let timeB = 0;
                             if (a.created_at) timeA = new Date(a.created_at).getTime();
@@ -137,7 +145,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
                         
                         const { data: rData } = await supabase.from('reviews').select('*');
                         if (rData) setReviews(rData);
-                    } catch (e) {
+                    } catch {
                          setProducts(mappedInitial);
                     }
 
@@ -149,9 +157,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
                             const adminData = await adminRes.json();
                             if (adminData.orders) setOrders(sortOrders(adminData.orders));
                             if (adminData.queries) setQueries(adminData.queries);
-                            if (adminData.subscribers) setSubscribers(adminData.subscribers);
                         }
-                    } catch (e) {
+                    } catch {
                         // Silent fail
                     }
 
@@ -166,13 +173,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
         loadInitialData();
     }, []);
 
-    const addProduct = async (p: any) => {
+    const addProduct = async (p: Omit<Product, 'id'>) => {
         const newP = { ...p, id: Math.random().toString(36).substr(2, 9) };
         setProducts(prev => [newP, ...prev]);
         if (supabase) await supabase.from('products').insert(newP);
     };
 
-    const updateProduct = async (id: string, fields: any) => {
+    const updateProduct = async (id: string, fields: Partial<Product>) => {
         setProducts(prev => prev.map(p => p.id === id ? { ...p, ...fields } : p));
         if (supabase) {
             const { error } = await supabase.from('products').update(fields).eq('id', id);
@@ -200,10 +207,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
             },
             addReview: async (review) => {
                 const tempId = Math.random().toString(36).substr(2, 9);
-                const newR = { ...review, id: tempId, date: new Date().toLocaleDateString() };
-                setReviews(prev => [newR as any, ...prev]);
+                const newR: Review = { ...review, id: tempId, date: new Date().toLocaleDateString() };
+                setReviews(prev => [newR, ...prev]);
                 if (supabase) {
-                    const { id, ...dbReview } = newR;
+                    const dbReview = Object.fromEntries(
+                        Object.entries(newR).filter(([key]) => key !== 'id')
+                    ) as Omit<Review, 'id'>;
                     const { data, error } = await supabase.from('reviews').insert(dbReview).select().single();
                     if (error) {
                         console.error("Review Insert Error:", error);
@@ -213,15 +222,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 }
             },
             addOrder: async (order) => {
-                const newO = { ...order, date: new Date().toLocaleDateString(), status: 'Pedido recibido' };
-                setOrders(prev => [newO as any, ...prev]);
+                const tempId = Math.random().toString(36).substr(2, 9);
+                const newO: Order = { ...order, id: order.id || tempId, date: new Date().toLocaleDateString(), status: 'Pedido recibido' };
+                setOrders(prev => [newO, ...prev]);
                 if (supabase) {
                     try {
-                        const { shippingCost, ...dbOrder } = newO as any;
+                        const dbOrder = Object.fromEntries(
+                            Object.entries(newO).filter(([key]) => key !== 'shippingCost')
+                        ) as typeof newO;
                         const { error } = await supabase.from('orders').insert(dbOrder);
                         if (error) console.error('Supabase DB error', error);
-                    } catch (e) {
-                        console.error('Failed to insert order', e);
+                    } catch {
+                        // Silent fail
                     }
                 }
             },
@@ -229,7 +241,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 const newQ = { ...q, date: new Date().toLocaleDateString(), read: false };
                 // Add an optimistic ID for UI so we don't need to select it back 
                 // (RLS blocks selecting queries for security)
-                setQueries(prev => [{ ...newQ, id: crypto.randomUUID() } as any, ...prev]);
+                setQueries(prev => [{ ...newQ, id: crypto.randomUUID() } as Query, ...prev]);
                 if (supabase) {
                     const { error } = await supabase.from('queries').insert(newQ);
                     if (error) console.error("Error inserting query:", error);

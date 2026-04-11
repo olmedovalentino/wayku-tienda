@@ -36,13 +36,16 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Order has no items' }, { status: 400 });
         }
 
-        const totalItems = details.map((item: any, index: number) => ({
-            id: `${order.id}-${index}`,
-            title: item.name,
-            unit_price: Number(item.price),
-            quantity: Number(item.quantity),
-            currency_id: 'ARS',
-        }));
+        const totalItems = details.map((item, index) => {
+            const detail = item as { name?: string; price?: number | string; quantity?: number | string };
+            return {
+                id: `${order.id}-${index}`,
+                title: detail.name || 'Producto',
+                unit_price: Number(detail.price ?? 0),
+                quantity: Number(detail.quantity ?? 1),
+                currency_id: 'ARS',
+            };
+        });
 
         // Determine Base URL correctly
 
@@ -88,8 +91,9 @@ export async function POST(request: Request) {
         });
 
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Mercado Pago Error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        const errorMessage = error instanceof Error ? error.message : 'Error al crear la preferencia de pago';
+        return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 }

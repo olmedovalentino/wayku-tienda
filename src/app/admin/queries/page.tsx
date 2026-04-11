@@ -14,17 +14,16 @@ import {
     RefreshCw
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { getTimeAgo } from '@/lib/time';
 
 interface Query {
-    id: any;
+    id: string | number;
     name: string;
     email: string;
     subject: string;
     message: string;
     date: string;
     read: boolean;
-    replied: boolean;
+    replied?: boolean;
 }
 
 export default function AdminQueriesPage() {
@@ -43,8 +42,8 @@ export default function AdminQueriesPage() {
             const res = await fetch('/api/admin/data');
             const data = await res.json();
             setQueries(data.queries || []);
-        } catch (e) {
-            console.error('Error fetching queries:', e);
+        } catch (fetchError) {
+            console.error('Error fetching queries:', fetchError);
         } finally {
             setIsLoading(false);
         }
@@ -56,7 +55,11 @@ export default function AdminQueriesPage() {
 
     const sortedQueries = [...queries]
         .filter(q => q.name !== 'Sistema Newsletter')
-        .sort((a, b) => sortOrder === 'recent' ? b.id - a.id : a.id - b.id);
+        .sort((a, b) => {
+            const aIndex = typeof a.id === 'number' ? a.id : parseInt(a.id, 10) || 0;
+            const bIndex = typeof b.id === 'number' ? b.id : parseInt(b.id, 10) || 0;
+            return sortOrder === 'recent' ? bIndex - aIndex : aIndex - bIndex;
+        });
 
     const filteredQueries = sortedQueries.filter(query => {
         const matchesSearch = query.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -113,6 +116,7 @@ export default function AdminQueriesPage() {
                 toast.error(`Error: ${data.error}`);
             }
         } catch (err) {
+            console.error('Error sending reply:', err);
             toast.error('Error enviando la respuesta.');
         } finally {
             setIsSending(false);
@@ -215,7 +219,7 @@ export default function AdminQueriesPage() {
                                         </div>
                                     </div>
                                 </div>
-                                <p className="text-sm text-stone-600 line-clamp-2 italic">"{query.message}"</p>
+                                <p className="text-sm text-stone-600 line-clamp-2 italic">&quot;{query.message}&quot;</p>
                             </div>
 
                             <div className="flex justify-between items-center text-xs">
@@ -271,7 +275,7 @@ export default function AdminQueriesPage() {
                                     Mensaje del Cliente
                                 </div>
                                 <p className="text-stone-800 leading-relaxed italic">
-                                    "{selectedQuery.message}"
+                                    &quot;{selectedQuery.message}&quot;
                                 </p>
                                 <div className="mt-4 flex items-center gap-2 text-[10px] text-stone-400 font-medium uppercase">
                                     <Clock size={12} />

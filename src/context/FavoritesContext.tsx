@@ -23,7 +23,6 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     const { user, isLoading: isAuthLoading } = useAuth();
     const [favorites, setFavorites] = useState<Product[]>([]);
     const [isOpen, setIsOpen] = useState(false);
-    const [isMounted, setIsMounted] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -31,7 +30,6 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
 
     // Load favorites on auth change
     useEffect(() => {
-        setIsMounted(true);
         if (isAuthLoading) return;
 
         const loadFavs = async () => {
@@ -56,7 +54,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
                         setIsLoaded(true);
                         return;
                     }
-                } catch (e) {
+                } catch {
                     console.warn('Favorites: could not load from Supabase');
                 }
             }
@@ -74,7 +72,8 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
                         localStorage.removeItem('wayku_favorites_guest');
                     }
                 }
-            } catch (e) {}
+            } catch {
+            }
             setIsLoaded(true);
         };
 
@@ -83,12 +82,13 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
 
     // Save whenever favorites change (debounced for Supabase)
     useEffect(() => {
-        if (!isLoaded || !isMounted) return;
+        if (!isLoaded) return;
 
         const favKey = user ? `wayku_favorites_user_${user.id}` : 'wayku_favorites_guest';
         try {
             localStorage.setItem(favKey, JSON.stringify(favorites));
-        } catch (e) {}
+        } catch {
+        }
 
         if (user && supabase) {
             if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
@@ -98,12 +98,12 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
                         .from('users')
                         .update({ favorites })
                         .eq('id', user.id);
-                } catch (e) {
+                } catch {
                     console.warn('Favorites: could not sync to Supabase');
                 }
             }, 600);
         }
-    }, [favorites, user, isLoaded, isMounted]);
+    }, [favorites, user, isLoaded]);
 
     const openFavorites = () => setIsOpen(true);
     const closeFavorites = () => setIsOpen(false);
@@ -112,7 +112,8 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
         if (user && supabase) {
             try {
                 await supabase.from('users').update({ favorites: newFavs }).eq('id', user.id);
-            } catch (e) {}
+            } catch {
+            }
         }
     };
 

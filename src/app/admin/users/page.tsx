@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User, Mail, Shield, Trash2, Search, Package, MessageSquare, Star, ChevronDown, ChevronUp } from 'lucide-react';
-import { useApp } from '@/context/AppContext';
+import { Mail, Trash2, Search, Package, MessageSquare, Star, ChevronDown, ChevronUp, User } from 'lucide-react';
+import { useApp, Order, Query, Review } from '@/context/AppContext';
 
 interface RegisteredUser {
     id: string;
@@ -13,9 +13,9 @@ interface RegisteredUser {
 
 function UserCard({ user, orders, queries, reviews, onDelete, expanded, onToggle }: {
     user: RegisteredUser;
-    orders: any[];
-    queries: any[];
-    reviews: any[];
+    orders: Order[];
+    queries: Query[];
+    reviews: Review[];
     onDelete: (id: string) => void;
     expanded: boolean;
     onToggle: () => void;
@@ -151,7 +151,7 @@ export default function UsersAdminPage() {
         fetchUsers();
     }, []);
 
-    const fetchUsers = async () => {
+    const fetchUsers = async (): Promise<void> => {
         try {
             const res = await fetch('/api/admin/users');
             if (!res.ok) {
@@ -159,15 +159,13 @@ export default function UsersAdminPage() {
                 return;
             }
             const data = (await res.json()) as Array<RegisteredUser & { full_name?: string }>;
-            if (data) {
-                const mappedUsers = data.map((u) => ({
-                    ...u,
-                    name: u.full_name || u.name || 'Usuario sin nombre'
-                }));
-                setUsers(mappedUsers);
-            }
-        } catch (e) {
-            console.error("Critical fetch error:", e);
+            const mappedUsers = data.map((u) => ({
+                ...u,
+                name: u.full_name || u.name || 'Usuario sin nombre'
+            }));
+            setUsers(mappedUsers);
+        } catch (fetchError) {
+            console.error("Critical fetch error:", fetchError);
         }
     };
 
@@ -182,9 +180,10 @@ export default function UsersAdminPage() {
                 const res = await fetch(`/api/admin/users?id=${id}`, { method: 'DELETE' });
                 if (!res.ok) throw new Error('Error al eliminar');
                 setUsers(users.filter(u => u.id !== id));
-                const localUsers = JSON.parse(localStorage.getItem('wayku_registered_users') || '[]');
-                localStorage.setItem('wayku_registered_users', JSON.stringify(localUsers.filter((u: any) => u.id !== id)));
-            } catch (e) {
+                const localUsers = JSON.parse(localStorage.getItem('wayku_registered_users') || '[]') as RegisteredUser[];
+                localStorage.setItem('wayku_registered_users', JSON.stringify(localUsers.filter((u: RegisteredUser) => u.id !== id)));
+            } catch (deleteError) {
+                console.error('Delete error:', deleteError);
                 alert('No se pudo eliminar el usuario. Intentá de nuevo.');
             }
         }

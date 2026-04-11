@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useRef, Suspense } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useSearchParams } from 'next/navigation';
 
@@ -10,7 +10,7 @@ import Link from 'next/link';
 
 function SuccessContent() {
     const { clearCart } = useCart();
-    const [isProcessed, setIsProcessed] = useState(false);
+    const isProcessedRef = useRef(false);
     const searchParams = useSearchParams();
 
     const method = searchParams.get('method');
@@ -23,12 +23,12 @@ function SuccessContent() {
     const orderIdParam = searchParams.get('order_id');
 
     useEffect(() => {
-        if (!isProcessed && (status === 'approved' || method === 'transfer')) {
+        if (!isProcessedRef.current && (status === 'approved' || method === 'transfer')) {
             // clearCart ya se llamó en checkout/page.tsx, pero lo llamamos por las dudas
             clearCart();
-            setIsProcessed(true);
+            isProcessedRef.current = true;
         }
-    }, [isProcessed, status, method, externalReference, orderIdParam, clearCart]);
+    }, [status, method, externalReference, orderIdParam, clearCart]);
 
     return (
         <div className="flex min-h-[80vh] flex-col items-center justify-center px-4 py-12 text-center max-w-4xl mx-auto">

@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export interface User {
@@ -23,17 +23,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    const syncUser = async (supabaseUser: any) => {
+    type SupabaseUser = {
+        id: string;
+        email?: string | null;
+        user_metadata?: { name?: string };
+    };
+
+    const syncUser = useCallback(async (supabaseUser: SupabaseUser | null) => {
         if (!supabaseUser) return null;
         try {
             const { data: profile } = await supabase!.from('users').select('*').eq('id', supabaseUser.id).single();
             const name = profile?.full_name || profile?.name || supabaseUser.user_metadata?.name || 'Usuario';
             return { id: supabaseUser.id, email: supabaseUser.email || '', name };
-        } catch (e) {
+        } catch {
             // Fallback to auth data if profile fetch fails
             return { id: supabaseUser.id, email: supabaseUser.email || '', name: supabaseUser.user_metadata?.name || 'Usuario' };
         }
-    };
+    }, []);
 
     useEffect(() => {
         const checkSession = async () => {
@@ -61,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
             return () => subscription.unsubscribe();
         }
-    }, []);
+    }, [syncUser]);
 
     const login = async (email: string, password: string) => {
         setIsLoading(true);

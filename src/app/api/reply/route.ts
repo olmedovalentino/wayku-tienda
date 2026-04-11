@@ -70,7 +70,7 @@ export async function POST(req: Request) {
         });
 
         return NextResponse.json({ success: true });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Error enviando la respuesta:', error);
         return NextResponse.json({ error: 'Failed to send reply' }, { status: 500 });
     }

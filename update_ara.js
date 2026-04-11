@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 require('dotenv').config({ path: '.env.local' });
 const { createClient } = require('@supabase/supabase-js');
 
@@ -8,7 +9,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 async function run() {
     const { data: ara, error: err2 } = await supabase
         .from('products')
-        .update({ description: 'Lámpara de diseño compacto y elegante que resalta la belleza natural de la madera. Su iluminación suave y direccional crea espacios íntimos y acogedores, ideal para sumar calidez a cualquier rincón.' })
+        .update({ description: 'Lï¿½mpara de diseï¿½o compacto y elegante que resalta la belleza natural de la madera. Su iluminaciï¿½n suave y direccional crea espacios ï¿½ntimos y acogedores, ideal para sumar calidez a cualquier rincï¿½n.' })
         .ilike('name', 'ar%')
         .select();
 

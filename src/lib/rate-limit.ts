@@ -3,8 +3,12 @@ type Bucket = {
     resetAt: number;
 };
 
+type UpstashLimiter = {
+    limit: (key: string) => Promise<{ success: boolean; reset: number }>;
+};
+
 const buckets = new Map<string, Bucket>();
-let upstashLimiter: any = null;
+let upstashLimiter: UpstashLimiter | null = null;
 let upstashInitAttempted = false;
 
 export function getClientIp(request: Request): string {

@@ -2,14 +2,13 @@
 
 import { Button } from '@/components/ui/Button';
 import { useApp } from '@/context/AppContext';
-import { Mail, MapPin, MessageCircle, Send, ChevronDown, Instagram } from 'lucide-react';
+import { Mail, MessageCircle, Send, Instagram } from 'lucide-react';
 import { useState, FormEvent } from 'react';
 
 export default function ContactPage() {
     const { addQuery } = useApp();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
-    const [openFaq, setOpenFaq] = useState<number | null>(null);
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
@@ -30,34 +29,6 @@ export default function ContactPage() {
         setIsSubmitting(false);
         setIsSuccess(true);
     };
-
-
-    const faqs = [
-        {
-            question: '¿Cuánto tiempo tarda la fabricación de una lámpara?',
-            answer: 'Cada lámpara es hecha a mano, por lo que el tiempo de fabricación es de aproximadamente 2-3 semanas. Para pedidos personalizados, el tiempo puede variar según la complejidad del diseño.'
-        },
-        {
-            question: '¿Hacen envíos a todo el país?',
-            answer: 'Sí, realizamos envíos a toda Argentina. El tiempo de entrega varía según la ubicación, generalmente entre 3-7 días hábiles una vez finalizada la fabricación.'
-        },
-        {
-            question: '¿Puedo personalizar el diseño de una lámpara?',
-            answer: 'Por supuesto. Ofrecemos opciones de personalización en tamaño, tipo de madera y acabado. Contáctanos para discutir tu proyecto personalizado.'
-        },
-        {
-            question: '¿Qué tipo de madera utilizan?',
-            answer: 'Trabajamos principalmente con maderas nobles como roble, nogal y cedro. Todas nuestras maderas provienen de fuentes sustentables y son tratadas con productos ecológicos.'
-        },
-        {
-            question: '¿Las lámparas incluyen la bombilla?',
-            answer: 'Sí, todas nuestras lámparas incluyen una bombilla LED de bajo consumo. También ofrecemos opciones de bombillas con diferentes temperaturas de color.'
-        },
-        {
-            question: '¿Tienen garantía?',
-            answer: 'Todas nuestras lámparas cuentan con 1 año de garantía contra defectos de fabricación. La garantía cubre el sistema eléctrico y la estructura de madera.'
-        }
-    ];
 
     return (
         <div className="bg-stone-50 py-16 sm:py-24">

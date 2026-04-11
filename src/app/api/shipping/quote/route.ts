@@ -43,8 +43,13 @@ function getZona(cp: number) {
     return ZONAS.find(z => cp >= z.desde && cp <= z.hasta);
 }
 
+type ShippingItem = {
+    name: string;
+    quantity: number;
+};
+
 // Calcula el peso a tarifar (el mayor entre peso real y peso volumétrico A x B x C / 4000)
-function calcularPesoTarifable(items: any[]) {
+function calcularPesoTarifable(items: ShippingItem[]) {
     let pesoTotal = 0;
     
     items.forEach(item => {

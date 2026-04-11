@@ -27,7 +27,7 @@ export async function GET() {
             queries: queries.data || [],
             subscribers: subscribers.data?.map(s => s.email) || []
         });
-    } catch (e) {
+    } catch {
         return NextResponse.json({ error: 'Failed to fetch admin data' }, { status: 500 });
     }
 }
@@ -47,6 +47,7 @@ export async function POST(req: Request) {
         
         const supabaseAdmin = getSupabaseAdmin();
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let query: any = supabaseAdmin.from(table);
         
         if (action === 'update') {
@@ -65,7 +66,7 @@ export async function POST(req: Request) {
         if (error) throw error;
 
         return NextResponse.json({ success: true, data: result });
-    } catch (e) {
+    } catch {
         return NextResponse.json({ error: 'Operation failed' }, { status: 500 });
     }
 }

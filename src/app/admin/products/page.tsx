@@ -8,21 +8,16 @@ import { Button } from '@/components/ui/Button';
 import {
     Plus,
     Search,
-    Filter,
-    MoreVertical,
     Edit,
     Trash2,
-    ExternalLink,
     X,
     Upload,
-    Check,
     Eye,
     EyeOff,
     PlusCircle,
     MinusCircle,
     ChevronLeft,
     ChevronRight,
-    Calendar,
     Clock
 } from 'lucide-react';
 import Image from 'next/image';
@@ -121,8 +116,8 @@ export default function AdminProductsPage() {
                 toast.success('Producto creado correctamente');
                 setIsModalOpen(false);
             }
-        } catch (err) {
-            console.error("Submit Error:", err);
+        } catch (submitError) {
+            console.error("Submit Error:", submitError);
             toast.error('Error al procesar el formulario');
         } finally {
             setIsSaving(false);
@@ -156,7 +151,7 @@ export default function AdminProductsPage() {
         setFormData({ ...formData, variants: newVariants });
     };
 
-    const updateVariant = (index: number, field: keyof StockVariant, value: any) => {
+    const updateVariant = (index: number, field: keyof StockVariant, value: string | number) => {
         const newVariants = [...(formData.variants || [])];
         newVariants[index] = { ...newVariants[index], [field]: value };
         setFormData({ ...formData, variants: newVariants });
@@ -426,7 +421,7 @@ export default function AdminProductsPage() {
                                     <select
                                         className="w-full px-4 py-2 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary"
                                         value={formData.category}
-                                        onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
+                                        onChange={(e) => setFormData({ ...formData, category: e.target.value as Product['category'] })}
                                     >
                                         <option value="pendant">Colgante</option>
                                         <option value="table">De Mesa</option>
@@ -493,7 +488,7 @@ export default function AdminProductsPage() {
                                             onChange={(e) => setFormData({ ...formData, isComingSoon: e.target.checked })}
                                         />
                                         <label htmlFor="isComingSoon" className="text-sm font-medium text-stone-900">
-                                            Marcar como "Próximamente"
+                                            Marcar como &quot;Próximamente&quot;
                                         </label>
                                     </div>
                                     {showVariants && (
@@ -584,7 +579,7 @@ export default function AdminProductsPage() {
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                                     {formData.images.filter(img => img && img.trim() !== '').map((img, idx) => (
                                         <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-stone-200 bg-stone-50 shadow-sm">
-                                            <img src={img} alt={`Imagen ${idx+1}`} className="object-cover w-full h-full absolute inset-0" />
+                                            <Image src={img} alt={`Imagen ${idx + 1}`} fill className="object-cover" sizes="(min-width: 1024px) 25vw, 50vw" />
                                             
                                             {/* Action Buttons Layer */}
                                             <div className="absolute inset-x-0 bottom-0 p-1.5 flex justify-between items-center bg-gradient-to-t from-black/50 to-transparent">
@@ -645,7 +640,7 @@ export default function AdminProductsPage() {
                                                 
                                                 for (const file of files) {
                                                     const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-                                                    const { data, error } = await supabase.storage.from('products').upload(fileName, file);
+                                                    const { data } = await supabase.storage.from('products').upload(fileName, file);
                                                     if (data) {
                                                         const { data: { publicUrl } } = supabase.storage.from('products').getPublicUrl(fileName);
                                                         newUrls.push(publicUrl);

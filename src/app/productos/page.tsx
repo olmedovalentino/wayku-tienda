@@ -2,7 +2,7 @@
 
 import { ProductCard } from '@/components/products/ProductCard';
 import { useApp } from '@/context/AppContext';
-import { useState, useMemo, useEffect, Suspense } from 'react';
+import { useState, useMemo, Suspense } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -14,10 +14,7 @@ function ProductsContent() {
     const searchParams = useSearchParams();
     const categoryQuery = searchParams.get('category');
 
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryQuery);
-
     const handleCategoryClick = (catId: string | null) => {
-        setSelectedCategory(catId);
         if (catId) {
             router.push(`/products?category=${catId}`, { scroll: false });
         } else {
@@ -30,22 +27,14 @@ function ProductsContent() {
     const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
     const [priceRange, setPriceRange] = useState({ min: 0, max: 1000000 });
 
-    useEffect(() => {
-        if (categoryQuery) {
-            setSelectedCategory(categoryQuery);
-        } else {
-            setSelectedCategory(null);
-        }
-    }, [categoryQuery]);
-
     // Filter and sort products
     const filteredAndSortedProducts = useMemo(() => {
         let result = products.filter(p => p.isVisible !== false);
 
 
         // Filter by category
-        if (selectedCategory) {
-            result = result.filter(p => p.category === selectedCategory);
+        if (categoryQuery) {
+            result = result.filter(p => p.category === categoryQuery);
         }
 
         // Filter by materials
@@ -84,7 +73,7 @@ function ProductsContent() {
         });
 
         return result;
-    }, [products, selectedCategory, selectedMaterials, priceRange, sortBy]);
+    }, [products, categoryQuery, selectedMaterials, priceRange, sortBy]);
 
 
     const categories = [
@@ -123,7 +112,7 @@ function ProductsContent() {
                     <div className="flex gap-2">
                         <button
                             onClick={() => handleCategoryClick(null)}
-                            className={`whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-medium transition-all border ${!selectedCategory ? 'bg-primary text-white border-primary shadow-sm' : 'bg-white text-stone-600 border-stone-200 hover:border-stone-300'}`}
+                            className={`whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-medium transition-all border ${!categoryQuery ? 'bg-primary text-white border-primary shadow-sm' : 'bg-white text-stone-600 border-stone-200 hover:border-stone-300'}`}
                         >
                             Ver todo
                         </button>
@@ -131,7 +120,7 @@ function ProductsContent() {
                             <button
                                 key={cat.id}
                                 onClick={() => handleCategoryClick(cat.id)}
-                                className={`whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-medium transition-all border ${selectedCategory === cat.id ? 'bg-primary text-white border-primary shadow-sm' : 'bg-white text-stone-600 border-stone-200 hover:border-stone-300'}`}
+                                className={`whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-medium transition-all border ${categoryQuery === cat.id ? 'bg-primary text-white border-primary shadow-sm' : 'bg-white text-stone-600 border-stone-200 hover:border-stone-300'}`}
                             >
                                 {cat.name}
                             </button>
@@ -187,7 +176,7 @@ function ProductsContent() {
                                 <li>
                                     <button
                                         onClick={() => handleCategoryClick(null)}
-                                        className={`text-sm ${!selectedCategory ? 'text-primary font-medium' : 'text-stone-500 hover:text-stone-900'}`}
+                                        className={`text-sm ${!categoryQuery ? 'text-primary font-medium' : 'text-stone-500 hover:text-stone-900'}`}
                                     >
                                         Ver todo
                                     </button>
@@ -196,7 +185,7 @@ function ProductsContent() {
                                     <li key={cat.id}>
                                         <button
                                             onClick={() => handleCategoryClick(cat.id)}
-                                            className={`text-sm ${selectedCategory === cat.id ? 'text-primary font-medium' : 'text-stone-500 hover:text-stone-900'}`}
+                                            className={`text-sm ${categoryQuery === cat.id ? 'text-primary font-medium' : 'text-stone-500 hover:text-stone-900'}`}
                                         >
                                             {cat.name}
                                         </button>

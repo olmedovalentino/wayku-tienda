@@ -31,8 +31,9 @@ export default function RegisterPage() {
         try {
             await register(name, email, password);
             router.push('/');
-        } catch (err: any) {
-            setError(err.message || 'Error al registrarse');
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Error al registrarse';
+            setError(message);
         } finally {
             setIsLoading(false);
         }

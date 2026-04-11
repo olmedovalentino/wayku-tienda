@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 require('dotenv').config({ path: '.env.local' });
 const { createClient } = require('@supabase/supabase-js');
 
@@ -8,7 +9,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 async function run() {
     const { data: nami, error: err1 } = await supabase
         .from('products')
-        .update({ description: 'Lámpara colgante con diseño curvo inspirado en la naturaleza. Sus líneas orgánicas aportan fluidez y calidez a cualquier ambiente, perfecta para ser la protagonista del comedor o salón.' })
+        .update({ description: 'Lï¿½mpara colgante con diseï¿½o curvo inspirado en la naturaleza. Sus lï¿½neas orgï¿½nicas aportan fluidez y calidez a cualquier ambiente, perfecta para ser la protagonista del comedor o salï¿½n.' })
         .ilike('name', 'nami%')
         .select();
         
@@ -16,7 +17,7 @@ async function run() {
 
     const { data: ara, error: err2 } = await supabase
         .from('products')
-        .update({ description: 'Lámpara de diseño compacto y elegante que resalta la belleza natural de la madera. Su iluminación suave y direccional crea espacios íntimos y acogedores ideales para mesas o rincones de lectura.' })
+        .update({ description: 'Lï¿½mpara de diseï¿½o compacto y elegante que resalta la belleza natural de la madera. Su iluminaciï¿½n suave y direccional crea espacios ï¿½ntimos y acogedores ideales para mesas o rincones de lectura.' })
         .ilike('name', 'ara%')
         .select();
 

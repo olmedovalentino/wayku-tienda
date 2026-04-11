@@ -36,14 +36,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const [items, setItems] = useState<CartItem[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
-    const [isMounted, setIsMounted] = useState(false);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const prevUserRef = useRef<string | null>(null);
 
     // Load cart on auth change
     useEffect(() => {
-        setIsMounted(true);
         if (isAuthLoading) return;
 
         const loadCart = async () => {
@@ -60,7 +58,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 try {
                     const saved = localStorage.getItem('cart_guest');
                     if (saved) setItems(JSON.parse(saved));
-                } catch (e) {}
+                } catch {
+                }
                 setIsLoaded(true);
                 return;
             }
@@ -79,7 +78,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                         setIsLoaded(true);
                         return;
                     }
-                } catch (e) {
+                } catch {
                     console.warn('Cart: could not load from Supabase, falling back to localStorage');
                 }
             }
@@ -95,7 +94,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
                     setItems(JSON.parse(guestSaved));
                     localStorage.removeItem('cart_guest');
                 }
-            } catch (e) {}
+            } catch {
+            }
             setIsLoaded(true);
         };
 
@@ -104,13 +104,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     // Save cart whenever items change (debounced)
     useEffect(() => {
-        if (!isLoaded || !isMounted) return;
+        if (!isLoaded) return;
 
         // Save to localStorage immediately
         const cartKey = user ? `cart_user_${user.id}` : 'cart_guest';
         try {
             localStorage.setItem(cartKey, JSON.stringify(items));
-        } catch (e) {}
+        } catch {
+        }
 
         // Debounce Supabase save to avoid too many requests
         if (user && supabase) {
@@ -121,20 +122,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
                         .from('users')
                         .update({ cart: items })
                         .eq('id', user.id);
-                } catch (e) {
+                } catch {
                     console.warn('Cart: could not sync to Supabase');
                 }
             }, 600);
         }
-    }, [items, user, isLoaded, isMounted]);
+    }, [items, user, isLoaded]);
 
-    const addItem = (p: any, m: any, s: any, shade: any, cable: any, canopy: any) => {
+    const addItem = (
+        p: Product,
+        m: CartItem['selectedMaterial'],
+        s?: CartItem['selectedSize'],
+        shade?: CartItem['shadeType'],
+        cable?: CartItem['cableColor'],
+        canopy?: CartItem['canopyColor']
+    ) => {
         let maxStock = typeof p.stockCount === 'number' ? p.stockCount : Infinity;
         if (p.variants && p.variants.length > 0) {
-            const variant = p.variants.find((v: any) => v.material === m && v.size === s);
+            const variant = p.variants.find(v => v.material === m && v.size === s);
             if (variant && typeof variant.stock === 'number') maxStock = variant.stock;
             else if (!s) {
-                const variantNoSize = p.variants.find((v: any) => v.material === m);
+                const variantNoSize = p.variants.find(v => v.material === m);
                 if (variantNoSize && typeof variantNoSize.stock === 'number') maxStock = variantNoSize.stock;
             }
         }
@@ -185,10 +193,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 if (i !== idx) return item;
                 let maxStock = typeof item.stockCount === 'number' ? item.stockCount : Infinity;
                 if (item.variants && item.variants.length > 0) {
-                    const variant = item.variants.find((v: any) => v.material === item.selectedMaterial && v.size === item.selectedSize);
+                    const variant = item.variants.find(v => v.material === item.selectedMaterial && v.size === item.selectedSize);
                     if (variant && typeof variant.stock === 'number') maxStock = variant.stock;
                     else if (!item.selectedSize) {
-                        const variantNoSize = item.variants.find((v: any) => v.material === item.selectedMaterial);
+                        const variantNoSize = item.variants.find(v => v.material === item.selectedMaterial);
                         if (variantNoSize && typeof variantNoSize.stock === 'number') maxStock = variantNoSize.stock;
                     }
                 }
@@ -196,7 +204,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             })),
             clearCart: () => setItems([]),
             subtotal: items.reduce((t, i) => t + (i.price * i.quantity), 0),
-            isInitialized: isMounted,
+            isInitialized: isLoaded,
             toastMessage, setToastMessage
         }}>
             {children}

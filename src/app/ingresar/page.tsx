@@ -23,8 +23,8 @@ export default function LoginPage() {
         try {
             await login(email, password);
             router.push('/');
-        } catch (err: any) {
-            setError(err.message || 'Error al iniciar sesión');
+        } catch (error: unknown) {
+            setError(error instanceof Error ? error.message : 'Error al iniciar sesión');
         } finally {
             setIsLoading(false);
         }

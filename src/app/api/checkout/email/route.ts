@@ -42,19 +42,22 @@ export async function POST(req: Request) {
             },
         });
 
-        const itemsHtml = order.details.map((item: any) => `
+        const itemsHtml = order.details.map((item: unknown) => {
+            const detail = item as { name?: string; material?: string; size?: string; quantity?: number | string; price?: number | string };
+            return `
             <tr>
                 <td style="padding: 10px; border-bottom: 1px solid #eee;">
-                    <strong>${item.name}</strong><br/>
+                    <strong>${detail.name || 'Producto'}</strong><br/>
                     <span style="font-size: 12px; color: #666;">
-                        ${item.material ? `Madera: ${item.material} ` : ''}
-                        ${item.size ? `Medida: ${item.size} ` : ''}
+                        ${detail.material ? `Madera: ${detail.material} ` : ''}
+                        ${detail.size ? `Medida: ${detail.size} ` : ''}
                     </span>
                 </td>
-                <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
-                <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">$${item.price.toLocaleString()}</td>
+                <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${detail.quantity ?? 1}</td>
+                <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">$${Number(detail.price ?? 0).toLocaleString()}</td>
             </tr>
-        `).join('');
+        `;
+        }).join('');
 
         const htmlTemplate = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #FAFAF9; padding: 40px; border-radius: 12px; border: 1px solid #E5E5E5;">
