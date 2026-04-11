@@ -79,12 +79,17 @@ export async function POST(request: Request) {
                             console.error('Payment amount mismatch for order', orderId, { amount, currency, expected: order.total });
                             return new NextResponse('Amount mismatch', { status: 422 });
                         }
-                        const { error } = await admin
+                        const { data: updatedOrder, error } = await admin
                             .from('orders')
                             .update({ status: 'Pago acreditado' })
-                            .eq('id', orderId);
+                            .eq('id', orderId)
+                            .neq('status', 'Cancelado')
+                            .select('id')
+                            .maybeSingle();
                         if (error) {
                             console.error('Error updating order status in DB:', error);
+                        } else if (!updatedOrder) {
+                            console.warn(`Skipped approved transition for ${orderId}; order state changed concurrently`);
                         } else {
                             console.log(`Successfully updated order ${orderId} to Pago acreditado`);
                         }
@@ -97,6 +102,21 @@ export async function POST(request: Request) {
                             .eq('id', orderId)
                             .single();
                         if (fullOrder && fullOrder.status !== 'Cancelado' && fullOrder.status !== 'Pago acreditado') {
+                            const { data: cancelledOrder, error: cancelError } = await admin
+                                .from('orders')
+                                .update({ status: 'Cancelado' })
+                                .eq('id', orderId)
+                                .eq('status', fullOrder.status)
+                                .select('id')
+                                .maybeSingle();
+                            if (cancelError) {
+                                console.error('Error cancelling order before stock release:', cancelError);
+                                return new NextResponse('Internal Error', { status: 500 });
+                            }
+                            if (!cancelledOrder) {
+                                return new NextResponse('OK', { status: 200 });
+                            }
+
                             const details = Array.isArray(fullOrder.details) ? fullOrder.details : [];
                             for (const detail of details) {
                                 if (!detail?.productId || !detail?.quantity) continue;
@@ -113,7 +133,6 @@ export async function POST(request: Request) {
                                         .eq('id', detail.productId);
                                 }
                             }
-                            await admin.from('orders').update({ status: 'Cancelado' }).eq('id', orderId);
                         }
                     }
                 }

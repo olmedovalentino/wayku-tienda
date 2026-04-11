@@ -1,7 +1,17 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { createAdminSessionToken } from '@/lib/admin-session';
+import { createAdminSessionToken, isValidAdminSessionToken } from '@/lib/admin-session';
 import { enforceRateLimit, getClientIp } from '@/lib/rate-limit';
+
+export async function GET() {
+    const cookieStore = await cookies();
+    const session = cookieStore.get('admin_session')?.value;
+    const authenticated = isValidAdminSessionToken(session);
+    return NextResponse.json(
+        { authenticated },
+        { status: authenticated ? 200 : 401 }
+    );
+}
 
 export async function POST(request: Request) {
     try {

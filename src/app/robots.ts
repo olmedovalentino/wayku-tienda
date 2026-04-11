@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/admin/', '/finalizar-compra/', '/cuenta/'],
     },
-    sitemap: 'https://waykulamparas.com/sitemap.xml',
+    sitemap: 'https://wayku.ar/sitemap.xml',
   };
 }

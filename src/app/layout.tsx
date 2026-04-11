@@ -15,21 +15,21 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://wayku.ar'),
-  title: "Waykú | Lámparas Artesanales y Diseño de Autor",
-  description: "Iluminación de diseño en madera natural y cerámica. Creamos lámparas artesanales, sustentables, únicas y exclusivas para transformar tus espacios. Hechas a mano en Córdoba, Argentina.",
-  keywords: ["lámparas de madera", "lámparas artesanales", "diseño de autor", "iluminación sustentable", "decoración de interiores", "lámparas nórdicas", "diseño argentino", "lámparas córdoba"],
+  title: "Wayku | Lamparas artesanales y diseno de autor",
+  description: "Iluminacion de diseno en madera natural y ceramica. Creamos lamparas artesanales, sustentables, unicas y exclusivas para transformar tus espacios. Hechas a mano en Cordoba, Argentina.",
+  keywords: ["lamparas de madera", "lamparas artesanales", "diseno de autor", "iluminacion sustentable", "decoracion de interiores", "lamparas nordicas", "diseno argentino", "lamparas cordoba"],
   openGraph: {
-    title: "Waykú | Lámparas Artesanales",
-    description: "Iluminación de diseño hecha a mano con madera natural y cerámica para transformar tus espacios.",
+    title: "Wayku | Lamparas artesanales",
+    description: "Iluminacion de diseno hecha a mano con madera natural y ceramica para transformar tus espacios.",
     url: "https://wayku.ar",
-    siteName: "Waykú",
+    siteName: "Wayku",
     locale: "es_AR",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Waykú | Lámparas Artesanales",
-    description: "Iluminación de diseño hecha a mano con madera natural y cerámica para transformar tus espacios.",
+    title: "Wayku | Lamparas artesanales",
+    description: "Iluminacion de diseno hecha a mano con madera natural y ceramica para transformar tus espacios.",
   },
   robots: {
     index: true,
@@ -62,11 +62,7 @@ export default function RootLayout({
             </CartProvider>
           </AppProvider>
         </AuthProvider>
-
       </body>
     </html>
   );
 }
-
-
-

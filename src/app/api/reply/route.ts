@@ -42,7 +42,7 @@ export async function POST(req: Request) {
         const htmlTemplate = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #FAFAF9; padding: 40px; border-radius: 12px; border: 1px solid #E5E5E5;">
             <div style="text-align: center; margin-bottom: 30px;">
-                <h1 style="color: #5E6F5E; font-size: 28px; letter-spacing: 2px; text-transform: uppercase; margin: 0;">Waykú</h1>
+                <h1 style="color: #5E6F5E; font-size: 28px; letter-spacing: 2px; text-transform: uppercase; margin: 0;">Wayku</h1>
             </div>
             
             <p style="font-size: 15px; color: #57534e;">Hola ${name || 'Cliente'},</p>
@@ -57,15 +57,15 @@ export async function POST(req: Request) {
             
             <hr style="border: none; border-top: 1px solid #E5E5E5; margin-top: 40px; margin-bottom: 20px;">
             <p style="font-size: 12px; color: #a8a29e; text-align: center; line-height: 1.5;">
-                Waykú | Diseño artesanal sostenible.<br>Fabricado a mano en Córdoba, Argentina.
+                Wayku | Disenio artesanal sostenible.<br>Fabricado a mano en Cordoba, Argentina.
             </p>
         </div>
         `;
 
         await transporter.sendMail({
-            from: `"Waykú Iluminación" <${process.env.EMAIL_USER}>`,
-            to: email, 
-            subject: `Re: ${subject} - Waykú`,
+            from: `"Wayku Iluminacion" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: `Re: ${subject} - Wayku`,
             html: htmlTemplate,
         });
 

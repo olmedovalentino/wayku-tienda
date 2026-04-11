@@ -3,9 +3,9 @@ import { supabase } from '@/lib/supabase';
 import { products as initialProducts } from '@/lib/products';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://waykulamparas.com';
+  const baseUrl = 'https://wayku.ar';
 
-  let activeProducts: Array<{ id: string; updated_at?: string }> = initialProducts.filter(p => p.isVisible !== false);
+  let activeProducts: Array<{ id: string; updated_at?: string }> = initialProducts.filter((product) => product.isVisible !== false);
   try {
     if (supabase) {
       const { data } = await supabase.from('products').select('id, updated_at, "isVisible"').eq('"isVisible"', true);
@@ -16,7 +16,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   } catch {}
 
   const productUrls: MetadataRoute.Sitemap = activeProducts.map((product) => ({
-    url: `${baseUrl}/products/${product.id}`,
+    url: `${baseUrl}/productos/${product.id}`,
     lastModified: product.updated_at ? new Date(product.updated_at) : new Date(),
     changeFrequency: 'weekly',
     priority: 0.8,
@@ -30,13 +30,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
     },
     {
-      url: `${baseUrl}/products`,
+      url: `${baseUrl}/productos`,
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/contact`,
+      url: `${baseUrl}/contacto`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,

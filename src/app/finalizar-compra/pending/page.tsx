@@ -10,15 +10,15 @@ export default function CheckoutPendingPage() {
                 </div>
                 <h1 className="text-2xl font-serif tracking-widest text-stone-900 mb-4">PAGO PENDIENTE</h1>
                 <p className="text-stone-500 mb-8">
-                    Tu pago está siendo procesado por Mercado Pago. 
-                    Te enviaremos un email en cuanto se confirme la acreditación.
-                    No es necesario que vuelvas a intentar si pagaste en efectivo (Rapipago/PagoFácil).
+                    Tu pago esta siendo procesado por Mercado Pago.
+                    Te enviaremos un email en cuanto se confirme la acreditacion.
+                    No es necesario que vuelvas a intentar si pagaste en efectivo.
                 </p>
                 <Link
                     href="/"
                     className="inline-block w-full bg-stone-900 text-white px-8 py-4 text-sm tracking-widest uppercase hover:bg-stone-800 transition-colors"
                 >
-                    Volver a la Tienda
+                    Volver a la tienda
                 </Link>
             </div>
         </div>

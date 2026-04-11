@@ -3,6 +3,7 @@ import { client } from '@/lib/mercadopago';
 import { Preference } from 'mercadopago';
 import { enforceRateLimit, getClientIp } from '@/lib/rate-limit';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { createCheckoutReleaseToken } from '@/lib/checkout-security';
 
 export async function POST(request: Request) {
     try {
@@ -58,6 +59,7 @@ export async function POST(request: Request) {
 
         // Remove trailing slash if present
         baseUrl = baseUrl.replace(/\/$/, '');
+        const releaseToken = createCheckoutReleaseToken(order.id);
 
         const preference = new Preference(client);
 
@@ -71,7 +73,7 @@ export async function POST(request: Request) {
                 },
                 back_urls: {
                     success: `${baseUrl}/checkout/success?order_id=${encodeURIComponent(order.id)}`,
-                    failure: `${baseUrl}/checkout/failure?order_id=${encodeURIComponent(order.id)}`,
+                    failure: `${baseUrl}/checkout/failure?order_id=${encodeURIComponent(order.id)}&release_token=${encodeURIComponent(releaseToken)}`,
                     pending: `${baseUrl}/checkout/pending?order_id=${encodeURIComponent(order.id)}`,
                 },
                 // Only use auto_return if on HTTPS, as Mercado Pago rejects HTTP domains

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { enforceRateLimit, getClientIp } from '@/lib/rate-limit';
+import { isValidCheckoutReleaseToken } from '@/lib/checkout-security';
 
 type DetailRow = {
     productId?: string;
@@ -18,10 +19,13 @@ export async function POST(request: Request) {
             );
         }
 
-        const { orderId } = await request.json();
+        const { orderId, releaseToken } = await request.json();
         const normalizedOrderId = String(orderId || '').trim();
         if (!normalizedOrderId) {
             return NextResponse.json({ error: 'Missing orderId' }, { status: 400 });
+        }
+        if (!isValidCheckoutReleaseToken(normalizedOrderId, String(releaseToken || '').trim())) {
+            return NextResponse.json({ error: 'Invalid release token' }, { status: 403 });
         }
 
         const admin = getSupabaseAdmin();
@@ -40,6 +44,21 @@ export async function POST(request: Request) {
         }
         if (order.status === 'Pago acreditado') {
             return NextResponse.json({ success: true, released: false, reason: 'already_paid' });
+        }
+
+        const { data: cancelledOrder, error: cancelError } = await admin
+            .from('orders')
+            .update({ status: 'Cancelado' })
+            .eq('id', normalizedOrderId)
+            .eq('status', order.status)
+            .select('id')
+            .maybeSingle();
+
+        if (cancelError) {
+            throw cancelError;
+        }
+        if (!cancelledOrder) {
+            return NextResponse.json({ success: true, released: false, reason: 'status_changed' });
         }
 
         const details = Array.isArray(order.details) ? (order.details as DetailRow[]) : [];
@@ -68,7 +87,6 @@ export async function POST(request: Request) {
             }
         }
 
-        await admin.from('orders').update({ status: 'Cancelado' }).eq('id', normalizedOrderId);
         return NextResponse.json({ success: true, released: true });
     } catch (e: unknown) {
         const message = e instanceof Error ? e.message : 'Release stock failed';

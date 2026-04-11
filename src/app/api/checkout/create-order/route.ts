@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { enforceRateLimit, getClientIp } from '@/lib/rate-limit';
+import { quoteShipping } from '@/lib/shipping';
 
 type CheckoutItemInput = {
     id: string;
@@ -29,7 +30,6 @@ export async function POST(request: Request) {
             payer,
             shippingMethod,
             paymentMethod,
-            shippingCost,
             couponCode,
             notes,
             checkoutToken,
@@ -38,7 +38,6 @@ export async function POST(request: Request) {
             payer: Record<string, string>;
             shippingMethod: 'shipping' | 'pickup';
             paymentMethod: 'card' | 'transfer';
-            shippingCost?: number;
             couponCode?: string;
             notes?: string;
             checkoutToken?: string;
@@ -153,9 +152,22 @@ export async function POST(request: Request) {
         }
 
         const discountAmount = subtotal * (discountPercentage / 100);
-        const safeShipping = shippingMethod === 'shipping'
-            ? Math.max(0, Number(shippingCost || 0))
-            : 0;
+        let safeShipping = 0;
+        if (shippingMethod === 'shipping') {
+            if (!payer.address || !payer.city || !payer.province || !payer.postalCode) {
+                return NextResponse.json({ error: 'Missing shipping address' }, { status: 400 });
+            }
+
+            const shippingQuote = quoteShipping({
+                postalCode: payer.postalCode,
+                items: validatedDetails.map((detail) => ({
+                    name: detail.name,
+                    quantity: detail.quantity,
+                })),
+                subtotal,
+            });
+            safeShipping = shippingQuote.cost;
+        }
         const total = Math.max(0, subtotal - discountAmount + safeShipping);
         const normalizedToken = String(checkoutToken || '')
             .trim()

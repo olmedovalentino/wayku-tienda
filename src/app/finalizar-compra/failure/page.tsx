@@ -9,18 +9,19 @@ function FailureContent() {
     const searchParams = useSearchParams();
     const didReleaseRef = useRef(false);
     const orderId = searchParams.get('order_id');
+    const releaseToken = searchParams.get('release_token');
 
     useEffect(() => {
-        if (!orderId || didReleaseRef.current) return;
+        if (!orderId || !releaseToken || didReleaseRef.current) return;
         didReleaseRef.current = true;
         fetch('/api/checkout/release-stock', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ orderId }),
+            body: JSON.stringify({ orderId, releaseToken }),
         }).catch(() => {
             // Non-blocking best effort.
         });
-    }, [orderId]);
+    }, [orderId, releaseToken]);
 
     return (
         <div className="min-h-screen py-20 px-4 bg-stone-50 flex items-center justify-center">

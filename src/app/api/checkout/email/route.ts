@@ -62,13 +62,13 @@ export async function POST(req: Request) {
         const htmlTemplate = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #FAFAF9; padding: 40px; border-radius: 12px; border: 1px solid #E5E5E5;">
             <div style="text-align: center; margin-bottom: 30px;">
-                <h1 style="color: #5E6F5E; font-size: 28px; letter-spacing: 2px; text-transform: uppercase; margin: 0;">Waykú</h1>
-                <p style="color: #78716c; font-size: 14px; margin-top: 10px;">¡Gracias por tu compra!</p>
+                <h1 style="color: #5E6F5E; font-size: 28px; letter-spacing: 2px; text-transform: uppercase; margin: 0;">Wayku</h1>
+                <p style="color: #78716c; font-size: 14px; margin-top: 10px;">Gracias por tu compra</p>
             </div>
             
             <div style="background-color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
                 <h2 style="font-size: 18px; color: #292524; margin-top: 0;">Resumen de tu pedido (${order.id})</h2>
-                <p style="font-size: 14px; color: #57534e;">Hola ${order.customer}, hemos recibido tu pedido y ${order.paymentMethod === 'transfer' ? 'estamos esperando tu comprobante de transferencia' : 'se está procesando'}.</p>
+                <p style="font-size: 14px; color: #57534e;">Hola ${order.customer}, hemos recibido tu pedido y ${order.paymentMethod === 'transfer' ? 'estamos esperando tu comprobante de transferencia' : 'se esta procesando'}.</p>
                 
                 <table style="width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px;">
                     <thead>
@@ -82,7 +82,7 @@ export async function POST(req: Request) {
                         ${itemsHtml}
                         ${order.shippingCost && order.shippingMethod === 'shipping' ? `
                         <tr>
-                            <td colspan="2" style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;"><strong>Envío a domicilio:</strong></td>
+                            <td colspan="2" style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;"><strong>Envio a domicilio:</strong></td>
                             <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">$${order.shippingCost.toLocaleString()}</td>
                         </tr>
                         ` : ''}
@@ -98,8 +98,8 @@ export async function POST(req: Request) {
             
             <div style="font-size: 14px; color: #57534e; text-align: center;">
                 ${order.paymentMethod === 'transfer' ? `
-                    <p style="margin-bottom: 24px;">Por favor, enviá el comprobante de transferencia haciendo clic a continuación para que procesemos tu pago.</p>
-                    <a href="https://wa.me/5493513844333?text=Hola,%20adjunto%20comprobante%20del%20pedido%20${order.id}" style="display: inline-block; background-color: #5E6F5E; color: white; padding: 12px 28px; text-decoration: none; border-radius: 4px; font-weight: 500; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 12px; margin-right: 12px; border: 1px solid #5E6F5E;">Enviar Comprobante</a>
+                    <p style="margin-bottom: 24px;">Por favor, envia el comprobante de transferencia haciendo clic a continuacion para que procesemos tu pago.</p>
+                    <a href="https://wa.me/5493513844333?text=Hola,%20adjunto%20comprobante%20del%20pedido%20${order.id}" style="display: inline-block; background-color: #5E6F5E; color: white; padding: 12px 28px; text-decoration: none; border-radius: 4px; font-weight: 500; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 12px; margin-right: 12px; border: 1px solid #5E6F5E;">Enviar comprobante</a>
                 ` : ''}
                 <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.wayku.ar'}" style="display: inline-block; background-color: transparent; color: #57534E; padding: 12px 28px; text-decoration: none; border-radius: 4px; font-weight: 500; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: 1px solid #D6D3D1; ${order.paymentMethod === 'transfer' ? 'margin-bottom: 12px;' : 'margin-top: 15px;'}">Volver a la tienda</a>
             </div>
@@ -107,9 +107,9 @@ export async function POST(req: Request) {
         `;
 
         await transporter.sendMail({
-            from: `"Waykú" <${process.env.EMAIL_USER}>`,
+            from: `"Wayku" <${process.env.EMAIL_USER}>`,
             to: order.email,
-            subject: `Confirmación de pedido - ${order.id}`,
+            subject: `Confirmacion de pedido - ${order.id}`,
             html: htmlTemplate,
         });
 

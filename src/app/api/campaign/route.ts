@@ -8,10 +8,11 @@ export async function POST(req: Request) {
     try {
         const cookieStore = await cookies();
         const session = cookieStore.get('admin_session');
-        
+
         if (!session || !isValidAdminSessionToken(session.value)) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
+
         const { subject, message, targetEmails } = await req.json();
 
         if (!subject || !message) {
@@ -22,17 +23,15 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Mail config missing in env' }, { status: 500 });
         }
 
-        // Fetch subscribers or use selected emails
         let emails: string[] = [];
-        
+
         if (targetEmails === 'all') {
             const supabase = getSupabaseAdmin();
-
             const { data: subscribers, error } = await supabase.from('subscribers').select('email');
             if (error || !subscribers || subscribers.length === 0) {
                 return NextResponse.json({ error: 'No subscribers found' }, { status: 400 });
             }
-            emails = subscribers.map(s => s.email);
+            emails = subscribers.map((subscriber) => subscriber.email);
         } else if (Array.isArray(targetEmails) && targetEmails.length > 0) {
             emails = targetEmails;
         } else {
@@ -47,38 +46,35 @@ export async function POST(req: Request) {
             },
         });
 
-        // Use BCC for mass email privacy
-        const bccEmails = emails.join(', ');
-
         const htmlTemplate = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #FAFAF9; padding: 40px; border-radius: 12px; border: 1px solid #E5E5E5;">
             <div style="text-align: center; margin-bottom: 30px;">
-                <h1 style="color: #5E6F5E; font-size: 28px; letter-spacing: 2px; text-transform: uppercase; margin: 0;">Waykú</h1>
+                <h1 style="color: #5E6F5E; font-size: 28px; letter-spacing: 2px; text-transform: uppercase; margin: 0;">Wayku</h1>
             </div>
             
             <div style="font-size: 15px; line-height: 1.6; color: #57534e; white-space: pre-wrap;">${message}</div>
             
             <div style="text-align: center; margin-top: 40px; margin-bottom: 20px;">
-                <a href="${process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_URL || 'https://www.wayku.ar'}" style="background-color: #5E6F5E; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 500; font-size: 14px;">Visitar la Tienda</a>
+                <a href="${process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_URL || 'https://www.wayku.ar'}" style="background-color: #5E6F5E; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 500; font-size: 14px;">Visitar la tienda</a>
             </div>
             
             <hr style="border: none; border-top: 1px solid #E5E5E5; margin-top: 40px; margin-bottom: 20px;">
             <p style="font-size: 12px; color: #a8a29e; text-align: center; line-height: 1.5;">
-                Diseño artesanal sostenible.<br>Fabricado a mano en Córdoba, Argentina.
+                Disenio artesanal sostenible.<br>Fabricado a mano en Cordoba, Argentina.
             </p>
         </div>
         `;
 
         await transporter.sendMail({
-            from: `"Waykú Iluminación" <${process.env.EMAIL_USER}>`,
-            bcc: bccEmails, 
-            subject: subject,
+            from: `"Wayku Iluminacion" <${process.env.EMAIL_USER}>`,
+            bcc: emails.join(', '),
+            subject,
             html: htmlTemplate,
         });
 
         return NextResponse.json({ success: true, sentCount: emails.length });
     } catch (error: unknown) {
-        console.error('Error enviando campaña:', error);
+        console.error('Error enviando campania:', error);
         return NextResponse.json({ error: 'Failed to send campaign' }, { status: 500 });
     }
 }

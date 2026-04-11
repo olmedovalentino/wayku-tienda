@@ -19,28 +19,26 @@ export interface Product {
     variants?: StockVariant[];
 }
 
-// Converts a product name to a URL-friendly slug
-// e.g. "Amaí" -> "amai", "Palo Santo" -> "palo-santo"
+// Converts a product name to a URL-friendly slug.
+// e.g. "Amai" -> "amai", "Palo Santo" -> "palo-santo"
 export function slugify(name: string): string {
     return name
         .toLowerCase()
         .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '') // remove diacritics (tildes, etc.)
+        .replace(/[\u0300-\u036f]/g, '')
         .replace(/\s+/g, '-')
         .replace(/[^a-z0-9-]/g, '');
 }
 
-// Find a product by its slug (name-based)
 export function findBySlug(productList: Product[], slug: string): Product | undefined {
-    return productList.find(p => slugify(p.name) === slug);
+    return productList.find((product) => slugify(product.name) === slug);
 }
-
 
 export const products: Product[] = [
     {
         id: 'new-1',
         name: 'Taini',
-        description: 'Lámpara colgante lineal de madera, ideal para iluminar islas de cocina o comedores con una luz cálida y difusa.',
+        description: 'Lampara colgante lineal de madera, ideal para iluminar islas de cocina o comedores con una luz calida y difusa.',
         price: 220000,
         category: 'pendant',
         material: 'roble',
@@ -50,16 +48,16 @@ export const products: Product[] = [
         variants: [
             { material: 'roble', size: '1m', stock: 5 },
             { material: 'roble', size: '1.5m', stock: 3 },
-            { material: 'roble', size: '2m', stock: 0 }, // Out of stock example
+            { material: 'roble', size: '2m', stock: 0 },
             { material: 'guayubira', size: '1m', stock: 2 },
-            { material: 'guayubira', size: '1.5m', stock: 0 }, // Out of stock example
+            { material: 'guayubira', size: '1.5m', stock: 0 },
             { material: 'guayubira', size: '2m', stock: 4 },
-        ]
+        ],
     },
     {
         id: 'new-2',
-        name: 'Amaí',
-        description: 'Lámpara de mesa con base de madera y pantalla de lino natural. Perfecta para mesas de luz o escritorios.',
+        name: 'Amai',
+        description: 'Lampara de mesa con base de madera y pantalla de lino natural. Perfecta para mesas de luz o escritorios.',
         price: 120000,
         category: 'table',
         material: 'guayubira',
@@ -68,30 +66,29 @@ export const products: Product[] = [
         variants: [
             { material: 'roble', stock: 2 },
             { material: 'guayubira', stock: 2 },
-            { material: 'palo-santo', stock: 2 }
-        ]
+            { material: 'palo-santo', stock: 2 },
+        ],
     },
     {
         id: 'new-3',
-        name: 'Kirú',
-        description: 'Aplique de pared en madera con foco direccional negro. Combina funcionalidad y diseño moderno.',
+        name: 'Kiru',
+        description: 'Aplique de pared en madera con foco direccional negro. Combina funcionalidad y diseno moderno.',
         price: 80000,
         category: 'wall',
         material: 'palo-santo',
         images: ['/productos/wall-sconce.png'],
         inStock: true,
-        stockCount: 12
+        stockCount: 12,
     },
-
     {
         id: 'new-4',
         name: 'Unui',
-        description: 'Lámpara colgante de diseño minimalista, ideal para crear ambientes serenos.',
+        description: 'Lampara colgante de diseno minimalista, ideal para crear ambientes serenos.',
         price: 200000,
         category: 'pendant',
         material: 'guayubira',
         images: ['/productos/unui.png'],
         inStock: true,
-        stockCount: 10
+        stockCount: 10,
     },
 ];

@@ -178,7 +178,8 @@ export default function CheckoutPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     postalCode: formData.postalCode,
-                    items: items.map(i => ({ name: i.name, quantity: i.quantity }))
+                    items: items.map(i => ({ name: i.name, quantity: i.quantity })),
+                    subtotal,
                 })
             });
             const data = await res.json();
@@ -234,7 +235,6 @@ export default function CheckoutPage() {
                     },
                     shippingMethod,
                     paymentMethod,
-                    shippingCost: shippingMethod === 'shipping' ? shippingCost : 0,
                     couponCode: couponCode.trim() ? couponCode : null,
                     notes: formData.notes,
                     checkoutToken: checkoutTokenRef.current,
