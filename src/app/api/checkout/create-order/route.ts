@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { createHash } from 'crypto';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { enforceRateLimit, getClientIp } from '@/lib/rate-limit';
 import { quoteShipping } from '@/lib/shipping';
@@ -12,6 +13,24 @@ type CheckoutItemInput = {
     cableColor?: string;
     canopyColor?: string;
 };
+
+type ValidatedDetail = {
+    name: string;
+    price: number;
+    quantity: number;
+    material?: string;
+    size?: string;
+    shade?: string;
+    cable?: string;
+    canopy?: string;
+    productId: string;
+};
+
+function createStableOrderId(checkoutToken: string): string {
+    const hash = createHash('sha256').update(checkoutToken).digest('hex').slice(0, 12);
+    const numeric = BigInt(`0x${hash}`).toString().slice(0, 10).padStart(10, '0');
+    return `ORD-${numeric}`;
+}
 
 export async function POST(request: Request) {
     try {
@@ -57,7 +76,7 @@ export async function POST(request: Request) {
         }
 
         const admin = getSupabaseAdmin();
-        const productIds = [...new Set(items.map(i => i.id))];
+        const productIds = [...new Set(items.map((item) => item.id))];
         const { data: products, error: productsError } = await admin
             .from('products')
             .select('id, name, price, stockCount, inStock')
@@ -67,18 +86,8 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Failed to load products' }, { status: 500 });
         }
 
-        const productMap = new Map(products.map(p => [p.id, p]));
-        const validatedDetails: Array<{
-            name: string;
-            price: number;
-            quantity: number;
-            material?: string;
-            size?: string;
-            shade?: string;
-            cable?: string;
-            canopy?: string;
-            productId: string;
-        }> = [];
+        const productMap = new Map(products.map((product) => [product.id, product]));
+        const validatedDetails: ValidatedDetail[] = [];
 
         for (const item of items) {
             const quantity = Number(item.quantity);
@@ -93,7 +102,6 @@ export async function POST(request: Request) {
             if (product.inStock === false) {
                 return NextResponse.json({ error: `${product.name} is out of stock` }, { status: 400 });
             }
-
             if (typeof product.stockCount === 'number' && product.stockCount < quantity) {
                 return NextResponse.json(
                     { error: `No hay stock suficiente para ${product.name}` },
@@ -116,7 +124,9 @@ export async function POST(request: Request) {
 
         const subtotal = validatedDetails.reduce((acc, item) => acc + item.price * item.quantity, 0);
         let discountPercentage = 0;
+        let checkoutWarning: string | null = null;
         const normalizedCoupon = String(couponCode || '').trim().toUpperCase();
+
         if (normalizedCoupon) {
             const { data: coupon, error: couponError } = await admin
                 .from('coupons')
@@ -125,13 +135,13 @@ export async function POST(request: Request) {
                 .single();
 
             if (couponError || !coupon) {
-                return NextResponse.json({ error: 'Código inválido o no encontrado' }, { status: 400 });
+                return NextResponse.json({ error: 'Codigo invalido o no encontrado' }, { status: 400 });
             }
             if (!coupon.is_active) {
-                return NextResponse.json({ error: 'El cupón está desactivado' }, { status: 400 });
+                return NextResponse.json({ error: 'El cupon esta desactivado' }, { status: 400 });
             }
             if (coupon.expires_at && new Date(coupon.expires_at) <= new Date()) {
-                return NextResponse.json({ error: 'Este cupón ya venció' }, { status: 400 });
+                return NextResponse.json({ error: 'Este cupon ya vencio' }, { status: 400 });
             }
 
             if (normalizedCoupon === 'PRIMERACOMPRA10') {
@@ -140,19 +150,24 @@ export async function POST(request: Request) {
                     .from('orders')
                     .select('*', { count: 'exact', head: true })
                     .ilike('email', email);
+
                 if (countError) {
                     return NextResponse.json({ error: 'No se pudo validar primera compra' }, { status: 500 });
                 }
-                if ((count || 0) > 0) {
-                    return NextResponse.json({ error: 'Este cupón es exclusivo para tu primera compra (ya registramos pedidos anteriores con tu email).' }, { status: 400 });
-                }
-            }
 
-            discountPercentage = Number(coupon.discount_percentage || 0);
+                if ((count || 0) > 0) {
+                    checkoutWarning = 'PRIMERACOMPRA10 no aplica para este email. El pedido continua sin descuento.';
+                } else {
+                    discountPercentage = Number(coupon.discount_percentage || 0);
+                }
+            } else {
+                discountPercentage = Number(coupon.discount_percentage || 0);
+            }
         }
 
         const discountAmount = subtotal * (discountPercentage / 100);
         let safeShipping = 0;
+
         if (shippingMethod === 'shipping') {
             if (!payer.address || !payer.city || !payer.province || !payer.postalCode) {
                 return NextResponse.json({ error: 'Missing shipping address' }, { status: 400 });
@@ -168,16 +183,18 @@ export async function POST(request: Request) {
             });
             safeShipping = shippingQuote.cost;
         }
+
         const total = Math.max(0, subtotal - discountAmount + safeShipping);
         const normalizedToken = String(checkoutToken || '')
             .trim()
             .replace(/[^a-zA-Z0-9_-]/g, '')
             .slice(0, 64);
+
         if (!normalizedToken) {
             return NextResponse.json({ error: 'Missing checkout token' }, { status: 400 });
         }
-        const orderId = `ORD-${normalizedToken}`;
 
+        const orderId = createStableOrderId(normalizedToken);
         const orderToInsert = {
             id: orderId,
             customer: `${payer.firstName} ${payer.lastName}`.trim(),
@@ -185,7 +202,7 @@ export async function POST(request: Request) {
             date: new Date().toLocaleDateString('es-AR'),
             total,
             status: 'Pedido recibido',
-            items: validatedDetails.reduce((acc, i) => acc + i.quantity, 0),
+            items: validatedDetails.reduce((acc, item) => acc + item.quantity, 0),
             shippingMethod,
             paymentMethod,
             phone: payer.phone,
@@ -197,28 +214,29 @@ export async function POST(request: Request) {
             details: validatedDetails,
         };
 
+        const buildOrderResponse = (baseOrder: typeof orderToInsert | Record<string, unknown>) => ({
+            success: true,
+            warning: checkoutWarning,
+            order: {
+                ...baseOrder,
+                shippingCost: safeShipping,
+                discountPercentage,
+                couponCode: normalizedCoupon || null,
+            },
+        });
+
         const { error: orderError } = await admin.from('orders').insert(orderToInsert);
         if (orderError) {
-            // Idempotency: if order already exists for this token, return it.
             const { data: existing } = await admin.from('orders').select('*').eq('id', orderId).single();
             if (existing) {
-                return NextResponse.json({
-                    success: true,
-                    order: {
-                        ...existing,
-                        shippingCost: safeShipping,
-                        discountPercentage,
-                        couponCode: normalizedCoupon || null,
-                    },
-                });
+                return NextResponse.json(buildOrderResponse(existing));
             }
             return NextResponse.json({ error: 'No se pudo crear el pedido' }, { status: 500 });
         }
 
-        // Prefer DB-atomic reservation if SQL function exists.
-        const stockPayload = validatedDetails.map(d => ({
-            productId: d.productId,
-            quantity: d.quantity,
+        const stockPayload = validatedDetails.map((detail) => ({
+            productId: detail.productId,
+            quantity: detail.quantity,
         }));
         const { data: reservedAtomic, error: atomicErr } = await admin.rpc('reserve_stock_atomic', {
             items: stockPayload,
@@ -226,17 +244,18 @@ export async function POST(request: Request) {
 
         let reservationOk = reservedAtomic === true;
         if (!reservationOk && atomicErr) {
-            // Fallback to optimistic compare-and-set when RPC is unavailable.
             const reserved: Array<{ productId: string; quantity: number }> = [];
             reservationOk = true;
+
             for (const detail of validatedDetails) {
                 let reservedOk = false;
-                for (let i = 0; i < 3; i += 1) {
+                for (let attempt = 0; attempt < 3; attempt += 1) {
                     const { data: latest, error: latestErr } = await admin
                         .from('products')
                         .select('stockCount')
                         .eq('id', detail.productId)
                         .single();
+
                     if (latestErr || !latest || typeof latest.stockCount !== 'number') break;
                     if (latest.stockCount < detail.quantity) break;
 
@@ -248,17 +267,20 @@ export async function POST(request: Request) {
                         .eq('stockCount', latest.stockCount)
                         .select('id')
                         .maybeSingle();
+
                     if (!updateErr && updated) {
                         reserved.push({ productId: detail.productId, quantity: detail.quantity });
                         reservedOk = true;
                         break;
                     }
                 }
+
                 if (!reservedOk) {
                     reservationOk = false;
                     break;
                 }
             }
+
             if (!reservationOk) {
                 for (const rollback of reserved) {
                     const { data: back } = await admin
@@ -266,6 +288,7 @@ export async function POST(request: Request) {
                         .select('stockCount')
                         .eq('id', rollback.productId)
                         .single();
+
                     if (back && typeof back.stockCount === 'number') {
                         const restored = back.stockCount + rollback.quantity;
                         await admin
@@ -280,22 +303,14 @@ export async function POST(request: Request) {
         if (!reservationOk) {
             await admin.from('orders').update({ status: 'Cancelado' }).eq('id', orderId);
             return NextResponse.json(
-                { error: 'No hay stock suficiente para uno o más productos.' },
+                { error: 'No hay stock suficiente para uno o mas productos.' },
                 { status: 409 }
             );
         }
 
-        return NextResponse.json({
-            success: true,
-            order: {
-                ...orderToInsert,
-                shippingCost: safeShipping,
-                discountPercentage,
-                couponCode: normalizedCoupon || null,
-            },
-        });
-    } catch (e: unknown) {
-        const message = e instanceof Error ? e.message : 'Checkout create order failed';
+        return NextResponse.json(buildOrderResponse(orderToInsert));
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Checkout create order failed';
         return NextResponse.json({ error: message }, { status: 500 });
     }
 }

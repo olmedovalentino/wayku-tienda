@@ -244,6 +244,10 @@ export default function CheckoutPage() {
             if (!orderResponse.ok || !orderData?.order) {
                 throw new Error(orderData?.error || 'No se pudo crear el pedido');
             }
+            if (orderData.warning) {
+                setCheckoutToast({ message: orderData.warning, type: 'success' });
+                setTimeout(() => setCheckoutToast(null), 5000);
+            }
 
             if (paymentMethod === 'transfer') {
                 await fetch('/api/checkout/email', {
