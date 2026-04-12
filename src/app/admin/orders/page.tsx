@@ -17,6 +17,7 @@ import {
     Printer
 } from 'lucide-react';
 import { getTimeAgo } from '@/lib/time';
+import { formatOrderDisplayId } from '@/lib/order-id';
 
 function escapeHtml(unsafe: string | null | undefined): string {
     if (!unsafe) return '';
@@ -191,7 +192,7 @@ export default function AdminOrdersPage() {
                                         onClick={() => setSelectedOrder(order)}
                                         className="px-6 py-4 font-medium text-stone-900 underline decoration-stone-200 underline-offset-4 cursor-pointer hover:text-primary transition-colors"
                                     >
-                                        {order.id}
+                                        {formatOrderDisplayId(order.id)}
                                     </td>
                                     <td className="px-6 py-4">
                                         <div>
@@ -252,7 +253,7 @@ export default function AdminOrdersPage() {
                                         onClick={() => setSelectedOrder(order)}
                                         className="font-bold text-stone-900 underline decoration-stone-200 underline-offset-4 cursor-pointer active:text-primary transition-colors"
                                     >
-                                        {order.id}
+                                        {formatOrderDisplayId(order.id)}
                                     </p>
                                     <div className="flex flex-col">
                                         <p className="text-xs text-stone-500 capitalize">{order.date}</p>
@@ -332,7 +333,7 @@ export default function AdminOrdersPage() {
 
                         <div className="flex items-center justify-between p-6 border-b border-stone-100">
                             <div>
-                                <h2 className="text-xl font-bold text-stone-900">Detalle de Pedido {selectedOrder.id}</h2>
+                                <h2 className="text-xl font-bold text-stone-900">Detalle de Pedido {formatOrderDisplayId(selectedOrder.id)}</h2>
                                 <p className="text-sm text-stone-500">{selectedOrder.date}</p>
                             </div>
                             <button onClick={() => { setSelectedOrder(null); setConfirmAction(null); }} className="text-stone-400 hover:text-stone-900 transition-colors">
@@ -471,7 +472,7 @@ export default function AdminOrdersPage() {
                                     const printContent = `
 <html>
 <head>
-    <title>Comprobante de Pedido ${selectedOrder.id}</title>
+    <title>Comprobante de Pedido ${formatOrderDisplayId(selectedOrder.id)}</title>
     <style>
         body { font-family: 'Courier New', Courier, monospace; padding: 40px; color: #333; line-height: 1.6; }
         .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
@@ -487,7 +488,7 @@ export default function AdminOrdersPage() {
     <div class="header">
         <div class="brand">WAYKÚ</div>
         <div>Lámparas de autor · Hechas a mano</div>
-        <div style="margin-top: 10px;">Comprobante de Pedido: ${selectedOrder.id}</div>
+        <div style="margin-top: 10px;">Comprobante de Pedido: ${formatOrderDisplayId(selectedOrder.id)}</div>
     </div>
     
     <div class="details">

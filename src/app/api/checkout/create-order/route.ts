@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { createHash } from 'crypto';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { enforceRateLimit, getClientIp } from '@/lib/rate-limit';
 import { quoteShipping } from '@/lib/shipping';
+import { createStableOrderId } from '@/lib/order-id';
 
 type CheckoutItemInput = {
     id: string;
@@ -25,12 +25,6 @@ type ValidatedDetail = {
     canopy?: string;
     productId: string;
 };
-
-function createStableOrderId(checkoutToken: string): string {
-    const hash = createHash('sha256').update(checkoutToken).digest('hex').slice(0, 12);
-    const numeric = BigInt(`0x${hash}`).toString().slice(0, 10).padStart(10, '0');
-    return `ORD-${numeric}`;
-}
 
 export async function POST(request: Request) {
     try {

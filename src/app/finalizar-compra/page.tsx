@@ -40,11 +40,12 @@ export default function CheckoutPage() {
 
     const [shippingMethod, setShippingMethod] = useState<'shipping' | 'pickup'>('shipping');
     const [paymentMethod, setPaymentMethod] = useState<'card' | 'transfer'>('card');
-    const checkoutTokenRef = useRef<string>(
+    const createCheckoutToken = () => (
         (typeof crypto !== 'undefined' && crypto.randomUUID)
             ? crypto.randomUUID()
             : `token-${Date.now()}`
     );
+    const checkoutTokenRef = useRef<string>(createCheckoutToken());
 
     const router = useRouter();
 
@@ -282,6 +283,7 @@ export default function CheckoutPage() {
         } catch (error: unknown) {
             console.error(error);
             const message = error instanceof Error ? error.message : 'Error al procesar el pago';
+            checkoutTokenRef.current = createCheckoutToken();
             alert(message);
         } finally {
             setIsProcessing(false);
