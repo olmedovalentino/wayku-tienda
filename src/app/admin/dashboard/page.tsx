@@ -12,13 +12,34 @@ import {
     RefreshCw,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { formatOrderDisplayId } from '@/lib/order-id';
 
 export default function AdminDashboardPage() {
-    const { products, orders, queries, updateProduct } = useApp();
+    const { products, orders, queries, updateProduct, refreshAdminData } = useApp();
     const [isRefreshing, setIsRefreshing] = useState(false);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const loadFreshData = async () => {
+            setIsRefreshing(true);
+            try {
+                await refreshAdminData();
+            } finally {
+                if (isMounted) {
+                    setIsRefreshing(false);
+                }
+            }
+        };
+
+        loadFreshData();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [refreshAdminData]);
 
     const stats = [
         {
@@ -73,9 +94,13 @@ export default function AdminDashboardPage() {
         }
     };
 
-    const refreshDashboard = () => {
+    const refreshDashboard = async () => {
         setIsRefreshing(true);
-        window.location.reload();
+        try {
+            await refreshAdminData();
+        } finally {
+            setIsRefreshing(false);
+        }
     };
 
     return (

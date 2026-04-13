@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import { ensureUserProfile } from '@/lib/user-profile';
 
 export interface User {
     id: string;
@@ -33,7 +32,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const syncUser = useCallback(async (supabaseUser: SupabaseUser | null) => {
         if (!supabaseUser) return null;
         try {
-            const profile = await ensureUserProfile(supabaseUser);
+            const { data: profile } = await supabase!
+                .from('users')
+                .select('*')
+                .eq('id', supabaseUser.id)
+                .maybeSingle();
             const name = profile?.full_name || profile?.name || supabaseUser.user_metadata?.name || 'Usuario';
             return { id: supabaseUser.id, email: supabaseUser.email || '', name };
         } catch {
@@ -100,7 +103,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
             if (error) throw new Error(error.message);
             if (data.user) {
-                await ensureUserProfile(data.user, { name });
+                try {
+                    await supabase.from('users').insert({
+                        id: data.user.id,
+                        full_name: name,
+                        email: cleanEmail,
+                    });
+                } catch {
+                    // Ignore duplicate or policy issues so registration does not block auth.
+                }
                 setUser({ id: data.user.id, name, email: cleanEmail });
             }
         } finally {
@@ -109,8 +120,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const logout = async () => {
-        if (supabase) await supabase.auth.signOut();
-        setUser(null);
+        try {
+            if (supabase) await supabase.auth.signOut();
+        } finally {
+            setUser(null);
+            setIsLoading(false);
+        }
     };
 
     return (

@@ -4,7 +4,6 @@ import { createContext, useContext, useState, ReactNode, useEffect, useRef } fro
 import { Product } from '@/lib/products';
 import { useAuth } from './AuthContext';
 import { supabase } from '@/lib/supabase';
-import { ensureUserProfile } from '@/lib/user-profile';
 
 export interface CartItem extends Product {
     quantity: number;
@@ -40,6 +39,31 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const prevUserRef = useRef<string | null>(null);
+
+    const saveCartToSupabase = async (userId: string, email: string, cart: CartItem[]) => {
+        if (!supabase) return;
+
+        const { data: updated, error: updateError } = await supabase
+            .from('users')
+            .update({ cart })
+            .eq('id', userId)
+            .select('id')
+            .maybeSingle();
+
+        if (!updateError && updated) {
+            return;
+        }
+
+        const { error: insertError } = await supabase.from('users').insert({
+            id: userId,
+            email: email.trim().toLowerCase(),
+            cart,
+        });
+
+        if (insertError) {
+            throw insertError;
+        }
+    };
 
     // Load cart on auth change
     useEffect(() => {
@@ -112,12 +136,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
             } else if (guestSaved.length > 0) {
                 setItems(guestSaved);
                 localStorage.removeItem('cart_guest');
-            } else if (supabase) {
-                try {
-                    await ensureUserProfile({ id: user.id, email: user.email }, { cart: [] });
-                } catch {
-                    console.warn('Cart: could not initialize user profile');
-                }
             }
             setIsLoaded(true);
         };
@@ -141,7 +159,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
             saveTimeoutRef.current = setTimeout(async () => {
                 try {
-                    await ensureUserProfile({ id: user.id, email: user.email }, { cart: items });
+                    await saveCartToSupabase(user.id, user.email, items);
                 } catch {
                     console.warn('Cart: could not sync to Supabase');
                 }
