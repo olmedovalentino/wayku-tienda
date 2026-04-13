@@ -16,7 +16,7 @@ function ProductsContent() {
 
     const handleCategoryClick = (catId: string | null) => {
         if (catId) {
-            router.push(`/products?category=${catId}`, { scroll: false });
+            router.push(`/productos?category=${catId}`, { scroll: false });
         } else {
             router.push('/productos', { scroll: false });
         }

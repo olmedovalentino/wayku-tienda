@@ -4,6 +4,7 @@ import { createContext, useContext, useState, ReactNode, useEffect, useRef } fro
 import { Product } from '@/lib/products';
 import { useAuth } from './AuthContext';
 import { supabase } from '@/lib/supabase';
+import { ensureUserProfile } from '@/lib/user-profile';
 
 export interface CartItem extends Product {
     quantity: number;
@@ -53,16 +54,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 prevUserRef.current = currentUserId;
             }
 
+            const readStoredItems = (key: string): CartItem[] => {
+                try {
+                    const saved = localStorage.getItem(key);
+                    return saved ? JSON.parse(saved) : [];
+                } catch {
+                    return [];
+                }
+            };
+
             if (!user) {
                 // Guest: load from localStorage
-                try {
-                    const saved = localStorage.getItem('cart_guest');
-                    if (saved) setItems(JSON.parse(saved));
-                } catch {
-                }
+                setItems(readStoredItems('cart_guest'));
                 setIsLoaded(true);
                 return;
             }
+
+            const userSaved = readStoredItems(`cart_user_${user.id}`);
+            const guestSaved = readStoredItems('cart_guest');
 
             // Logged-in user: try Supabase first
             if (supabase) {
@@ -71,10 +80,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
                         .from('users')
                         .select('cart')
                         .eq('id', user.id)
-                        .single();
+                        .maybeSingle();
 
-                    if (!error && data && Array.isArray(data.cart) && data.cart.length > 0) {
-                        setItems(data.cart);
+                    if (!error && data && Array.isArray(data.cart)) {
+                        if (data.cart.length > 0) {
+                            setItems(data.cart);
+                            setIsLoaded(true);
+                            return;
+                        }
+
+                        const localItems = userSaved.length > 0 ? userSaved : guestSaved;
+                        if (localItems.length > 0) {
+                            setItems(localItems);
+                            localStorage.removeItem('cart_guest');
+                            setIsLoaded(true);
+                            return;
+                        }
+
+                        setItems([]);
                         setIsLoaded(true);
                         return;
                     }
@@ -84,17 +107,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
             }
 
             // Fallback: localStorage (merge guest cart if exists)
-            try {
-                const userSaved = localStorage.getItem(`cart_user_${user.id}`);
-                const guestSaved = localStorage.getItem('cart_guest');
-                if (userSaved) {
-                    setItems(JSON.parse(userSaved));
-                } else if (guestSaved) {
-                    // Migrate guest cart to user
-                    setItems(JSON.parse(guestSaved));
-                    localStorage.removeItem('cart_guest');
+            if (userSaved.length > 0) {
+                setItems(userSaved);
+            } else if (guestSaved.length > 0) {
+                setItems(guestSaved);
+                localStorage.removeItem('cart_guest');
+            } else if (supabase) {
+                try {
+                    await ensureUserProfile({ id: user.id, email: user.email }, { cart: [] });
+                } catch {
+                    console.warn('Cart: could not initialize user profile');
                 }
-            } catch {
             }
             setIsLoaded(true);
         };
@@ -118,16 +141,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
             if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
             saveTimeoutRef.current = setTimeout(async () => {
                 try {
-                    await supabase!
-                        .from('users')
-                        .update({ cart: items })
-                        .eq('id', user.id);
+                    await ensureUserProfile({ id: user.id, email: user.email }, { cart: items });
                 } catch {
                     console.warn('Cart: could not sync to Supabase');
                 }
             }, 600);
         }
     }, [items, user, isLoaded]);
+
+    useEffect(() => {
+        return () => {
+            if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+        };
+    }, []);
 
     const addItem = (
         p: Product,

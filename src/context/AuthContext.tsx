@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
+import { ensureUserProfile } from '@/lib/user-profile';
 
 export interface User {
     id: string;
@@ -32,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const syncUser = useCallback(async (supabaseUser: SupabaseUser | null) => {
         if (!supabaseUser) return null;
         try {
-            const { data: profile } = await supabase!.from('users').select('*').eq('id', supabaseUser.id).single();
+            const profile = await ensureUserProfile(supabaseUser);
             const name = profile?.full_name || profile?.name || supabaseUser.user_metadata?.name || 'Usuario';
             return { id: supabaseUser.id, email: supabaseUser.email || '', name };
         } catch {
@@ -99,12 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
             if (error) throw new Error(error.message);
             if (data.user) {
-                // Upsert to ensure user exists in public.users
-                await supabase.from('users').upsert({
-                    id: data.user.id,
-                    full_name: name,
-                    email: cleanEmail,
-                }, { onConflict: 'id' });
+                await ensureUserProfile(data.user, { name });
                 setUser({ id: data.user.id, name, email: cleanEmail });
             }
         } finally {

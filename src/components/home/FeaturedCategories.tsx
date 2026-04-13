@@ -5,19 +5,19 @@ import { ArrowRight } from 'lucide-react';
 const categories = [
     {
         name: 'Colgantes',
-        href: '/productos/pendant',
+        href: '/productos?category=pendant',
         image: 'https://images.unsplash.com/photo-1540932296481-d448663801e1?q=80&w=2670&auto=format&fit=crop',
         description: 'Elegancia suspendida en el aire'
     },
     {
         name: 'De Mesa',
-        href: '/productos/table',
+        href: '/productos?category=table',
         image: 'https://images.unsplash.com/photo-1507473885765-e6ed05e54765?q=80&w=2574&auto=format&fit=crop',
         description: 'Luz puntual para tus momentos'
     },
     {
         name: 'De Pie',
-        href: '/productos/floor',
+        href: '/productos?category=floor',
         image: 'https://images.unsplash.com/photo-1513506003011-3b03c8a35918?q=80&w=2574&auto=format&fit=crop',
         description: 'Presencia y calidez en cada rincón'
     }

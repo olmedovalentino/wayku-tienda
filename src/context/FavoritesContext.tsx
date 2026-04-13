@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useRef } fro
 import { Product } from '@/lib/products';
 import { useAuth } from './AuthContext';
 import { supabase } from '@/lib/supabase';
+import { ensureUserProfile } from '@/lib/user-profile';
 
 type FavoritesContextType = {
     favorites: Product[];
@@ -41,16 +42,43 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
                 prevUserRef.current = currentUserId;
             }
 
+            const readStoredFavorites = (key: string): Product[] => {
+                try {
+                    const saved = localStorage.getItem(key);
+                    return saved ? JSON.parse(saved) : [];
+                } catch {
+                    return [];
+                }
+            };
+
+            const userFavKey = user ? `wayku_favorites_user_${user.id}` : 'wayku_favorites_guest';
+            const userSaved = readStoredFavorites(userFavKey);
+            const guestSaved = readStoredFavorites('wayku_favorites_guest');
+
             if (user && supabase) {
                 try {
                     const { data, error } = await supabase
                         .from('users')
                         .select('favorites')
                         .eq('id', user.id)
-                        .single();
+                        .maybeSingle();
 
-                    if (!error && data && Array.isArray(data.favorites) && data.favorites.length > 0) {
-                        setFavorites(data.favorites);
+                    if (!error && data && Array.isArray(data.favorites)) {
+                        if (data.favorites.length > 0) {
+                            setFavorites(data.favorites);
+                            setIsLoaded(true);
+                            return;
+                        }
+
+                        const localFavorites = userSaved.length > 0 ? userSaved : guestSaved;
+                        if (localFavorites.length > 0) {
+                            setFavorites(localFavorites);
+                            localStorage.removeItem('wayku_favorites_guest');
+                            setIsLoaded(true);
+                            return;
+                        }
+
+                        setFavorites([]);
                         setIsLoaded(true);
                         return;
                     }
@@ -60,19 +88,17 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
             }
 
             // Fallback: localStorage
-            const favKey = user ? `wayku_favorites_user_${user.id}` : 'wayku_favorites_guest';
-            try {
-                const saved = localStorage.getItem(favKey);
-                if (saved) setFavorites(JSON.parse(saved));
-                else if (user) {
-                    // Try migrating guest favorites
-                    const guestFavs = localStorage.getItem('wayku_favorites_guest');
-                    if (guestFavs) {
-                        setFavorites(JSON.parse(guestFavs));
-                        localStorage.removeItem('wayku_favorites_guest');
-                    }
+            if (userSaved.length > 0) {
+                setFavorites(userSaved);
+            } else if (user && guestSaved.length > 0) {
+                setFavorites(guestSaved);
+                localStorage.removeItem('wayku_favorites_guest');
+            } else if (user && supabase) {
+                try {
+                    await ensureUserProfile({ id: user.id, email: user.email }, { favorites: [] });
+                } catch {
+                    console.warn('Favorites: could not initialize user profile');
                 }
-            } catch {
             }
             setIsLoaded(true);
         };
@@ -94,10 +120,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
             if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
             saveTimeoutRef.current = setTimeout(async () => {
                 try {
-                    await supabase!
-                        .from('users')
-                        .update({ favorites })
-                        .eq('id', user.id);
+                    await ensureUserProfile({ id: user.id, email: user.email }, { favorites });
                 } catch {
                     console.warn('Favorites: could not sync to Supabase');
                 }
@@ -105,17 +128,14 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
         }
     }, [favorites, user, isLoaded]);
 
+    useEffect(() => {
+        return () => {
+            if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+        };
+    }, []);
+
     const openFavorites = () => setIsOpen(true);
     const closeFavorites = () => setIsOpen(false);
-
-    const saveFavsToSupabase = async (newFavs: Product[]) => {
-        if (user && supabase) {
-            try {
-                await supabase.from('users').update({ favorites: newFavs }).eq('id', user.id);
-            } catch {
-            }
-        }
-    };
 
     const toggleFavorite = (product: Product) => {
         setFavorites(prev => {
@@ -128,18 +148,13 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
                 newFavs = [...prev, product];
                 setToastMessage(`Agregado a tus favoritos`);
             }
-            saveFavsToSupabase(newFavs);
             setTimeout(() => setToastMessage(null), 3000);
             return newFavs;
         });
     };
 
     const removeFavorite = (productId: string) => {
-        setFavorites(prev => {
-            const newFavs = prev.filter(p => p.id !== productId);
-            saveFavsToSupabase(newFavs);
-            return newFavs;
-        });
+        setFavorites(prev => prev.filter(p => p.id !== productId));
     };
 
     const isFavorite = (productId: string) => favorites.some(p => p.id === productId);
