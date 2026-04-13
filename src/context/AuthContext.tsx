@@ -123,6 +123,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             if (supabase) await supabase.auth.signOut();
         } finally {
+            try {
+                localStorage.removeItem('cart_guest');
+                localStorage.removeItem('wayku_favorites_guest');
+            } catch {
+                // Ignore storage cleanup failures on logout.
+            }
             setUser(null);
             setIsLoading(false);
         }
