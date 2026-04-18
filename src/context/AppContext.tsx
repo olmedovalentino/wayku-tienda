@@ -109,9 +109,9 @@ interface AppContextType {
     queries: Query[];
     reviews: Review[];
     refreshAdminData: () => Promise<void>;
-    addProduct: (product: Omit<Product, 'id'>) => void;
+    addProduct: (product: Omit<Product, 'id'>) => Promise<{ error: Error | null }>;
     updateProduct: (id: string, product: Partial<Product>) => Promise<{ error: Error | null }>;
-    deleteProduct: (id: string) => void;
+    deleteProduct: (id: string) => Promise<{ error: Error | null }>;
     updateOrderStatus: (id: string, status: Order['status']) => void;
     addQuery: (query: Omit<Query, 'id' | 'date' | 'read'>) => void;
     markQueryAsRead: (id: number) => void;
@@ -181,7 +181,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const addProduct = async (p: Omit<Product, 'id'>) => {
         const newP = { ...p, id: Math.random().toString(36).substr(2, 9) };
         setProducts(prev => [newP, ...prev]);
-        if (supabase) await supabase.from('products').insert(newP);
+        if (supabase) {
+            const { error } = await supabase.from('products').insert(newP);
+            if (error) {
+                setProducts(prev => prev.filter(product => product.id !== newP.id));
+                return { error };
+            }
+        }
+        return { error: null };
     };
 
     const updateProduct = async (id: string, fields: Partial<Product>) => {
@@ -195,7 +202,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const deleteProduct = async (id: string) => {
         setProducts(prev => prev.filter(p => p.id !== id));
-        if (supabase) await supabase.from('products').delete().eq('id', id);
+        if (supabase) {
+            const { error } = await supabase.from('products').delete().eq('id', id);
+            return { error };
+        }
+        return { error: null };
     };
 
     return (

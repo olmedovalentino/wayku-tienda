@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { ChangeEvent, useMemo, useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { supabase } from '@/lib/supabase';
 import { Product, StockVariant } from '@/lib/products';
@@ -94,9 +94,18 @@ export default function AdminProductsPage() {
     };
 
     const [isSaving, setIsSaving] = useState(false);
+    const [isUploadingImages, setIsUploadingImages] = useState(false);
+    const visibleImages = useMemo(
+        () => formData.images.filter((img) => img && img.trim() !== ''),
+        [formData.images]
+    );
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isUploadingImages) {
+            toast.error('Espera a que terminen de subirse las imagenes antes de guardar.');
+            return;
+        }
         setIsSaving(true);
         try {
             // Filter out empty image entries before saving
@@ -112,15 +121,99 @@ export default function AdminProductsPage() {
                     setIsModalOpen(false);
                 }
             } else {
-                await addProduct(dataToSave);
-                toast.success('Producto creado correctamente');
-                setIsModalOpen(false);
+                const { error } = await addProduct(dataToSave);
+                if (error) {
+                    toast.error(`Error al crear en base de datos: ${error.message}`);
+                } else {
+                    toast.success('Producto creado correctamente');
+                    setIsModalOpen(false);
+                }
             }
         } catch (submitError) {
             console.error("Submit Error:", submitError);
             toast.error('Error al procesar el formulario');
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+        const input = e.target;
+        const files = Array.from(input.files || []);
+
+        if (!files.length || !supabase) {
+            input.value = '';
+            return;
+        }
+
+        setIsUploadingImages(true);
+        const loadingToastId = toast.loading(
+            files.length === 1 ? 'Subiendo imagen...' : `Subiendo ${files.length} imagenes...`
+        );
+
+        try {
+            const uploadedUrls: string[] = [];
+            const failedUploads: string[] = [];
+
+            for (const file of files) {
+                const safeName = file.name
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .replace(/[^a-zA-Z0-9._-]/g, '-')
+                    .replace(/-+/g, '-')
+                    .toLowerCase();
+                const filePath = `products/${crypto.randomUUID()}-${safeName}`;
+
+                const { data, error } = await supabase.storage
+                    .from('products')
+                    .upload(filePath, file, {
+                        cacheControl: '3600',
+                        upsert: false,
+                    });
+
+                if (error || !data?.path) {
+                    console.error('Storage upload error:', error);
+                    failedUploads.push(file.name);
+                    continue;
+                }
+
+                const { data: publicData } = supabase.storage
+                    .from('products')
+                    .getPublicUrl(data.path);
+
+                if (publicData.publicUrl) {
+                    uploadedUrls.push(publicData.publicUrl);
+                } else {
+                    failedUploads.push(file.name);
+                }
+            }
+
+            if (uploadedUrls.length > 0) {
+                setFormData((current) => {
+                    const currentImages = current.images.filter((img) => img && img.trim() !== '');
+                    return { ...current, images: [...currentImages, ...uploadedUrls] };
+                });
+                toast.success(
+                    uploadedUrls.length === 1
+                        ? 'Imagen subida correctamente'
+                        : `${uploadedUrls.length} imagenes subidas correctamente`
+                );
+            }
+
+            if (failedUploads.length > 0) {
+                toast.error(
+                    failedUploads.length === 1
+                        ? `No se pudo subir ${failedUploads[0]}`
+                        : `Fallaron ${failedUploads.length} imagenes`
+                );
+            }
+        } catch (uploadError) {
+            console.error('Unexpected image upload error:', uploadError);
+            toast.error('Ocurrio un error al subir las imagenes');
+        } finally {
+            toast.dismiss(loadingToastId);
+            setIsUploadingImages(false);
+            input.value = '';
         }
     };
 
@@ -577,7 +670,7 @@ export default function AdminProductsPage() {
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-stone-700">Galería de Imágenes</label>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                                    {formData.images.filter(img => img && img.trim() !== '').map((img, idx) => (
+                                    {visibleImages.map((img, idx) => (
                                         <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-stone-200 bg-stone-50 shadow-sm">
                                             <Image src={img} alt={`Imagen ${idx + 1}`} fill className="object-cover" sizes="(min-width: 1024px) 25vw, 50vw" />
                                             
@@ -588,7 +681,7 @@ export default function AdminProductsPage() {
                                                         <button type="button" 
                                                             onClick={(e) => {
                                                                 e.preventDefault();
-                                                                const newArr = [...formData.images];
+                                                                const newArr = [...visibleImages];
                                                                 [newArr[idx-1], newArr[idx]] = [newArr[idx], newArr[idx-1]];
                                                                 setFormData({...formData, images: newArr});
                                                             }} 
@@ -597,11 +690,11 @@ export default function AdminProductsPage() {
                                                             <ChevronLeft size={14} />
                                                         </button>
                                                     )}
-                                                    {idx < formData.images.filter(img => img && img.trim() !== '').length - 1 && (
+                                                    {idx < visibleImages.length - 1 && (
                                                         <button type="button" 
                                                             onClick={(e) => {
                                                                 e.preventDefault();
-                                                                const newArr = [...formData.images];
+                                                                const newArr = [...visibleImages];
                                                                 [newArr[idx], newArr[idx+1]] = [newArr[idx+1], newArr[idx]];
                                                                 setFormData({...formData, images: newArr});
                                                             }} 
@@ -614,7 +707,7 @@ export default function AdminProductsPage() {
                                                 <button type="button" 
                                                     onClick={(e) => {
                                                         e.preventDefault();
-                                                        const newArr = formData.images.filter((_, i) => i !== idx);
+                                                        const newArr = visibleImages.filter((_, i) => i !== idx);
                                                         setFormData({...formData, images: newArr.length ? newArr : []});
                                                     }} 
                                                     className="p-1 bg-red-500 rounded-md text-white shadow-sm transition-all active:scale-95 hover:bg-red-600"
@@ -631,34 +724,13 @@ export default function AdminProductsPage() {
                                             accept="image/*"
                                             multiple
                                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                            onChange={async (e) => {
-                                                const files = Array.from(e.target.files || []);
-                                                if (!files.length || !supabase) return;
-                                                
-                                                toast.loading('Subiendo imágenes...');
-                                                const newUrls: string[] = [];
-                                                
-                                                for (const file of files) {
-                                                    const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-                                                    const { data } = await supabase.storage.from('products').upload(fileName, file);
-                                                    if (data) {
-                                                        const { data: { publicUrl } } = supabase.storage.from('products').getPublicUrl(fileName);
-                                                        newUrls.push(publicUrl);
-                                                    } else {
-                                                        toast.error(`Error al subir ${file.name}`);
-                                                    }
-                                                }
-                                                
-                                                toast.dismiss();
-                                                if (newUrls.length > 0) {
-                                                    toast.success(`${newUrls.length} imágenes subidas correctamente`);
-                                                    const current = formData.images.filter(i => i && i.trim() !== '');
-                                                    setFormData({ ...formData, images: [...current, ...newUrls] });
-                                                }
-                                            }}
+                                            disabled={isUploadingImages}
+                                            onChange={handleImageUpload}
                                         />
                                         <Upload className="h-6 w-6 text-stone-400 group-hover:text-primary mb-2" />
-                                        <p className="text-xs font-medium text-stone-600 text-center px-2">Subir fotos (Múltiples)</p>
+                                        <p className="text-xs font-medium text-stone-600 text-center px-2">
+                                            {isUploadingImages ? 'Subiendo...' : 'Subir fotos (Multiples)'}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -696,8 +768,14 @@ export default function AdminProductsPage() {
                                 >
                                     Cancelar
                                 </Button>
-                                <Button type="submit" className="flex-1" disabled={isSaving}>
-                                    {isSaving ? 'Guardando...' : editingProduct ? 'Guardar Cambios' : 'Crear Producto'}
+                                <Button type="submit" className="flex-1" disabled={isSaving || isUploadingImages}>
+                                    {isUploadingImages
+                                        ? 'Subiendo imagenes...'
+                                        : isSaving
+                                            ? 'Guardando...'
+                                            : editingProduct
+                                                ? 'Guardar Cambios'
+                                                : 'Crear Producto'}
                                 </Button>
                             </div>
                         </form>

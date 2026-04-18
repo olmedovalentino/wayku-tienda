@@ -126,6 +126,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         return () => document.removeEventListener('mousedown', handler);
     }, []);
 
+    useEffect(() => {
+        if (pathname === '/admin/login') return;
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    }, [pathname]);
+
     const addNotif = useCallback((notif: Omit<Notif, 'id' | 'time'>) => {
         const id = Math.random().toString(36).slice(2);
         const full: Notif = { ...notif, id, time: new Date() };
@@ -308,15 +313,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </div>
             </aside>
 
-            <div className="flex-1 flex flex-col lg:pl-64">
-                <header className="h-16 bg-white border-b border-stone-100 flex items-center justify-between px-4 lg:hidden">
+            <div className="flex-1 flex min-h-screen flex-col lg:pl-64">
+                <header className="sticky top-0 z-30 h-16 bg-white border-b border-stone-100 flex items-center justify-between px-4 lg:hidden">
                     <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 text-stone-600 hover:bg-stone-100 rounded-lg">
                         {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
                     </button>
                     <span className="font-serif text-xl tracking-widest uppercase">Wayku</span>
                     <div className="w-10" />
                 </header>
-                <main className="p-4 sm:p-6 lg:p-8">{children}</main>
+                <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
             </div>
 
             {showBell && (

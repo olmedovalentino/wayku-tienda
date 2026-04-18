@@ -105,14 +105,14 @@ export default function AdminDashboardPage() {
 
     return (
         <div className="space-y-8">
-            <div className="mb-4 flex items-start justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-stone-900">Bienvenido de nuevo, Valen</h1>
-                    <p className="text-stone-500 mt-2">Aqui tienes un resumen de lo que esta pasando en Wayku.</p>
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                <div className="min-w-0">
+                    <h1 className="text-xl font-bold text-stone-900 sm:text-2xl">Bienvenido de nuevo, Valen</h1>
+                    <p className="mt-2 text-sm text-stone-500 sm:text-base">Aqui tienes un resumen de lo que esta pasando en Wayku.</p>
                 </div>
                 <button
                     onClick={refreshDashboard}
-                    className="flex items-center gap-2 text-sm text-stone-500 hover:text-primary transition-colors border border-stone-200 rounded-lg px-3 py-2"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-500 transition-colors hover:text-primary sm:w-auto"
                     title="Actualizar dashboard"
                 >
                     <RefreshCw size={15} className={isRefreshing ? 'animate-spin' : ''} />
@@ -122,24 +122,24 @@ export default function AdminDashboardPage() {
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 {stats.map((stat) => (
-                    <div key={stat.name} className="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
-                        <div className="flex items-center justify-between mb-4">
+                    <div key={stat.name} className="flex min-h-[150px] flex-col items-center justify-center rounded-2xl border border-stone-100 bg-white p-4 text-center shadow-sm sm:min-h-[168px] sm:p-6">
+                        <div className="mb-4 flex w-full items-center justify-center gap-3">
                             <div className={`p-2 rounded-lg ${stat.color}`}>
-                                <stat.icon size={24} />
+                                <stat.icon size={22} />
                             </div>
-                            <div className={`flex items-center gap-1 text-sm font-medium ${stat.trendingUp ? 'text-green-600' : 'text-red-600'}`}>
+                            <div className={`flex items-center gap-1 text-xs font-medium sm:text-sm ${stat.trendingUp ? 'text-green-600' : 'text-red-600'}`}>
                                 {stat.change}
-                                {stat.trendingUp ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
+                                {stat.trendingUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
                             </div>
                         </div>
-                        <h3 className="text-stone-500 text-sm font-medium">{stat.name}</h3>
-                        <p className="text-2xl font-bold text-stone-900 mt-1">{stat.value}</p>
+                        <h3 className="text-sm font-medium text-stone-500">{stat.name}</h3>
+                        <p className="mt-1 text-2xl font-bold text-stone-900">{stat.value}</p>
                     </div>
                 ))}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
+                <div className="order-2 lg:order-1 lg:col-span-2 bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
                     <div className="px-6 py-4 border-b border-stone-100 flex items-center justify-between">
                         <h3 className="font-bold text-stone-900">Pedidos recientes</h3>
                         <Link href="/admin/orders" className="text-primary text-sm font-medium hover:underline">Ver todos</Link>
@@ -205,7 +205,7 @@ export default function AdminDashboardPage() {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-6 space-y-6">
+                <div className="order-1 lg:order-2 bg-white rounded-2xl shadow-sm border border-stone-100 p-4 sm:p-6 space-y-6">
                     <h3 className="font-bold text-stone-900">Acciones rapidas</h3>
                     <div className="space-y-3">
                         <Link href="/admin/products" className="w-full flex items-center justify-between p-3 rounded-xl border border-stone-100 hover:border-primary hover:bg-stone-50 transition-all text-left">
@@ -236,11 +236,16 @@ export default function AdminDashboardPage() {
 
                     <div className="pt-6 border-t border-stone-100">
                         <h4 className="text-sm font-medium text-stone-900 mb-4">Stock rapido (global)</h4>
-                        <div className="space-y-4">
-                            {products.map((product) => (
-                                <div key={product.id} className="flex items-center justify-between">
-                                    <span className="text-sm text-stone-600 font-medium line-clamp-1 flex-1">{product.name}</span>
-                                    <div className="flex items-center gap-3 bg-stone-50 rounded-lg p-1 border border-stone-100">
+                        <div className="space-y-3">
+                            {products.length === 0 ? (
+                                <div className="rounded-xl border border-dashed border-stone-200 bg-stone-50 px-4 py-5 text-center text-sm text-stone-500">
+                                    No hay productos cargados para ajustar stock.
+                                </div>
+                            ) : (
+                                products.map((product) => (
+                                <div key={product.id} className="flex items-center justify-between gap-3 rounded-xl border border-stone-100 bg-stone-50 px-3 py-3">
+                                    <span className="text-sm text-stone-600 font-medium line-clamp-2 flex-1">{product.name}</span>
+                                    <div className="flex items-center gap-3 rounded-lg border border-stone-200 bg-white p-1">
                                         <button
                                             onClick={() => updateProduct(product.id, { stockCount: Math.max(0, (product.stockCount || 0) - 1), inStock: Math.max(0, (product.stockCount || 0) - 1) > 0 })}
                                             className="text-stone-400 hover:text-red-500 transition-colors"
@@ -256,7 +261,8 @@ export default function AdminDashboardPage() {
                                         </button>
                                     </div>
                                 </div>
-                            ))}
+                                ))
+                            )}
                         </div>
                     </div>
                 </div>
