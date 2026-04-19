@@ -128,7 +128,7 @@ export default function AdminQueriesPage() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
                     <h1 className="text-2xl font-bold text-stone-900">Consultas</h1>
-                    <p className="text-stone-500">Mensajes recibidos a travÃ©s del formulario de contacto.</p>
+                    <p className="text-stone-500">Mensajes recibidos a traves del formulario de contacto.</p>
                 </div>
                 <button
                     onClick={fetchQueries}
@@ -321,3 +321,4 @@ export default function AdminQueriesPage() {
         </div>
     );
 }
+

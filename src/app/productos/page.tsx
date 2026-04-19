@@ -86,7 +86,6 @@ function ProductsContent() {
     const materials = [
         { id: 'guayubira', name: 'Guayubira' },
         { id: 'roble', name: 'Roble' },
-        { id: 'palo-santo', name: 'Palo Santo' },
     ];
 
     const sortOptions = [
@@ -275,11 +274,27 @@ function ProductsContent() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-                        {filteredAndSortedProducts.map((product) => (
-                            <ProductCard key={product.id} product={product} />
-                        ))}
-                    </div>
+                    {filteredAndSortedProducts.length > 0 ? (
+                        <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+                            {filteredAndSortedProducts.map((product) => (
+                                <ProductCard key={product.id} product={product} />
+                            ))}
+                        </div>
+                    ) : categoryQuery === 'floor' ? (
+                        <div className="rounded-3xl border border-stone-200 bg-stone-50 px-6 py-12 text-center">
+                            <h2 className="text-2xl font-serif text-stone-900">Por ahora no hay lamparas de pie</h2>
+                            <p className="mt-3 text-sm text-stone-600">
+                                Estamos preparando nuevos modelos. Mientras tanto, podes ver las opciones de mesa, colgantes y apliques.
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="rounded-3xl border border-stone-200 bg-stone-50 px-6 py-12 text-center">
+                            <h2 className="text-2xl font-serif text-stone-900">No encontramos productos con esos filtros</h2>
+                            <p className="mt-3 text-sm text-stone-600">
+                                Proba limpiando materiales o cambiando la categoria para ver mas opciones.
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
@@ -293,3 +308,4 @@ export default function ProductsPage() {
         </Suspense>
     );
 }
+

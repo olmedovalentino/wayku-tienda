@@ -25,7 +25,7 @@ export default function ProductPage() {
     const [selectedMaterial, setSelectedMaterial] = useState<'guayubira' | 'roble' | 'palo-santo'>('roble');
     const [selectedSize, setSelectedSize] = useState<'1m' | '1.5m' | '2m'>('1m');
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-    const [shadeType, setShadeType] = useState<'lino' | 'blanco-calido' | 'blanco-frio'>('lino');
+    const [shadeType, setShadeType] = useState<'blanco-calido' | 'negro'>('blanco-calido');
     const [cableColor, setCableColor] = useState<'blanco' | 'negro'>('blanco');
     const [canopyColor, setCanopyColor] = useState<'blanco' | 'negro'>('blanco');
     const [autoSelected, setAutoSelected] = useState(false);
@@ -75,7 +75,7 @@ export default function ProductPage() {
             hasSizeVariants ? selectedSize : undefined,
             product.category === 'table' ? shadeType : undefined,
             (product.category === 'table' || isUnifiedCableCanopy) ? cableColor : undefined,
-            product.category === 'pendant' ? (isUnifiedCableCanopy ? cableColor : canopyColor) : undefined
+            product.category === 'pendant' ? (isUnifiedCableCanopy ? cableColor : canopyColor) : product.category === 'wall' ? canopyColor : undefined
         );
     };
 
@@ -100,11 +100,17 @@ export default function ProductPage() {
             { id: 'palo-santo' as const, name: 'Palo Santo' },
         ];
 
-        if (product?.name === 'Taini') {
+        if (product?.name === 'Taini' || product?.category === 'table' || product?.category === 'wall') {
             return allMaterials.filter(m => m.id !== 'palo-santo');
         }
         return allMaterials;
     }, [product]);
+
+    useEffect(() => {
+        if (materials.length > 0 && !materials.some((material) => material.id === selectedMaterial)) {
+            setSelectedMaterial(materials[0].id);
+        }
+    }, [materials, selectedMaterial]);
 
     const sizes = useMemo<{ id: '1m' | '1.5m' | '2m'; name: string }[]>(() => {
         if (product?.variants && product.variants.some(v => !!v.size)) {
@@ -129,9 +135,8 @@ export default function ProductPage() {
     }, [product]);
 
     const shadeTypes = [
-        { id: 'lino' as const, name: 'Lino' },
-        { id: 'blanco-calido' as const, name: 'Blanco Cálido' },
-        { id: 'blanco-frio' as const, name: 'Blanco Frío' },
+        { id: 'blanco-calido' as const, name: 'Blanco Calido' },
+        { id: 'negro' as const, name: 'Negro' },
     ];
 
     const colors = [
@@ -298,7 +303,7 @@ export default function ProductPage() {
                         {hasSizeVariants && (
                             <div>
                                 <h3 className="text-sm font-medium text-stone-900 mb-3">Tamaño</h3>
-                                <div className="grid grid-cols-3 gap-3">
+                                <div className="grid grid-cols-2 gap-3">
                                     {sizes.map((size) => {
                                         const isAvailable = product.variants
                                             ? getVariantStock(selectedMaterial, size.id) > 0
@@ -327,7 +332,7 @@ export default function ProductPage() {
                         {product.category === 'table' && (
                             <div>
                                 <h3 className="text-sm font-medium text-stone-900 mb-3">Tipo de Pantalla</h3>
-                                <div className="grid grid-cols-3 gap-3">
+                                <div className="grid grid-cols-2 gap-3">
                                     {shadeTypes.map((shade) => (
                                         <button
                                             key={shade.id}
@@ -371,6 +376,26 @@ export default function ProductPage() {
                         {product.category === 'pendant' && (product.id === 'new-1' || product.id === 'new-4') && (
                             <div>
                                 <h3 className="text-sm font-medium text-stone-900 mb-3">Color Florón</h3>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {colors.map((color) => (
+                                        <button
+                                            key={color.id}
+                                            onClick={() => setCanopyColor(color.id)}
+                                            className={`px-4 py-3 text-sm font-medium rounded-lg border-2 transition-colors ${canopyColor === color.id
+                                                ? 'border-primary bg-primary/5 text-primary'
+                                                : 'border-stone-200 text-stone-700 hover:border-stone-300'
+                                                }`}
+                                        >
+                                            {color.name}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                        )}
+                        {product.category === 'wall' && (
+                            <div>
+                                <h3 className="text-sm font-medium text-stone-900 mb-3">Color de Plafon</h3>
                                 <div className="grid grid-cols-2 gap-3">
                                     {colors.map((color) => (
                                         <button
@@ -607,3 +632,6 @@ export default function ProductPage() {
         </div>
     );
 }
+
+
+

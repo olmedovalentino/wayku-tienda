@@ -82,7 +82,7 @@ export function CartDrawer() {
                                                     <p className="text-sm text-stone-500">{item.selectedSize}</p>
                                                 )}
                                                 {item.shadeType && (
-                                                    <p className="text-sm text-stone-500">Pantalla: {item.shadeType === 'blanco-calido' ? 'Blanco Cálido' : item.shadeType === 'blanco-frio' ? 'Blanco Frío' : 'Lino'}</p>
+                                                    <p className="text-sm text-stone-500">Pantalla: {item.shadeType === 'blanco-calido' ? 'Blanco Calido' : 'Negro'}</p>
                                                 )}
                                                 {item.cableColor && (
                                                     <p className="text-sm text-stone-500">Cable: {item.cableColor}</p>
@@ -166,3 +166,4 @@ export function CartDrawer() {
         </div>
     );
 }
+

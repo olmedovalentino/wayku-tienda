@@ -9,7 +9,7 @@ export interface CartItem extends Product {
     quantity: number;
     selectedMaterial: 'guayubira' | 'roble' | 'palo-santo';
     selectedSize?: '1m' | '1.5m' | '2m';
-    shadeType?: 'lino' | 'blanco-calido' | 'blanco-frio';
+    shadeType?: 'blanco-calido' | 'negro';
     cableColor?: 'blanco' | 'negro';
     canopyColor?: 'blanco' | 'negro';
 }
@@ -19,7 +19,7 @@ interface CartContextType {
     isOpen: boolean;
     openCart: () => void;
     closeCart: () => void;
-    addItem: (p: Product, m: 'guayubira' | 'roble' | 'palo-santo', s?: '1m' | '1.5m' | '2m', shade?: 'lino' | 'blanco-calido' | 'blanco-frio', cable?: 'blanco' | 'negro', canopy?: 'blanco' | 'negro') => void;
+    addItem: (p: Product, m: 'guayubira' | 'roble' | 'palo-santo', s?: '1m' | '1.5m' | '2m', shade?: 'blanco-calido' | 'negro', cable?: 'blanco' | 'negro', canopy?: 'blanco' | 'negro') => void;
     removeItem: (index: number) => void;
     updateItemQuantity: (index: number, quantity: number) => void;
     clearCart: () => void;
@@ -261,3 +261,4 @@ export function useCart() {
     if (!context) throw new Error('useCart missing');
     return context;
 }
+
