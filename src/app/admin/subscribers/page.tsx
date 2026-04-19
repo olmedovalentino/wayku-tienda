@@ -93,13 +93,13 @@ export default function AdminSubscribersPage() {
 
     return (
         <div className="space-y-8">
-            <div className="flex justify-between items-start">
-                <div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
                     <h1 className="text-2xl font-bold text-stone-900">Suscripciones al Newsletter</h1>
                     <p className="text-stone-500">Gestiona las personas interesadas en recibir tus correos.</p>
                 </div>
-                <div className="flex gap-2">
-                    <Button onClick={() => setIsCampaignModalOpen(true)} className="flex items-center gap-2 bg-primary text-white shadow-md shadow-primary/20 hover:bg-primary/90">
+                <div className="flex w-full gap-2 sm:w-auto">
+                    <Button onClick={() => setIsCampaignModalOpen(true)} className="flex w-full items-center justify-center gap-2 bg-primary text-white shadow-md shadow-primary/20 hover:bg-primary/90 sm:w-auto">
                         <Mail size={18} />
                         Crear Campaña
                     </Button>

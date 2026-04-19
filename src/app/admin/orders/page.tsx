@@ -115,14 +115,14 @@ export default function AdminOrdersPage() {
 
     return (
         <div className="space-y-8">
-            <div className="flex items-start justify-between">
-                <div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
                     <h1 className="text-2xl font-bold text-stone-900">Pedidos</h1>
                     <p className="text-stone-500">Gestiona las ventas y el estado de los envíos.</p>
                 </div>
                 <button
                     onClick={fetchOrders}
-                    className="flex items-center gap-2 text-sm text-stone-500 hover:text-primary transition-colors border border-stone-200 rounded-lg px-3 py-2"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-500 transition-colors hover:text-primary sm:w-auto"
                     title="Actualizar pedidos"
                 >
                     <RefreshCw size={15} className={isLoading ? 'animate-spin' : ''} />

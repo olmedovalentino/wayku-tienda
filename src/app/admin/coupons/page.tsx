@@ -17,14 +17,14 @@ type ToastType = 'success' | 'error' | 'warning';
 interface Toast { id: string; type: ToastType; message: string; }
 
 const DURATION_OPTIONS = [
-    { label: 'Sin expiración', value: null },
+    { label: 'Sin expiracion', value: null },
     { label: '1 hora',   value: 1 / 24 },
     { label: '6 horas',  value: 6 / 24 },
-    { label: '1 día',    value: 1 },
-    { label: '3 días',   value: 3 },
-    { label: '7 días',   value: 7 },
-    { label: '15 días',  value: 15 },
-    { label: '30 días',  value: 30 },
+    { label: '1 dia',    value: 1 },
+    { label: '3 dias',   value: 3 },
+    { label: '7 dias',   value: 7 },
+    { label: '15 dias',  value: 15 },
+    { label: '30 dias',  value: 30 },
 ];
 
 function ToastNotification({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) {
@@ -54,7 +54,7 @@ function ToastNotification({ toast, onDismiss }: { toast: Toast; onDismiss: () =
 }
 
 function getExpiryLabel(expiresAt: string | null): string {
-    if (!expiresAt) return '∞ Sin expiración';
+    if (!expiresAt) return 'Sin expiracion';
     const diffMs = new Date(expiresAt).getTime() - Date.now();
     if (diffMs <= 0) return 'Expirado';
     const diffH = Math.floor(diffMs / 3600000);
@@ -124,18 +124,18 @@ export default function CouponsPage() {
             const data = await res.json();
 
             if (res.status === 409) {
-                showToast('warning', 'Ese código ya existe. Usá otro nombre.');
+                showToast('warning', 'Ese codigo ya existe. Usa otro nombre.');
             } else if (!res.ok) {
                 throw new Error(data.error);
             } else {
-                showToast('success', `Cupón ${newCode.toUpperCase()} creado con éxito.`);
+                showToast('success', `Cupon ${newCode.toUpperCase()} creado con exito.`);
                 setNewCode('');
                 setNewDiscount(10);
                 setNewDuration(null);
                 loadCoupons();
             }
         } catch {
-            showToast('error', 'Error inesperado al crear el cupón.');
+            showToast('error', 'Error inesperado al crear el cupon.');
         } finally {
             setIsSubmitting(false);
         }
@@ -150,9 +150,9 @@ export default function CouponsPage() {
             });
             if (!res.ok) throw new Error();
             setCoupons(prev => prev.map(c => c.id === id ? { ...c, is_active: !currentStatus } : c));
-            showToast('success', currentStatus ? 'Cupón apagado.' : 'Cupón activado.');
+            showToast('success', currentStatus ? 'Cupon apagado.' : 'Cupon activado.');
         } catch {
-            showToast('error', 'No se pudo cambiar el estado del cupón.');
+            showToast('error', 'No se pudo cambiar el estado del cupon.');
         }
     };
 
@@ -161,9 +161,9 @@ export default function CouponsPage() {
             const res = await fetch(`/api/admin/coupons?id=${id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error();
             setCoupons(prev => prev.filter(c => c.id !== id));
-            showToast('success', 'Cupón eliminado.');
+            showToast('success', 'Cupon eliminado.');
         } catch {
-            showToast('error', 'No se pudo eliminar el cupón.');
+            showToast('error', 'No se pudo eliminar el cupon.');
         } finally {
             setConfirmDelete(null);
         }
@@ -195,8 +195,8 @@ export default function CouponsPage() {
                         <div className="h-14 w-14 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
                             <Trash2 size={22} className="text-red-500" />
                         </div>
-                        <h3 className="text-lg font-bold text-stone-900 mb-1">¿Eliminar cupón?</h3>
-                        <p className="text-sm text-stone-500 mb-6">Esta acción es permanente y no se puede deshacer.</p>
+                        <h3 className="text-lg font-bold text-stone-900 mb-1">Eliminar cupon?</h3>
+                        <p className="text-sm text-stone-500 mb-6">Esta accion es permanente y no se puede deshacer.</p>
                         <div className="flex gap-3">
                             <Button variant="outline" className="flex-1" onClick={() => setConfirmDelete(null)}>Cancelar</Button>
                             <Button className="flex-1 bg-red-600 hover:bg-red-700 text-white border-transparent" onClick={() => deleteCoupon(confirmDelete)}>Eliminar</Button>
@@ -207,18 +207,18 @@ export default function CouponsPage() {
 
             <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
                 <div>
-                    <h1 className="text-2xl font-bold text-stone-900 tracking-tight">Gestión de Cupones</h1>
+                    <h1 className="text-2xl font-bold text-stone-900 tracking-tight">Gestion de Cupones</h1>
                     <p className="mt-1 text-sm text-stone-500">Crea cupones de descuento especiales para fechas limitadas.</p>
                 </div>
 
-                {/* Crear nuevo cupón */}
+                {/* Crear nuevo cupon */}
                 <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-6">
                     <h2 className="text-base font-semibold text-stone-900 mb-5 flex items-center gap-2">
-                        <Plus size={18} className="text-primary" /> Nuevo Cupón
+                        <Plus size={18} className="text-primary" /> Nuevo Cupon
                     </h2>
                     <form onSubmit={handleCreateCoupon} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                         <div>
-                            <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">Código</label>
+                            <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">Codigo</label>
                             <input
                                 type="text"
                                 required
@@ -243,7 +243,7 @@ export default function CouponsPage() {
                             </div>
                         </div>
                         <div>
-                            <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">Duración</label>
+                            <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">Duracion</label>
                             <select
                                 value={newDuration === null ? 'null' : String(newDuration)}
                                 onChange={(e) => setNewDuration(e.target.value === 'null' ? null : Number(e.target.value))}
@@ -254,21 +254,21 @@ export default function CouponsPage() {
                                 ))}
                             </select>
                         </div>
-                        <Button type="submit" disabled={isSubmitting} className="h-[42px] font-medium">
-                            {isSubmitting ? 'Creando...' : 'Crear Cupón'}
+                        <Button type="submit" disabled={isSubmitting} className="h-[42px] w-full font-medium lg:w-auto">
+                            {isSubmitting ? 'Creando...' : 'Crear Cupon'}
                         </Button>
                     </form>
                 </div>
 
                 {/* Listado */}
-                <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
+                <div className="hidden lg:block bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-stone-100">
                             <thead className="bg-stone-50">
                                 <tr>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-stone-500 uppercase tracking-wider">Código</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-stone-500 uppercase tracking-wider">Codigo</th>
                                     <th className="px-6 py-4 text-left text-xs font-semibold text-stone-500 uppercase tracking-wider">Descuento</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-stone-500 uppercase tracking-wider">Duración</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-stone-500 uppercase tracking-wider">Duracion</th>
                                     <th className="px-6 py-4 text-left text-xs font-semibold text-stone-500 uppercase tracking-wider">Estado</th>
                                     <th className="px-6 py-4 text-right text-xs font-semibold text-stone-500 uppercase tracking-wider">Acciones</th>
                                 </tr>
@@ -277,8 +277,8 @@ export default function CouponsPage() {
                                 {coupons.length === 0 ? (
                                     <tr>
                                         <td colSpan={5} className="px-6 py-16 text-center">
-                                            <Ticket size={28} className="mx-auto text-stone-200 mb-2" />
-                                            <p className="text-sm text-stone-400">No hay cupones creados aún.</p>
+                                            <p className="text-sm text-stone-400">No hay cupones creados aun.</p>
+                                            <p className="text-sm text-stone-400">No hay cupones creados aÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºn.</p>
                                         </td>
                                     </tr>
                                 ) : (
@@ -324,7 +324,7 @@ export default function CouponsPage() {
                                                             <button
                                                                 onClick={() => toggleStatus(coupon.id, coupon.is_active)}
                                                                 className={`p-1.5 rounded-lg hover:bg-stone-100 transition-colors ${coupon.is_active ? 'text-orange-500' : 'text-primary'}`}
-                                                                title={coupon.is_active ? 'Apagar cupón' : 'Activar cupón'}
+                                                                title={coupon.is_active ? 'Apagar cupon' : 'Activar cupon'}
                                                             >
                                                                 <Power size={16} />
                                                             </button>
@@ -347,6 +347,68 @@ export default function CouponsPage() {
                     </div>
                 </div>
             </div>
+                <div className="lg:hidden space-y-4">
+                    {coupons.length === 0 ? (
+                        <div className="rounded-2xl border border-stone-100 bg-white px-6 py-14 text-center shadow-sm">
+                            <Ticket size={28} className="mx-auto text-stone-200 mb-2" />
+                            <p className="text-sm text-stone-400">No hay cupones creados aun.</p>
+                        </div>
+                    ) : (
+                        coupons.map((coupon) => {
+                            const expired = isExpired(coupon.expires_at);
+                            const effectivelyActive = coupon.is_active && !expired;
+
+                            return (
+                                <div key={coupon.id} className={`rounded-2xl border border-stone-100 bg-white p-4 shadow-sm ${expired ? 'opacity-60' : ''}`}>
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="min-w-0">
+                                            <div className="flex items-center gap-2">
+                                                <Ticket size={16} className={effectivelyActive ? 'text-primary' : 'text-stone-300'} />
+                                                <span className="truncate font-mono text-sm font-bold tracking-wider text-stone-900">{coupon.code}</span>
+                                            </div>
+                                            <div className="mt-2 flex flex-wrap gap-2">
+                                                <span className="inline-flex items-center rounded-lg bg-green-50 px-2.5 py-1 text-xs font-bold text-green-700 ring-1 ring-inset ring-green-600/20">
+                                                    {coupon.discount_percentage}% OFF
+                                                </span>
+                                                <span className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium ${expired ? 'bg-red-50 text-red-500' : effectivelyActive ? 'bg-primary/10 text-primary' : 'bg-stone-100 text-stone-500'}`}>
+                                                    <span className={`h-1.5 w-1.5 rounded-full ${expired ? 'bg-red-400' : effectivelyActive ? 'bg-primary' : 'bg-stone-400'}`}></span>
+                                                    {expired ? 'Expirado' : effectivelyActive ? 'Activo' : 'Apagado'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            {!expired && (
+                                                <button
+                                                    onClick={() => toggleStatus(coupon.id, coupon.is_active)}
+                                                    className={`p-2 rounded-lg transition-colors ${coupon.is_active ? 'text-orange-500 hover:bg-orange-50' : 'text-primary hover:bg-primary/10'}`}
+                                                    title={coupon.is_active ? 'Apagar cupon' : 'Activar cupon'}
+                                                >
+                                                    <Power size={16} />
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={() => setConfirmDelete(coupon.id)}
+                                                className="p-2 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                                                title="Eliminar permanentemente"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-4 rounded-xl border border-stone-100 bg-stone-50 px-3 py-3">
+                                        <div className="flex items-center justify-between gap-3 text-xs">
+                                            <span className="font-medium text-stone-500">Duracion</span>
+                                            <span className={`inline-flex items-center gap-1.5 font-medium ${expired ? 'text-red-500' : 'text-stone-600'}`}>
+                                                <Clock size={12} /> {getExpiryLabel(coupon.expires_at)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
 
             <style>{`@keyframes shrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }`}</style>
         </>

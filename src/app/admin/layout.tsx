@@ -94,6 +94,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const pathname = usePathname();
     const seenIds = useRef<Set<string>>(new Set());
     const bellRef = useRef<HTMLButtonElement>(null);
+    const mobileBellRef = useRef<HTMLButtonElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -118,8 +119,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         const handler = (event: MouseEvent) => {
             const target = event.target as Node;
             const outsideBell = bellRef.current && !bellRef.current.contains(target);
+            const outsideMobileBell = mobileBellRef.current && !mobileBellRef.current.contains(target);
             const outsideDropdown = dropdownRef.current && !dropdownRef.current.contains(target);
-            if (outsideBell && outsideDropdown) setShowBell(false);
+            if (outsideBell && outsideMobileBell && outsideDropdown) setShowBell(false);
         };
 
         document.addEventListener('mousedown', handler);
@@ -273,7 +275,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <button
                             ref={bellRef}
                             onClick={() => setShowBell((value) => !value)}
-                            className="relative p-1.5 text-stone-400 hover:text-white transition-colors rounded-lg hover:bg-stone-800"
+                            className="relative hidden p-1.5 text-stone-400 hover:text-white transition-colors rounded-lg hover:bg-stone-800 lg:inline-flex"
                         >
                             <Bell size={17} />
                             {unread > 0 && (
@@ -319,7 +321,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
                     </button>
                     <span className="font-serif text-xl tracking-widest uppercase">Wayku</span>
-                    <div className="w-10" />
+                    <button
+                        ref={mobileBellRef}
+                        onClick={() => setShowBell((value) => !value)}
+                        className="relative inline-flex p-2 text-stone-600 hover:bg-stone-100 rounded-lg transition-colors"
+                    >
+                        <Bell size={20} />
+                        {unread > 0 && (
+                            <span className="absolute top-1 right-1 h-4 min-w-4 px-1 flex items-center justify-center rounded-full bg-primary text-[9px] font-bold text-white">
+                                {unread > 9 ? '9+' : unread}
+                            </span>
+                        )}
+                    </button>
                 </header>
                 <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
             </div>
@@ -327,7 +340,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {showBell && (
                 <div
                     ref={dropdownRef}
-                    className="fixed top-4 left-[148px] z-[200] w-80 bg-stone-800 border border-stone-700 rounded-2xl shadow-2xl overflow-hidden"
+                    className="fixed top-20 left-4 right-4 z-[200] max-h-[70vh] overflow-hidden rounded-2xl bg-stone-800 border border-stone-700 shadow-2xl sm:left-auto sm:w-80 lg:top-4 lg:left-[148px] lg:right-auto"
                 >
                     <div className="flex items-center justify-between px-4 py-3 border-b border-stone-700">
                         <span className="text-xs font-bold text-stone-300 uppercase tracking-widest">Notificaciones</span>

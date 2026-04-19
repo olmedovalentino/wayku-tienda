@@ -125,14 +125,14 @@ export default function AdminQueriesPage() {
 
     return (
         <div className="space-y-8">
-            <div className="flex items-start justify-between">
-                <div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
                     <h1 className="text-2xl font-bold text-stone-900">Consultas</h1>
-                    <p className="text-stone-500">Mensajes recibidos a través del formulario de contacto.</p>
+                    <p className="text-stone-500">Mensajes recibidos a travÃ©s del formulario de contacto.</p>
                 </div>
                 <button
                     onClick={fetchQueries}
-                    className="flex items-center gap-2 text-sm text-stone-500 hover:text-primary transition-colors border border-stone-200 rounded-lg px-3 py-2"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-500 transition-colors hover:text-primary sm:w-auto"
                     title="Actualizar consultas"
                 >
                     <RefreshCw size={15} className={isLoading ? 'animate-spin' : ''} />
@@ -154,33 +154,23 @@ export default function AdminQueriesPage() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <div className="flex gap-2 flex-wrap sm:flex-nowrap">
-                    <select
-                        value={sortOrder}
-                        onChange={(e) => setSortOrder(e.target.value)}
-                        className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-stone-50 border border-stone-200 text-stone-600 transition-all focus:ring-primary focus:border-primary"
-                    >
-                        <option value="recent">Más recientes</option>
-                        <option value="oldest">Más antiguas</option>
-                    </select>
-                    {[{v:'todas', label:'Todas'}, {v:'pendientes', label:'Pendientes'}, {v:'respondidas', label:'Respondidas'}].map(opt => (
-                        <button
-                            key={opt.v}
-                            onClick={() => setStatusFilter(opt.v)}
-                            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                                statusFilter === opt.v
-                                    ? opt.v === 'pendientes'
-                                        ? 'bg-orange-500 text-white shadow-sm'
-                                        : opt.v === 'respondidas'
-                                            ? 'bg-green-600 text-white shadow-sm'
-                                            : 'bg-primary text-white shadow-sm'
-                                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-                            }`}
-                        >
-                            {opt.label}
-                        </button>
-                    ))}
-                </div>
+                <select
+                    value={sortOrder}
+                    onChange={(e) => setSortOrder(e.target.value)}
+                    className="w-full sm:w-auto px-4 py-2 bg-stone-50 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary text-sm font-medium text-stone-700"
+                >
+                    <option value="recent">Mas recientes</option>
+                    <option value="oldest">Mas antiguas</option>
+                </select>
+                <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="w-full sm:w-auto px-4 py-2 bg-stone-50 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary text-sm font-medium text-stone-700"
+                >
+                    <option value="todas">Todas</option>
+                    <option value="pendientes">Pendientes</option>
+                    <option value="respondidas">Respondidas</option>
+                </select>
             </div>
 
             {/* Queries Grid */}
@@ -235,7 +225,7 @@ export default function AdminQueriesPage() {
                                         </span>
                                     )}
                                 </div>
-                                <button className="text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 px-3 py-1 rounded-full transition-colors">Ver mensaje →</button>
+                                <button className="text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 px-3 py-1 rounded-full transition-colors">Ver mensaje â†’</button>
                             </div>
                         </div>
                     ))}
@@ -244,7 +234,7 @@ export default function AdminQueriesPage() {
                         <div className="col-span-full flex flex-col items-center justify-center py-20 text-center bg-white rounded-2xl border border-stone-100">
                             <MessageSquare className="h-12 w-12 text-stone-200 mb-4" />
                             <h3 className="text-lg font-medium text-stone-900">No hay consultas</h3>
-                            <p className="text-stone-500">Aún no hay mensajes, o prueba con otro término.</p>
+                            <p className="text-stone-500">AÃºn no hay mensajes, o prueba con otro tÃ©rmino.</p>
                         </div>
                     )}
                 </div>
@@ -261,7 +251,7 @@ export default function AdminQueriesPage() {
                                 </div>
                                 <div>
                                     <h2 className="text-xl font-bold text-stone-900">{selectedQuery.subject}</h2>
-                                    <p className="text-sm text-stone-500">{selectedQuery.name} · {selectedQuery.email}</p>
+                                    <p className="text-sm text-stone-500">{selectedQuery.name} Â· {selectedQuery.email}</p>
                                 </div>
                             </div>
                             <button onClick={() => setSelectedQuery(null)} className="text-stone-400 hover:text-stone-900 transition-colors">
@@ -295,7 +285,7 @@ export default function AdminQueriesPage() {
                                 </div>
                                 <textarea
                                     rows={5}
-                                    placeholder="Escribe tu respuesta aquí..."
+                                    placeholder="Escribe tu respuesta aquÃ­..."
                                     className="w-full px-4 py-3 border border-stone-200 rounded-2xl focus:ring-primary focus:border-primary transition-all resize-none"
                                     value={replyText}
                                     onChange={(e) => setReplyText(e.target.value)}
