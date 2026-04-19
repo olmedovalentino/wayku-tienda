@@ -22,7 +22,7 @@ export default function ProductPage() {
     const product = findBySlug(products, decodedId) ?? products.find((p) => p.id === decodedId);
     
     // Default to the first ones, then we'll adjust in useEffect if needed
-    const [selectedMaterial, setSelectedMaterial] = useState<'guayubira' | 'roble' | 'palo-santo'>('roble');
+    const [selectedMaterial, setSelectedMaterial] = useState<'guayubira' | 'roble'>('roble');
     const [selectedSize, setSelectedSize] = useState<'1m' | '1.5m' | '2m'>('1m');
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [shadeType, setShadeType] = useState<'blanco-calido' | 'negro'>('blanco-calido');
@@ -55,7 +55,7 @@ export default function ProductPage() {
         if (product?.variants && product.variants.length > 0 && !autoSelected) {
             const availableVariant = product.variants.find(v => v.stock > 0);
             if (availableVariant) {
-                if (availableVariant.material) setSelectedMaterial(availableVariant.material as 'guayubira' | 'roble' | 'palo-santo');
+                if (availableVariant.material) setSelectedMaterial(availableVariant.material as 'guayubira' | 'roble');
                 if (availableVariant.size) setSelectedSize(availableVariant.size as '1m' | '1.5m' | '2m');
             }
             setAutoSelected(true);
@@ -94,17 +94,11 @@ export default function ProductPage() {
     };
 
     const materials = useMemo(() => {
-        const allMaterials = [
+        return [
             { id: 'guayubira' as const, name: 'Guayubira' },
             { id: 'roble' as const, name: 'Roble' },
-            { id: 'palo-santo' as const, name: 'Palo Santo' },
         ];
-
-        if (product?.name === 'Taini' || product?.category === 'table' || product?.category === 'wall') {
-            return allMaterials.filter(m => m.id !== 'palo-santo');
-        }
-        return allMaterials;
-    }, [product]);
+    }, []);
 
     useEffect(() => {
         if (materials.length > 0 && !materials.some((material) => material.id === selectedMaterial)) {

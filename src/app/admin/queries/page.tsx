@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/Button';
@@ -11,7 +11,6 @@ import {
     X,
     Send,
     Check,
-    RefreshCw
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -130,14 +129,6 @@ export default function AdminQueriesPage() {
                     <h1 className="text-2xl font-bold text-stone-900">Consultas</h1>
                     <p className="text-stone-500">Mensajes recibidos a traves del formulario de contacto.</p>
                 </div>
-                <button
-                    onClick={fetchQueries}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-500 transition-colors hover:text-primary sm:w-auto"
-                    title="Actualizar consultas"
-                >
-                    <RefreshCw size={15} className={isLoading ? 'animate-spin' : ''} />
-                    Actualizar
-                </button>
             </div>
 
             {/* Search and Filters */}
@@ -225,7 +216,7 @@ export default function AdminQueriesPage() {
                                         </span>
                                     )}
                                 </div>
-                                <button className="text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 px-3 py-1 rounded-full transition-colors">Ver mensaje â†’</button>
+                                <button className="text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 px-3 py-1 rounded-full transition-colors">Ver mensaje -&gt;</button>
                             </div>
                         </div>
                     ))}
@@ -234,7 +225,7 @@ export default function AdminQueriesPage() {
                         <div className="col-span-full flex flex-col items-center justify-center py-20 text-center bg-white rounded-2xl border border-stone-100">
                             <MessageSquare className="h-12 w-12 text-stone-200 mb-4" />
                             <h3 className="text-lg font-medium text-stone-900">No hay consultas</h3>
-                            <p className="text-stone-500">AÃºn no hay mensajes, o prueba con otro tÃ©rmino.</p>
+                            <p className="text-stone-500">Aun no hay mensajes, o proba con otro termino.</p>
                         </div>
                     )}
                 </div>
@@ -251,7 +242,7 @@ export default function AdminQueriesPage() {
                                 </div>
                                 <div>
                                     <h2 className="text-xl font-bold text-stone-900">{selectedQuery.subject}</h2>
-                                    <p className="text-sm text-stone-500">{selectedQuery.name} Â· {selectedQuery.email}</p>
+                                    <p className="text-sm text-stone-500">{selectedQuery.name} - {selectedQuery.email}</p>
                                 </div>
                             </div>
                             <button onClick={() => setSelectedQuery(null)} className="text-stone-400 hover:text-stone-900 transition-colors">
@@ -285,7 +276,7 @@ export default function AdminQueriesPage() {
                                 </div>
                                 <textarea
                                     rows={5}
-                                    placeholder="Escribe tu respuesta aquÃ­..."
+                                    placeholder="Escribe tu respuesta aqui..."
                                     className="w-full px-4 py-3 border border-stone-200 rounded-2xl focus:ring-primary focus:border-primary transition-all resize-none"
                                     value={replyText}
                                     onChange={(e) => setReplyText(e.target.value)}

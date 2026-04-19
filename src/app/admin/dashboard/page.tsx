@@ -9,7 +9,6 @@ import {
     Package,
     PlusCircle,
     MinusCircle,
-    RefreshCw,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -18,27 +17,13 @@ import { formatOrderDisplayId } from '@/lib/order-id';
 
 export default function AdminDashboardPage() {
     const { products, orders, queries, updateProduct, refreshAdminData } = useApp();
-    const [isRefreshing, setIsRefreshing] = useState(false);
 
     useEffect(() => {
-        let isMounted = true;
-
         const loadFreshData = async () => {
-            setIsRefreshing(true);
-            try {
-                await refreshAdminData();
-            } finally {
-                if (isMounted) {
-                    setIsRefreshing(false);
-                }
-            }
+            await refreshAdminData();
         };
 
         loadFreshData();
-
-        return () => {
-            isMounted = false;
-        };
     }, [refreshAdminData]);
 
     const stats = [
@@ -94,30 +79,13 @@ export default function AdminDashboardPage() {
         }
     };
 
-    const refreshDashboard = async () => {
-        setIsRefreshing(true);
-        try {
-            await refreshAdminData();
-        } finally {
-            setIsRefreshing(false);
-        }
-    };
-
     return (
         <div className="space-y-8">
-            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+            <div className="mb-4">
                 <div className="min-w-0">
                     <h1 className="text-xl font-bold text-stone-900 sm:text-2xl">Bienvenido de nuevo, Valen</h1>
                     <p className="mt-2 text-sm text-stone-500 sm:text-base">Aqui tienes un resumen de lo que esta pasando en Wayku.</p>
                 </div>
-                <button
-                    onClick={refreshDashboard}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-500 transition-colors hover:text-primary sm:w-auto"
-                    title="Actualizar dashboard"
-                >
-                    <RefreshCw size={15} className={isRefreshing ? 'animate-spin' : ''} />
-                    Actualizar
-                </button>
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">

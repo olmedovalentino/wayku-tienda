@@ -18,6 +18,7 @@ import {
     Rss,
     ChevronRight,
     Ticket,
+    RefreshCw,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -89,6 +90,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     });
     const [toasts, setToasts] = useState<Notif[]>([]);
     const [showBell, setShowBell] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     const router = useRouter();
     const pathname = usePathname();
@@ -245,6 +247,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         router.refresh();
     };
 
+    const handleGlobalRefresh = () => {
+        setShowBell(false);
+        setIsRefreshing(true);
+        window.location.reload();
+    };
+
     if (pathname === '/admin/login') return <>{children}</>;
     if (!isAuthorized) return null;
 
@@ -271,19 +279,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <div className="flex flex-col h-full">
                     <div className="h-16 flex items-center justify-between px-5 border-b border-stone-800">
                         <span className="font-serif text-base tracking-wider uppercase whitespace-nowrap">Wayku Admin</span>
-
-                        <button
-                            ref={bellRef}
-                            onClick={() => setShowBell((value) => !value)}
-                            className="relative hidden p-1.5 text-stone-400 hover:text-white transition-colors rounded-lg hover:bg-stone-800 lg:inline-flex"
-                        >
-                            <Bell size={17} />
-                            {unread > 0 && (
-                                <span className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center rounded-full bg-primary text-[9px] font-bold text-white">
-                                    {unread > 9 ? '9+' : unread}
-                                </span>
-                            )}
-                        </button>
+                        <div className="hidden items-center gap-2 lg:flex">
+                            <button
+                                onClick={handleGlobalRefresh}
+                                className="inline-flex p-1.5 text-stone-400 hover:text-white transition-colors rounded-lg hover:bg-stone-800"
+                                title="Recargar admin"
+                            >
+                                <RefreshCw size={17} className={isRefreshing ? 'animate-spin' : ''} />
+                            </button>
+                            <button
+                                ref={bellRef}
+                                onClick={() => setShowBell((value) => !value)}
+                                className="relative inline-flex p-1.5 text-stone-400 hover:text-white transition-colors rounded-lg hover:bg-stone-800"
+                            >
+                                <Bell size={17} />
+                                {unread > 0 && (
+                                    <span className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center rounded-full bg-primary text-[9px] font-bold text-white">
+                                        {unread > 9 ? '9+' : unread}
+                                    </span>
+                                )}
+                            </button>
+                        </div>
                     </div>
 
                     <nav className="flex-1 px-4 py-6 space-y-1">
@@ -321,18 +337,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
                     </button>
                     <span className="font-serif text-xl tracking-widest uppercase">Wayku</span>
-                    <button
-                        ref={mobileBellRef}
-                        onClick={() => setShowBell((value) => !value)}
-                        className="relative inline-flex p-2 text-stone-600 hover:bg-stone-100 rounded-lg transition-colors"
-                    >
-                        <Bell size={20} />
-                        {unread > 0 && (
-                            <span className="absolute top-1 right-1 h-4 min-w-4 px-1 flex items-center justify-center rounded-full bg-primary text-[9px] font-bold text-white">
-                                {unread > 9 ? '9+' : unread}
-                            </span>
-                        )}
-                    </button>
+                    <div className="flex items-center gap-1">
+                        <button
+                            onClick={handleGlobalRefresh}
+                            className="inline-flex p-2 text-stone-600 hover:bg-stone-100 rounded-lg transition-colors"
+                            title="Recargar admin"
+                        >
+                            <RefreshCw size={20} className={isRefreshing ? 'animate-spin' : ''} />
+                        </button>
+                        <button
+                            ref={mobileBellRef}
+                            onClick={() => setShowBell((value) => !value)}
+                            className="relative inline-flex p-2 text-stone-600 hover:bg-stone-100 rounded-lg transition-colors"
+                        >
+                            <Bell size={20} />
+                            {unread > 0 && (
+                                <span className="absolute top-1 right-1 h-4 min-w-4 px-1 flex items-center justify-center rounded-full bg-primary text-[9px] font-bold text-white">
+                                    {unread > 9 ? '9+' : unread}
+                                </span>
+                            )}
+                        </button>
+                    </div>
                 </header>
                 <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
             </div>

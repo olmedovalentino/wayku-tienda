@@ -10,7 +10,7 @@ export interface Product {
     description: string;
     price: number;
     category: 'pendant' | 'table' | 'floor' | 'wall';
-    material: 'guayubira' | 'roble' | 'palo-santo';
+    material: 'guayubira' | 'roble';
     images: string[];
     inStock: boolean;
     isVisible?: boolean;
@@ -20,7 +20,7 @@ export interface Product {
 }
 
 // Converts a product name to a URL-friendly slug.
-// e.g. "Amai" -> "amai", "Palo Santo" -> "palo-santo"
+// e.g. "Amai" -> "amai"
 export function slugify(name: string): string {
     return name
         .toLowerCase()
@@ -66,7 +66,6 @@ export const products: Product[] = [
         variants: [
             { material: 'roble', stock: 2 },
             { material: 'guayubira', stock: 2 },
-            { material: 'palo-santo', stock: 2 },
         ],
     },
     {
@@ -75,7 +74,7 @@ export const products: Product[] = [
         description: 'Aplique de pared en madera con foco direccional negro. Combina funcionalidad y diseno moderno.',
         price: 80000,
         category: 'wall',
-        material: 'palo-santo',
+        material: 'roble',
         images: ['/productos/wall-sconce.png'],
         inStock: true,
         stockCount: 12,

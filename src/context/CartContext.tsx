@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase';
 
 export interface CartItem extends Product {
     quantity: number;
-    selectedMaterial: 'guayubira' | 'roble' | 'palo-santo';
+    selectedMaterial: 'guayubira' | 'roble';
     selectedSize?: '1m' | '1.5m' | '2m';
     shadeType?: 'blanco-calido' | 'negro';
     cableColor?: 'blanco' | 'negro';
@@ -19,7 +19,7 @@ interface CartContextType {
     isOpen: boolean;
     openCart: () => void;
     closeCart: () => void;
-    addItem: (p: Product, m: 'guayubira' | 'roble' | 'palo-santo', s?: '1m' | '1.5m' | '2m', shade?: 'blanco-calido' | 'negro', cable?: 'blanco' | 'negro', canopy?: 'blanco' | 'negro') => void;
+    addItem: (p: Product, m: 'guayubira' | 'roble', s?: '1m' | '1.5m' | '2m', shade?: 'blanco-calido' | 'negro', cable?: 'blanco' | 'negro', canopy?: 'blanco' | 'negro') => void;
     removeItem: (index: number) => void;
     updateItemQuantity: (index: number, quantity: number) => void;
     clearCart: () => void;

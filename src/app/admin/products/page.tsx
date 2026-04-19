@@ -218,13 +218,13 @@ export default function AdminProductsPage() {
     };
 
     const handleDelete = (id: string, name: string) => {
-        if (confirm(`Ã‚Â¿EstÃƒÂ¡s seguro de que quieres eliminar la lÃƒÂ¡mpara "${name}"?`)) {
+        if (confirm(`Estas seguro de que quieres eliminar la lampara "${name}"?`)) {
             deleteProduct(id);
         }
     };
 
     const addVariant = () => {
-        const isAmai = formData.name === 'AmaÃƒÂ­';
+        const isAmai = formData.name === 'Amai';
         setFormData({
             ...formData,
             variants: [
@@ -255,7 +255,7 @@ export default function AdminProductsPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-stone-900">Productos</h1>
-                    <p className="text-stone-500">Gestiona el catÃƒÂ¡logo de lÃƒÂ¡mparas de WaykÃƒÂº.</p>
+                    <p className="text-stone-500">Gestiona el catalogo de lamparas de Wayku.</p>
                 </div>
                 <Button onClick={openAddModal} className="flex items-center gap-2">
                     <Plus size={20} />
@@ -271,7 +271,7 @@ export default function AdminProductsPage() {
                     </div>
                     <input
                         type="text"
-                        placeholder="Buscar por nombre o categorÃƒÂ­a..."
+                        placeholder="Buscar por nombre o categoria..."
                         className="block w-full pl-10 pr-3 py-2 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary sm:text-sm"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -283,7 +283,7 @@ export default function AdminProductsPage() {
                     onChange={(e) => setCategoryFilter(e.target.value)}
                     className="w-full sm:w-auto px-4 py-2 bg-stone-50 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary text-sm font-medium text-stone-700"
                 >
-                    <option value="Todas">Todas las CategorÃƒÂ­as</option>
+                    <option value="Todas">Todas las Categorias</option>
                     <option value="pendant">Colgantes</option>
                     <option value="table">Mesa</option>
                     <option value="floor">Pie</option>
@@ -298,7 +298,7 @@ export default function AdminProductsPage() {
                         <thead className="bg-stone-50 text-stone-500 text-xs uppercase tracking-wider">
                             <tr>
                                 <th className="px-6 py-4 font-medium">Producto</th>
-                                <th className="px-6 py-4 font-medium">CategorÃƒÂ­a</th>
+                                <th className="px-6 py-4 font-medium">Categoria</th>
                                 <th className="px-6 py-4 font-medium text-center">Precio</th>
                                 <th className="px-6 py-4 font-medium text-center">Stock (U)</th>
                                 <th className="px-6 py-4 font-medium text-center min-w-[140px]">Estado</th>
@@ -356,7 +356,7 @@ export default function AdminProductsPage() {
                                                     }`}
                                             >
                                                 <Clock size={10} className={product.isComingSoon ? 'text-yellow-600' : 'text-stone-300'} />
-                                                {product.isComingSoon ? 'PrÃƒÂ³ximamente' : 'Lanzado'}
+                                                {product.isComingSoon ? 'Proximamente' : 'Lanzado'}
                                             </button>
                                         </div>
                                     </td>
@@ -467,7 +467,7 @@ export default function AdminProductsPage() {
                                     }`}
                             >
                                 <Clock size={12} className={product.isComingSoon ? 'text-yellow-600' : 'text-stone-300'} />
-                                {product.isComingSoon ? 'PrÃƒÂ³ximamente' : 'Lanzado'}
+                                {product.isComingSoon ? 'Proximamente' : 'Lanzado'}
                             </button>
                             <button
                                 onClick={() => updateProduct(product.id, { isVisible: !(product.isVisible ?? true) })}
@@ -510,7 +510,7 @@ export default function AdminProductsPage() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-stone-700">CategorÃƒÂ­a</label>
+                                    <label className="text-sm font-medium text-stone-700">Categoria</label>
                                     <select
                                         className="w-full px-4 py-2 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary"
                                         value={formData.category}
@@ -569,12 +569,12 @@ export default function AdminProductsPage() {
                                             }}
                                         />
                                         <label htmlFor="showVariants" className="text-sm font-medium text-stone-900">
-                                            Gestionar Stock por Variantes (Material/TamaÃƒÂ±o)
+                                            Gestionar Stock por Variantes (Material/Tamano)
                                         </label>
                                     </div>
                                     {showVariants && (
                                         <Button type="button" size="sm" variant="outline" onClick={addVariant} className="gap-2">
-                                            <PlusCircle size={16} /> Agregar CombinaciÃƒÂ³n
+                                            <PlusCircle size={16} /> Agregar Combinacion
                                         </Button>
                                     )}
                                 </div>
@@ -587,8 +587,8 @@ export default function AdminProductsPage() {
                                             <div className="space-y-3">
                                                 <div className="grid grid-cols-12 gap-2 text-xs font-medium text-stone-500 uppercase px-1">
                                                     <div className="col-span-4">Material</div>
-                                                    {formData.name !== 'AmaÃƒÂ­' && <div className="col-span-4">TamaÃƒÂ±o</div>}
-                                                    <div className={formData.name !== 'AmaÃƒÂ­' ? "col-span-3" : "col-span-7"}>Stock</div>
+                                                    {formData.name !== 'Amai' && <div className="col-span-4">Tamano</div>}
+                                                    <div className={formData.name !== 'Amai' ? "col-span-3" : "col-span-7"}>Stock</div>
                                                     <div className="col-span-1"></div>
                                                 </div>
                                                 {(formData.variants || []).map((variant, index) => (
@@ -601,12 +601,9 @@ export default function AdminProductsPage() {
                                                             >
                                                                 <option value="roble">Roble</option>
                                                                 <option value="guayubira">Guayubira</option>
-                                                                {formData.category !== 'table' && formData.category !== 'wall' && formData.name !== 'Taini' && (
-                                                                    <option value="palo-santo">Palo Santo</option>
-                                                                )}
                                                             </select>
                                                         </div>
-                                                        {formData.name !== 'AmaÃƒÂ­' && (
+                                                        {formData.name !== 'Amai' && (
                                                             <div className="col-span-4">
                                                                 <input
                                                                     type="text"
@@ -617,7 +614,7 @@ export default function AdminProductsPage() {
                                                                 />
                                                             </div>
                                                         )}
-                                                        <div className={formData.name !== 'AmaÃƒÂ­' ? "col-span-3" : "col-span-7"}>
+                                                        <div className={formData.name !== 'Amai' ? "col-span-3" : "col-span-7"}>
                                                             <input
                                                                 type="number"
                                                                 min="0"
@@ -644,8 +641,7 @@ export default function AdminProductsPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-stone-700">DescripciÃƒÂ³n</label>
-
+                                <label className="text-sm font-medium text-stone-700">Descripcion</label>
                                 <textarea
                                     required
                                     rows={4}
@@ -656,7 +652,7 @@ export default function AdminProductsPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-stone-700">GalerÃƒÂ­a de ImÃƒÂ¡genes</label>
+                                <label className="text-sm font-medium text-stone-700">Galeria de Imagenes</label>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                                     {visibleImages.map((img, idx) => (
                                         <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-stone-200 bg-stone-50 shadow-sm">
@@ -722,7 +718,6 @@ export default function AdminProductsPage() {
                                     </div>
                                 </div>
                             </div>
-
 
                             <div className="flex gap-4 pt-4">
                                 <Button

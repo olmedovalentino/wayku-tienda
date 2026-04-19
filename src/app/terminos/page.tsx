@@ -18,7 +18,7 @@ export default function TermsPage() {
                     <h2 className="text-xl font-semibold text-stone-900 mt-8">2. Productos y Artesanía</h2>
                     <p>
                         En Waykú nos dedicamos a la fabricación artesanal de lámparas de madera de diseño. Debido a la naturaleza natural 
-                        de la madera (Roble, Guayubira, Palo Santo) y al proceso hecho a mano, cada producto es único. Las vetas, 
+                        de la madera (Roble y Guayubira) y al proceso hecho a mano, cada producto es único. Las vetas, 
                         tonalidades y texturas pueden variar ligeramente con respecto a las fotografías del sitio web, lo que no se 
                         considera un defecto sino un sello de autenticidad.
                     </p>
@@ -58,3 +58,4 @@ export default function TermsPage() {
         </div>
     );
 }
+

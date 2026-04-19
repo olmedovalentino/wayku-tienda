@@ -278,7 +278,6 @@ export default function CouponsPage() {
                                     <tr>
                                         <td colSpan={5} className="px-6 py-16 text-center">
                                             <p className="text-sm text-stone-400">No hay cupones creados aun.</p>
-                                            <p className="text-sm text-stone-400">No hay cupones creados aÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºn.</p>
                                         </td>
                                     </tr>
                                 ) : (
@@ -414,3 +413,4 @@ export default function CouponsPage() {
         </>
     );
 }
+

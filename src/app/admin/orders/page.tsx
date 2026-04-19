@@ -11,7 +11,6 @@ import {
     Clock,
     Truck,
     HelpCircle,
-    RefreshCw,
     AlertTriangle,
     MoreVertical,
     Printer
@@ -120,14 +119,6 @@ export default function AdminOrdersPage() {
                     <h1 className="text-2xl font-bold text-stone-900">Pedidos</h1>
                     <p className="text-stone-500">Gestiona las ventas y el estado de los envíos.</p>
                 </div>
-                <button
-                    onClick={fetchOrders}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-500 transition-colors hover:text-primary sm:w-auto"
-                    title="Actualizar pedidos"
-                >
-                    <RefreshCw size={15} className={isLoading ? 'animate-spin' : ''} />
-                    Actualizar
-                </button>
             </div>
 
             {/* Filters and Search */}

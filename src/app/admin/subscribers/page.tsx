@@ -51,7 +51,7 @@ export default function AdminSubscribersPage() {
     );
 
     const handleDelete = async (email: string) => {
-        if (confirm(`¿Eliminar a ${email} de la lista?`)) {
+        if (confirm(`Eliminar a ${email} de la lista?`)) {
             const res = await fetch(`/api/admin/subscribers?email=${encodeURIComponent(email)}`, { method: 'DELETE' });
             if (res.ok) {
                 setSubscribers(prev => prev.filter(s => s.email !== email));
@@ -76,12 +76,12 @@ export default function AdminSubscribersPage() {
             });
             const data = await res.json();
             if (data.success) {
-                toast.success(`Campaña enviada con éxito a ${data.sentCount} suscriptores.`);
+                toast.success(`Campana enviada con exito a ${data.sentCount} suscriptores.`);
                 setIsCampaignModalOpen(false);
                 setCampaignSubject('');
                 setCampaignMessage('');
             } else {
-                toast.error(`Error al enviar la campaña: ${data.error}`);
+                toast.error(`Error al enviar la campana: ${data.error}`);
             }
         } catch (err) {
             console.error(err);
@@ -101,7 +101,7 @@ export default function AdminSubscribersPage() {
                 <div className="flex w-full gap-2 sm:w-auto">
                     <Button onClick={() => setIsCampaignModalOpen(true)} className="flex w-full items-center justify-center gap-2 bg-primary text-white shadow-md shadow-primary/20 hover:bg-primary/90 sm:w-auto">
                         <Mail size={18} />
-                        Crear Campaña
+                        Crear Campana
                     </Button>
                 </div>
             </div>
@@ -146,7 +146,7 @@ export default function AdminSubscribersPage() {
                             </div>
                             <div className="flex-1">
                                 <p className="text-sm text-stone-600 leading-relaxed">
-                                    <span className="font-bold text-stone-900">{subscriber.email}</span> se suscribió al newsletter.
+                                    <span className="font-bold text-stone-900">{subscriber.email}</span> se suscribio al newsletter.
                                 </p>
                             </div>
                         </div>
@@ -155,7 +155,7 @@ export default function AdminSubscribersPage() {
                             <div className="text-stone-400 flex flex-col font-medium">
                                 <span className="flex items-center gap-1">
                                     <Calendar size={12} />
-                                    {subscriber.created_at ? new Date(subscriber.created_at).toLocaleDateString() : '—'}
+                                    {subscriber.created_at ? new Date(subscriber.created_at).toLocaleDateString() : '-'}
                                 </span>
                                 {subscriber.created_at && (
                                     <span className="text-[10px] text-primary/70 italic mt-0.5 ml-4">{getTimeAgo(subscriber.created_at)}</span>
@@ -176,7 +176,7 @@ export default function AdminSubscribersPage() {
                     <div className="col-span-full flex flex-col items-center justify-center py-20 text-center bg-white rounded-2xl border border-stone-100">
                         <Mail className="h-12 w-12 text-stone-200 mb-4" />
                         <h3 className="text-lg font-medium text-stone-900">No hay suscripciones</h3>
-                        <p className="text-stone-500">Prueba con otro término de búsqueda.</p>
+                        <p className="text-stone-500">Proba con otro termino de busqueda.</p>
                     </div>
                 )}
             </div>
@@ -187,9 +187,9 @@ export default function AdminSubscribersPage() {
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                         <div className="flex items-center justify-between p-6 border-b border-stone-100">
                             <div>
-                                <h2 className="text-xl font-bold text-stone-900">Nueva Campaña de Email</h2>
+                                <h2 className="text-xl font-bold text-stone-900">Nueva Campana de Email</h2>
                                 <p className="text-sm text-stone-500">
-                                    {targetType === 'all' ? `Se enviará un correo a las ${subscribers.length} suscripciones activas.` : `Se enviará un correo a ${selectedEmails.length} suscripciones seleccionadas.`}
+                                    {targetType === 'all' ? `Se enviara un correo a las ${subscribers.length} suscripciones activas.` : `Se enviara un correo a ${selectedEmails.length} suscripciones seleccionadas.`}
                                 </p>
                             </div>
                             <button onClick={() => setIsCampaignModalOpen(false)} className="text-stone-400 hover:text-stone-900 transition-colors">
@@ -286,3 +286,5 @@ export default function AdminSubscribersPage() {
         </div>
     );
 }
+
+
