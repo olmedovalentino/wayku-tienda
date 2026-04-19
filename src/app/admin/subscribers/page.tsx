@@ -106,8 +106,8 @@ export default function AdminSubscribersPage() {
                 </div>
             </div>
 
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="max-w-sm bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-2xl shadow-sm border border-primary/15 flex items-center gap-4">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-start lg:gap-4">
+                <div className="max-w-sm bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-2xl shadow-sm border border-primary/15 flex items-center gap-4">
                 <div className="h-10 w-10 bg-primary text-white rounded-full flex items-center justify-center shadow-md shadow-primary/30">
                     <Mail size={20} />
                 </div>
@@ -115,7 +115,7 @@ export default function AdminSubscribersPage() {
                     <h3 className="text-xs font-medium text-stone-500 uppercase tracking-wider">Total de suscripciones</h3>
                     <p className="text-2xl font-bold text-stone-900">{subscribers.length}</p>
                 </div>
-            </div>
+                </div>
                 <Button onClick={() => setIsCampaignModalOpen(true)} className="hidden items-center justify-center gap-2 bg-primary text-white shadow-md shadow-primary/20 hover:bg-primary/90 lg:inline-flex">
                     <Mail size={18} />
                     Crear Campaña
