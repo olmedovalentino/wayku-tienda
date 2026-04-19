@@ -76,12 +76,12 @@ export default function AdminSubscribersPage() {
             });
             const data = await res.json();
             if (data.success) {
-                toast.success(`Campana enviada con exito a ${data.sentCount} suscriptores.`);
+                toast.success(`Campaña enviada con exito a ${data.sentCount} suscriptores.`);
                 setIsCampaignModalOpen(false);
                 setCampaignSubject('');
                 setCampaignMessage('');
             } else {
-                toast.error(`Error al enviar la campana: ${data.error}`);
+                toast.error(`Error al enviar la campaña: ${data.error}`);
             }
         } catch (err) {
             console.error(err);
@@ -101,19 +101,19 @@ export default function AdminSubscribersPage() {
                 <div className="flex w-full gap-2 sm:w-auto">
                     <Button onClick={() => setIsCampaignModalOpen(true)} className="flex w-full items-center justify-center gap-2 bg-primary text-white shadow-md shadow-primary/20 hover:bg-primary/90 sm:w-auto">
                         <Mail size={18} />
-                        Crear Campana
+                        Crear Campaña
                     </Button>
                 </div>
             </div>
 
             {/* Stats */}
-            <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-6 rounded-2xl shadow-sm border border-primary/15 flex items-center gap-6">
-                <div className="h-12 w-12 bg-primary text-white rounded-full flex items-center justify-center shadow-md shadow-primary/30">
-                    <Mail size={24} />
+            <div className="max-w-sm bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-2xl shadow-sm border border-primary/15 flex items-center gap-4">
+                <div className="h-10 w-10 bg-primary text-white rounded-full flex items-center justify-center shadow-md shadow-primary/30">
+                    <Mail size={20} />
                 </div>
                 <div>
-                    <h3 className="text-sm font-medium text-stone-500 uppercase tracking-wider">Total de suscripciones</h3>
-                    <p className="text-3xl font-bold text-stone-900">{subscribers.length}</p>
+                    <h3 className="text-xs font-medium text-stone-500 uppercase tracking-wider">Total de suscripciones</h3>
+                    <p className="text-2xl font-bold text-stone-900">{subscribers.length}</p>
                 </div>
             </div>
 
@@ -187,7 +187,7 @@ export default function AdminSubscribersPage() {
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                         <div className="flex items-center justify-between p-6 border-b border-stone-100">
                             <div>
-                                <h2 className="text-xl font-bold text-stone-900">Nueva Campana de Email</h2>
+                                <h2 className="text-xl font-bold text-stone-900">Nueva Campaña de Email</h2>
                                 <p className="text-sm text-stone-500">
                                     {targetType === 'all' ? `Se enviara un correo a las ${subscribers.length} suscripciones activas.` : `Se enviara un correo a ${selectedEmails.length} suscripciones seleccionadas.`}
                                 </p>
