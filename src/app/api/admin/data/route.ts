@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { isValidAdminSessionToken } from '@/lib/admin-session';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { sortAdminOrders } from '@/lib/admin-orders';
 
 async function ensureAdminSession() {
     const cookieStore = await cookies();
@@ -17,17 +18,28 @@ export async function GET() {
         const supabaseAdmin = getSupabaseAdmin();
 
         const [orders, queries, subscribers] = await Promise.all([
-            supabaseAdmin.from('orders').select('*').order('created_at', { ascending: false }),
+            supabaseAdmin.from('orders').select('*'),
             supabaseAdmin.from('queries').select('*').order('id', { ascending: false }),
             supabaseAdmin.from('subscribers').select('*').order('created_at', { ascending: false })
         ]);
 
+        if (orders.error) {
+            throw orders.error;
+        }
+        if (queries.error) {
+            throw queries.error;
+        }
+        if (subscribers.error) {
+            throw subscribers.error;
+        }
+
         return NextResponse.json({
-            orders: orders.data || [],
+            orders: sortAdminOrders(orders.data || []),
             queries: queries.data || [],
             subscribers: subscribers.data?.map(s => s.email) || []
         });
-    } catch {
+    } catch (error) {
+        console.error('Failed to fetch admin data:', error);
         return NextResponse.json({ error: 'Failed to fetch admin data' }, { status: 500 });
     }
 }
