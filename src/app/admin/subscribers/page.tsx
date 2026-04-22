@@ -91,6 +91,14 @@ export default function AdminSubscribersPage() {
         }
     };
 
+    const toggleSelectedEmail = (email: string) => {
+        setSelectedEmails((prev) =>
+            prev.includes(email)
+                ? prev.filter((currentEmail) => currentEmail !== email)
+                : [...prev, email]
+        );
+    };
+
     return (
         <div className="space-y-8">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -230,21 +238,25 @@ export default function AdminSubscribersPage() {
                                     {targetType === 'selected' && (
                                         <div className="mt-3 max-h-48 overflow-y-auto rounded-2xl border border-stone-200 bg-stone-50 p-3 space-y-2">
                                             {subscribers.map((sub, idx) => (
-                                                <label key={idx} className="flex items-center gap-3 cursor-pointer rounded-xl border border-transparent bg-white/70 px-3 py-2 hover:border-stone-200 hover:bg-white transition-colors">
-                                                    <input 
-                                                        type="checkbox" 
+                                                <button
+                                                    key={idx}
+                                                    type="button"
+                                                    onClick={() => toggleSelectedEmail(sub.email)}
+                                                    className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2 text-left transition-colors ${
+                                                        selectedEmails.includes(sub.email)
+                                                            ? 'border-primary bg-white'
+                                                            : 'border-transparent bg-white/70 hover:border-stone-200 hover:bg-white'
+                                                    }`}
+                                                >
+                                                    <input
+                                                        type="checkbox"
                                                         checked={selectedEmails.includes(sub.email)}
-                                                        onChange={(e) => {
-                                                            if (e.target.checked) {
-                                                                setSelectedEmails(prev => [...prev, sub.email]);
-                                                            } else {
-                                                                setSelectedEmails(prev => prev.filter(email => email !== sub.email));
-                                                            }
-                                                        }}
-                                                        className="rounded text-primary focus:ring-primary"
+                                                        readOnly
+                                                        tabIndex={-1}
+                                                        className="pointer-events-none rounded text-primary focus:ring-primary"
                                                     />
                                                     <span className="text-sm text-stone-700">{sub.email}</span>
-                                                </label>
+                                                </button>
                                             ))}
                                             {subscribers.length === 0 && <span className="text-sm text-stone-500">No hay suscriptores</span>}
                                         </div>
