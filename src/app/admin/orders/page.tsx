@@ -84,6 +84,20 @@ export default function AdminOrdersPage() {
         }
     };
 
+    const getStatusIcon = (status: string) => {
+        switch (status) {
+            case 'Pedido recibido': return Clock;
+            case 'Pago acreditado': return CheckCircle2;
+            case 'En preparaciÃ³n': return Package;
+            case 'Embalado': return Package;
+            case 'Despachado': return Truck;
+            case 'Entregado': return CheckCircle2;
+            case 'DevoluciÃ³n': return AlertTriangle;
+            case 'Cancelado': return X;
+            default: return Package;
+        }
+    };
+
     return (
         <div className="space-y-8">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -133,74 +147,123 @@ export default function AdminOrdersPage() {
                 </select>
             </div>
 
-            {/* Orders Table (Desktop) */}
-            <div className="hidden lg:block bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead className="bg-stone-50 text-stone-500 text-xs uppercase tracking-wider">
-                            <tr>
-                                <th className="px-6 py-4 font-medium">ID Pedido</th>
-                                <th className="px-6 py-4 font-medium">Cliente</th>
-                                <th className="px-6 py-4 font-medium">Fecha</th>
-                                <th className="px-6 py-4 font-medium">Items</th>
-                                <th className="px-6 py-4 font-medium">Total</th>
-                                <th className="px-6 py-4 font-medium">Estado</th>
-                                <th className="px-6 py-4 font-medium text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-stone-100 text-sm">
-                            {filteredOrders.map((order) => (
-                                <tr key={order.id} className="hover:bg-stone-50 transition-colors">
-                                    <td
-                                        onClick={() => setSelectedOrder(order)}
-                                        className="px-6 py-4 font-medium text-stone-900 underline decoration-stone-200 underline-offset-4 cursor-pointer hover:text-primary transition-colors"
-                                    >
-                                        {formatOrderDisplayId(order.id)}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div>
-                                            <p className="font-medium text-stone-900">{order.customer}</p>
-                                            <p className="text-xs text-stone-500">{order.email}</p>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 text-stone-500">
-                                        <div className="flex flex-col">
-                                            <span>{order.date}</span>
-                                            {order.created_at && <span className="text-[10px] text-primary/70 italic mt-0.5">{getTimeAgo(order.created_at)}</span>}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 text-stone-600">{order.items} {order.items === 1 ? 'item' : 'items'}</td>
-                                    <td className="px-6 py-4 font-medium text-stone-900">${(order.total || 0).toLocaleString()}</td>
-                                    <td className="px-6 py-4">
-                                        <select
-                                            value={order.status}
-                                            onChange={(e) => updateOrderStatus(order.id, e.target.value as Order['status'])}
-                                            className={`px-2 py-0.5 rounded-full text-xs font-medium border-none focus:ring-0 cursor-pointer ${getStatusStyles(order.status)}`}
-                                        >
-                                            <option value="Pedido recibido">Pedido recibido</option>
-                                            <option value="Pago acreditado">Pago acreditado</option>
-                                            <option value="En preparación">En preparación</option>
-                                            <option value="Embalado">Embalado</option>
-                                            <option value="Despachado">Despachado</option>
-                                            <option value="Entregado">Entregado</option>
-                                            <option value="Devolución">Devolución</option>
-                                            <option value="Cancelado">Cancelado</option>
-                                        </select>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
+            {/* Orders Grid (Desktop) */}
+            {filteredOrders.length > 0 ? (
+                <div className="hidden lg:grid lg:grid-cols-2 2xl:grid-cols-3 gap-5">
+                    {filteredOrders.map((order) => {
+                        const StatusIcon = getStatusIcon(order.status);
+
+                        return (
+                            <article
+                                key={order.id}
+                                className="group rounded-[28px] border border-stone-200 bg-[linear-gradient(180deg,#ffffff_0%,#fcfaf7_100%)] p-6 shadow-[0_18px_40px_-28px_rgba(120,92,54,0.45)] transition-all hover:-translate-y-0.5 hover:shadow-[0_26px_60px_-30px_rgba(120,92,54,0.5)]"
+                            >
+                                <div className="flex items-start justify-between gap-4">
+                                    <div className="min-w-0">
                                         <button
                                             onClick={() => setSelectedOrder(order)}
-                                            className="p-1.5 text-stone-400 hover:text-stone-900 transition-colors"
+                                            className="text-left text-base font-semibold text-stone-900 underline decoration-stone-200 underline-offset-4 transition-colors hover:text-primary"
                                         >
-                                            <MoreVertical size={18} />
+                                            {formatOrderDisplayId(order.id)}
                                         </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-stone-500">
+                                            <span className="rounded-full bg-stone-100 px-2.5 py-1 font-medium text-stone-700">
+                                                {order.date}
+                                            </span>
+                                            {order.created_at && (
+                                                <span className="italic text-primary/70">
+                                                    {getTimeAgo(order.created_at)}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setSelectedOrder(order)}
+                                        className="rounded-full border border-stone-200 p-2 text-stone-400 transition-colors hover:border-stone-300 hover:text-stone-900"
+                                        title="Ver detalle"
+                                    >
+                                        <MoreVertical size={18} />
+                                    </button>
+                                </div>
+
+                                <div className="mt-5 flex items-start gap-4 rounded-2xl bg-stone-50/90 p-4">
+                                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-white text-primary shadow-sm ring-1 ring-stone-200">
+                                        <StatusIcon size={22} />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="truncate text-sm font-semibold text-stone-900">{order.customer}</p>
+                                        <p className="truncate text-xs text-stone-500">{order.email}</p>
+                                        <p className="mt-2 text-xs text-stone-500">
+                                            {order.shippingMethod === 'pickup' ? 'Retiro en tienda' : 'Envío a domicilio'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="mt-5 grid grid-cols-3 gap-3">
+                                    <div className="rounded-2xl border border-stone-100 bg-white p-3">
+                                        <p className="text-[11px] uppercase tracking-[0.18em] text-stone-400">Total</p>
+                                        <p className="mt-2 text-lg font-semibold text-stone-900">${(order.total || 0).toLocaleString()}</p>
+                                    </div>
+                                    <div className="rounded-2xl border border-stone-100 bg-white p-3">
+                                        <p className="text-[11px] uppercase tracking-[0.18em] text-stone-400">Items</p>
+                                        <p className="mt-2 text-lg font-semibold text-stone-900">{order.items}</p>
+                                    </div>
+                                    <div className="rounded-2xl border border-stone-100 bg-white p-3">
+                                        <p className="text-[11px] uppercase tracking-[0.18em] text-stone-400">Pago</p>
+                                        <p className="mt-2 text-sm font-semibold text-stone-900">
+                                            {order.paymentMethod === 'card' ? 'Tarjeta' : 'Transferencia'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="mt-5 flex items-center gap-3">
+                                    <div className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold ${getStatusStyles(order.status)}`}>
+                                        <StatusIcon size={14} />
+                                        <span>{order.status}</span>
+                                    </div>
+                                    <div className="h-px flex-1 bg-stone-200" />
+                                </div>
+
+                                <div className="mt-4 flex items-end gap-3">
+                                    <select
+                                        value={order.status}
+                                        onChange={(e) => updateOrderStatus(order.id, e.target.value as Order['status'])}
+                                        className={`min-w-0 flex-1 cursor-pointer rounded-2xl border-none px-4 py-3 text-sm font-medium focus:ring-0 ${getStatusStyles(order.status)}`}
+                                    >
+                                        <option value="Pedido recibido">Pedido recibido</option>
+                                        <option value="Pago acreditado">Pago acreditado</option>
+                                        <option value="En preparación">En preparación</option>
+                                        <option value="Embalado">Embalado</option>
+                                        <option value="Despachado">Despachado</option>
+                                        <option value="Entregado">Entregado</option>
+                                        <option value="Devolución">Devolución</option>
+                                        <option value="Cancelado">Cancelado</option>
+                                    </select>
+                                    <Button
+                                        variant="outline"
+                                        className="rounded-2xl border-stone-200 bg-white px-4 py-3 text-sm"
+                                        onClick={() => setSelectedOrder(order)}
+                                    >
+                                        Ver detalle
+                                    </Button>
+                                </div>
+                            </article>
+                        );
+                    })}
                 </div>
-            </div>
+            ) : (
+                <div className="hidden lg:flex min-h-[260px] items-center justify-center rounded-[28px] border border-dashed border-stone-200 bg-white/70 px-6 text-center">
+                    <div className="max-w-sm">
+                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-stone-100 text-stone-400">
+                            <Package size={24} />
+                        </div>
+                        <h3 className="mt-4 text-lg font-semibold text-stone-900">No hay pedidos para mostrar</h3>
+                        <p className="mt-2 text-sm text-stone-500">
+                            Probá cambiando la búsqueda o el filtro de estado para ver otros pedidos.
+                        </p>
+                    </div>
+                </div>
+            )}
 
             {/* Orders List (Mobile) */}
             <div className="lg:hidden space-y-4">
