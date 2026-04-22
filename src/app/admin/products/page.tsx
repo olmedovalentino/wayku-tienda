@@ -320,9 +320,9 @@ export default function AdminProductsPage() {
                         return (
                             <article
                                 key={product.id}
-                                className="overflow-hidden rounded-[22px] border border-stone-200 bg-[linear-gradient(180deg,#ffffff_0%,#fbf8f3_100%)] shadow-[0_14px_34px_-30px_rgba(120,92,54,0.42)] transition-all hover:-translate-y-0.5 hover:shadow-[0_22px_48px_-30px_rgba(120,92,54,0.48)]"
+                                className="overflow-hidden rounded-[20px] border border-stone-200 bg-[linear-gradient(180deg,#ffffff_0%,#fbf8f3_100%)] shadow-[0_12px_28px_-30px_rgba(120,92,54,0.38)] transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-30px_rgba(120,92,54,0.45)]"
                             >
-                                <div className="relative aspect-[6/5] bg-stone-100">
+                                <div className="relative aspect-[7/5] bg-stone-100">
                                     <Image
                                         src={product.images[0] || 'https://via.placeholder.com/150'}
                                         alt={product.name}
@@ -330,37 +330,65 @@ export default function AdminProductsPage() {
                                         className="object-cover"
                                         sizes="(min-width: 1536px) 28vw, (min-width: 1024px) 42vw, 100vw"
                                     />
-                                    <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-2.5">
+                                    <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-2">
                                         <span className="rounded-full bg-white/92 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-stone-700 shadow-sm backdrop-blur">
                                             {getCategoryLabel(product.category)}
                                         </span>
-                                        <button
-                                            onClick={() => updateProduct(product.id, { isVisible: !(product.isVisible ?? true) })}
-                                            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold shadow-sm backdrop-blur transition-colors ${
-                                                product.isVisible !== false
-                                                    ? 'bg-blue-100/95 text-blue-700 hover:bg-blue-200'
-                                                    : 'bg-stone-100/95 text-stone-600 hover:bg-stone-200'
-                                            }`}
-                                        >
-                                            {product.isVisible !== false ? <Eye size={12} /> : <EyeOff size={12} />}
-                                            {product.isVisible !== false ? 'Visible' : 'Oculto'}
-                                        </button>
+                                        <div className="rounded-full bg-white/85 px-2 py-1 text-[10px] font-medium text-stone-600 shadow-sm backdrop-blur">
+                                            {product.images.length} fotos
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="space-y-3 p-3.5">
+                                <div className="space-y-2.5 p-3">
                                     <div className="flex items-start justify-between gap-3">
                                         <div className="min-w-0">
                                             <h3 className="truncate text-[15px] font-semibold text-stone-900">{product.name}</h3>
-                                            <p className="mt-0.5 line-clamp-2 text-[11px] text-stone-500">{product.description}</p>
+                                            <p className="mt-0.5 line-clamp-2 text-[11px] leading-4 text-stone-500">{product.description}</p>
                                         </div>
-                                        <div className="rounded-xl bg-stone-900 px-2.5 py-1.5 text-right text-white shadow-sm">
-                                            <p className="text-[10px] uppercase tracking-[0.18em] text-white/60">Precio</p>
-                                            <p className="mt-0.5 text-sm font-semibold">${product.price.toLocaleString()}</p>
+                                        <div className="shrink-0 text-right">
+                                            <p className="text-[10px] uppercase tracking-[0.16em] text-stone-400">Precio</p>
+                                            <p className="mt-0.5 text-sm font-semibold text-stone-900">${product.price.toLocaleString()}</p>
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-3 gap-2">
+                                    <div className="grid grid-cols-3 gap-1.5">
+                                        <button
+                                            onClick={() => updateProduct(product.id, { inStock: !product.inStock })}
+                                            className={`flex items-center justify-center gap-1 rounded-xl px-2 py-1.5 text-[10px] font-semibold transition-colors ${
+                                                product.inStock
+                                                    ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                                                    : 'bg-red-100 text-red-700 hover:bg-red-200'
+                                            }`}
+                                        >
+                                            <span className={`h-1.5 w-1.5 rounded-full ${product.inStock ? 'bg-green-600' : 'bg-red-600'}`}></span>
+                                            {product.inStock ? 'En stock' : 'Sin stock'}
+                                        </button>
+                                        <button
+                                            onClick={() => updateProduct(product.id, { isComingSoon: !product.isComingSoon })}
+                                            className={`flex items-center justify-center gap-1 rounded-xl px-2 py-1.5 text-[10px] font-semibold transition-colors ${
+                                                product.isComingSoon
+                                                    ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                                                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                                            }`}
+                                        >
+                                            <Clock size={11} className={product.isComingSoon ? 'text-yellow-700' : 'text-stone-500'} />
+                                            {product.isComingSoon ? 'Proximam.' : 'Lanzado'}
+                                        </button>
+                                        <button
+                                            onClick={() => updateProduct(product.id, { isVisible: !(product.isVisible ?? true) })}
+                                            className={`flex items-center justify-center gap-1 rounded-xl px-2 py-1.5 text-[10px] font-semibold transition-colors ${
+                                                product.isVisible !== false
+                                                    ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                                            }`}
+                                        >
+                                            {product.isVisible !== false ? <Eye size={11} /> : <EyeOff size={11} />}
+                                            {product.isVisible !== false ? 'Visible' : 'Oculto'}
+                                        </button>
+                                    </div>
+
+                                    <div className="grid grid-cols-3 gap-1.5">
                                         <div className="rounded-xl border border-stone-100 bg-white p-2">
                                             <p className="text-[11px] uppercase tracking-[0.18em] text-stone-400">Stock</p>
                                             <p className="mt-1 text-sm font-semibold text-stone-900">{stockValue}</p>
@@ -378,36 +406,10 @@ export default function AdminProductsPage() {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <button
-                                            onClick={() => updateProduct(product.id, { inStock: !product.inStock })}
-                                            className={`flex items-center justify-center gap-1 rounded-xl px-2.5 py-2 text-[11px] font-semibold transition-colors ${
-                                                product.inStock
-                                                    ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                                                    : 'bg-red-100 text-red-700 hover:bg-red-200'
-                                            }`}
-                                        >
-                                            <span className={`h-2 w-2 rounded-full ${product.inStock ? 'bg-green-600' : 'bg-red-600'}`}></span>
-                                            {product.inStock ? 'En stock' : 'Sin stock'}
-                                        </button>
-
-                                        <button
-                                            onClick={() => updateProduct(product.id, { isComingSoon: !product.isComingSoon })}
-                                            className={`flex items-center justify-center gap-1 rounded-xl px-2.5 py-2 text-[11px] font-semibold transition-colors ${
-                                                product.isComingSoon
-                                                    ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-                                                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-                                            }`}
-                                        >
-                                            <Clock size={12} className={product.isComingSoon ? 'text-yellow-700' : 'text-stone-500'} />
-                                            {product.isComingSoon ? 'Proximamente' : 'Lanzado'}
-                                        </button>
-                                    </div>
-
-                                    <div className="flex items-center gap-2 border-t border-stone-100 pt-2.5">
+                                    <div className="flex items-center gap-2 border-t border-stone-100 pt-2">
                                         <Button
                                             variant="outline"
-                                            className="flex-1 rounded-xl border-stone-200 bg-white px-3 py-2 text-sm"
+                                            className="flex-1 rounded-xl border-stone-200 bg-white px-3 py-1.5 text-sm"
                                             onClick={() => openEditModal(product)}
                                         >
                                             <Edit size={16} />
@@ -415,7 +417,7 @@ export default function AdminProductsPage() {
                                         </Button>
                                         <Button
                                             variant="outline"
-                                            className="rounded-xl border-red-100 bg-red-50 px-3 py-2 text-red-600 hover:bg-red-100 hover:text-red-700"
+                                            className="rounded-xl border-red-100 bg-red-50 px-3 py-1.5 text-red-600 hover:bg-red-100 hover:text-red-700"
                                             onClick={() => handleDelete(product.id, product.name)}
                                         >
                                             <Trash2 size={16} />
