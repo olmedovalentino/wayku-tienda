@@ -189,8 +189,8 @@ export default function AdminSubscribersPage() {
             {/* Campaign Modal */}
             {isCampaignModalOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                        <div className="flex items-center justify-between p-6 border-b border-stone-100">
+                    <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-[28px] border border-stone-200 bg-[linear-gradient(180deg,#ffffff_0%,#fcfaf7_100%)] shadow-xl">
+                        <div className="flex items-center justify-between px-6 py-5 border-b border-stone-100 bg-white/80 backdrop-blur-sm">
                             <div>
                                 <h2 className="text-xl font-bold text-stone-900">Nueva Campaña de Email</h2>
                                 <p className="text-sm text-stone-500">
@@ -202,25 +202,35 @@ export default function AdminSubscribersPage() {
                             </button>
                         </div>
 
-                        <form onSubmit={handleSendCampaign} className="p-6 space-y-6">
-                            <div className="space-y-4">
+                        <form onSubmit={handleSendCampaign} className="p-6 space-y-5">
+                            <div className="space-y-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-stone-700">Destinatarios</label>
-                                    <div className="flex gap-4 mb-2">
-                                        <label className="flex items-center gap-2 cursor-pointer">
-                                            <input type="radio" name="targetType" checked={targetType === 'all'} onChange={() => setTargetType('all')} />
-                                            <span className="text-sm">Todos los suscriptores ({subscribers.length})</span>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
+                                        <label className={`cursor-pointer rounded-2xl border px-4 py-3 transition-colors ${targetType === 'all' ? 'border-primary bg-primary/5' : 'border-stone-200 bg-stone-50 hover:bg-stone-100'}`}>
+                                            <div className="flex items-start gap-3">
+                                                <input type="radio" name="targetType" checked={targetType === 'all'} onChange={() => setTargetType('all')} className="mt-1" />
+                                                <div>
+                                                    <p className="text-sm font-semibold text-stone-900">Todos los suscriptores</p>
+                                                    <p className="text-xs text-stone-500">{subscribers.length} destinatarios activos</p>
+                                                </div>
+                                            </div>
                                         </label>
-                                        <label className="flex items-center gap-2 cursor-pointer">
-                                            <input type="radio" name="targetType" checked={targetType === 'selected'} onChange={() => setTargetType('selected')} />
-                                            <span className="text-sm">Seleccionar...</span>
+                                        <label className={`cursor-pointer rounded-2xl border px-4 py-3 transition-colors ${targetType === 'selected' ? 'border-primary bg-primary/5' : 'border-stone-200 bg-stone-50 hover:bg-stone-100'}`}>
+                                            <div className="flex items-start gap-3">
+                                                <input type="radio" name="targetType" checked={targetType === 'selected'} onChange={() => setTargetType('selected')} className="mt-1" />
+                                                <div>
+                                                    <p className="text-sm font-semibold text-stone-900">Seleccion manual</p>
+                                                    <p className="text-xs text-stone-500">Elegi un subconjunto de emails</p>
+                                                </div>
+                                            </div>
                                         </label>
                                     </div>
                                     
                                     {targetType === 'selected' && (
-                                        <div className="mt-2 max-h-40 overflow-y-auto border border-stone-200 rounded-xl p-3 space-y-2 bg-stone-50">
+                                        <div className="mt-3 max-h-48 overflow-y-auto rounded-2xl border border-stone-200 bg-stone-50 p-3 space-y-2">
                                             {subscribers.map((sub, idx) => (
-                                                <label key={idx} className="flex items-center gap-2 cursor-pointer hover:bg-stone-100 p-1 rounded-md transition-colors">
+                                                <label key={idx} className="flex items-center gap-3 cursor-pointer rounded-xl border border-transparent bg-white/70 px-3 py-2 hover:border-stone-200 hover:bg-white transition-colors">
                                                     <input 
                                                         type="checkbox" 
                                                         checked={selectedEmails.includes(sub.email)}
@@ -247,7 +257,7 @@ export default function AdminSubscribersPage() {
                                         type="text"
                                         required
                                         placeholder="Ej: ¡Llegó la nueva colección de lámparas!"
-                                        className="w-full px-4 py-2 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary"
+                                        className="w-full rounded-xl border border-stone-200 bg-stone-50/60 px-4 py-3 focus:ring-primary focus:border-primary"
                                         value={campaignSubject}
                                         onChange={(e) => setCampaignSubject(e.target.value)}
                                     />
@@ -259,23 +269,23 @@ export default function AdminSubscribersPage() {
                                         rows={8}
                                         required
                                         placeholder="Escribe el contenido de la campaña aquí..."
-                                        className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary resize-none"
+                                        className="w-full resize-none rounded-xl border border-stone-200 bg-stone-50/60 px-4 py-3 focus:ring-primary focus:border-primary"
                                         value={campaignMessage}
                                         onChange={(e) => setCampaignMessage(e.target.value)}
                                     ></textarea>
                                 </div>
                             </div>
 
-                            <div className="flex gap-4 pt-4 border-t border-stone-100">
+                            <div className="flex gap-4 pt-2">
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    className="flex-1"
+                                    className="flex-1 rounded-xl"
                                     onClick={() => setIsCampaignModalOpen(false)}
                                 >
                                     Cancelar
                                 </Button>
-                                <Button type="submit" className="flex-1 gap-2" disabled={isSendingCampaign || subscribers.length === 0}>
+                                <Button type="submit" className="flex-1 gap-2 rounded-xl" disabled={isSendingCampaign || subscribers.length === 0}>
                                     {isSendingCampaign ? 'Enviando...' : (
                                         <>
                                             <Send size={18} />
