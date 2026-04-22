@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { Product, products as initialProducts } from '@/lib/products';
 import { sortAdminOrders } from '@/lib/admin-orders';
+import { formatOrderDate } from '@/lib/order-date';
 import { supabase } from '@/lib/supabase';
 
 export interface Order {
@@ -203,7 +204,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             },
             addOrder: async (order) => {
                 const tempId = Math.random().toString(36).substr(2, 9);
-                const newO: Order = { ...order, id: order.id || tempId, date: new Date().toLocaleDateString(), status: 'Pedido recibido' };
+                const newO: Order = { ...order, id: order.id || tempId, date: formatOrderDate(), status: 'Pedido recibido' };
                 setOrders(prev => [newO, ...prev]);
                 if (supabase) {
                     try {

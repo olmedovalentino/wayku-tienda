@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { enforceRateLimit, getClientIp } from '@/lib/rate-limit';
 import { quoteShipping } from '@/lib/shipping';
 import { createStableOrderId } from '@/lib/order-id';
+import { formatOrderDate } from '@/lib/order-date';
 
 type CheckoutItemInput = {
     id: string;
@@ -193,7 +194,7 @@ export async function POST(request: Request) {
             id: orderId,
             customer: `${payer.firstName} ${payer.lastName}`.trim(),
             email: String(payer.email).trim().toLowerCase(),
-            date: new Date().toLocaleDateString('es-AR'),
+            date: formatOrderDate(),
             total,
             status: 'Pedido recibido',
             items: validatedDetails.reduce((acc, item) => acc + item.quantity, 0),
