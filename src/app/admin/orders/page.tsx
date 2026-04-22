@@ -15,6 +15,7 @@ import {
     MoreVertical,
     Printer
 } from 'lucide-react';
+import { sortAdminOrders } from '@/lib/admin-orders';
 import { getTimeAgo } from '@/lib/time';
 import { formatOrderDisplayId } from '@/lib/order-id';
 
@@ -46,7 +47,7 @@ export default function AdminOrdersPage() {
         try {
             const res = await fetch('/api/admin/data');
             const data = await res.json();
-            if (data.orders) setOrders(data.orders);
+            if (data.orders) setOrders(sortAdminOrders(data.orders));
         } catch (error) {
             console.error('Error fetching orders:', error);
         } finally {
@@ -55,40 +56,11 @@ export default function AdminOrdersPage() {
     }, []);
 
     // Orders sorting logic
-    const sortedOrders = [...orders].sort((a, b) => {
-        if (sortOrder === 'total_high') {
-            return (b.total || 0) - (a.total || 0);
-        }
-        if (sortOrder === 'total_low') {
-            return (a.total || 0) - (b.total || 0);
-        }
-
-        let timeA = 0; let timeB = 0;
-        if (a.created_at) timeA = new Date(a.created_at).getTime();
-        if (b.created_at) timeB = new Date(b.created_at).getTime();
-        
-        if (timeA === 0 && a.id && a.id.startsWith('ORD-') && a.id.length > 10) {
-            const ts = Number(a.id.replace('ORD-', ''));
-            if (!isNaN(ts) && ts > 1000000000) timeA = ts;
-        }
-        if (timeB === 0 && b.id && b.id.startsWith('ORD-') && b.id.length > 10) {
-            const ts = Number(b.id.replace('ORD-', ''));
-            if (!isNaN(ts) && ts > 1000000000) timeB = ts;
-        }
-        
-        if (timeA !== 0 && timeB !== 0 && timeA !== timeB) {
-            return timeB - timeA;
-        }
-        
-        // Fallback to numeric ID sort
-        const numA = Number(String(a.id).replace('ORD-', ''));
-        const numB = Number(String(b.id).replace('ORD-', ''));
-        if (!isNaN(numA) && !isNaN(numB)) {
-             return numB - numA;
-        }
-        
-        return String(b.id).localeCompare(String(a.id));
-    });
+    const sortedOrders = sortOrder === 'total_high'
+        ? [...orders].sort((a, b) => (b.total || 0) - (a.total || 0))
+        : sortOrder === 'total_low'
+            ? [...orders].sort((a, b) => (a.total || 0) - (b.total || 0))
+            : sortAdminOrders(orders);
 
     const filteredOrders = sortedOrders.filter(order => {
         const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||

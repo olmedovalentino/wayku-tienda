@@ -17,7 +17,7 @@ export async function GET() {
         const supabaseAdmin = getSupabaseAdmin();
 
         const [orders, queries, subscribers] = await Promise.all([
-            supabaseAdmin.from('orders').select('*'),
+            supabaseAdmin.from('orders').select('*').order('created_at', { ascending: false }),
             supabaseAdmin.from('queries').select('*').order('id', { ascending: false }),
             supabaseAdmin.from('subscribers').select('*').order('created_at', { ascending: false })
         ]);

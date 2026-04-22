@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ShoppingBag, Menu, X, Search, Heart, ChevronDown, User as UserIcon, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { useCart } from '@/context/CartContext';
@@ -12,12 +13,27 @@ export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isCatalogOpen, setIsCatalogOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
     const { openCart, items } = useCart();
     const { openFavorites, favorites } = useFavorites();
     const { user, logout } = useAuth();
+    const router = useRouter();
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
     const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
+
+    const handleLogout = async () => {
+        if (isLoggingOut) return;
+
+        setIsLoggingOut(true);
+        try {
+            await logout();
+            router.push('/');
+            router.refresh();
+        } finally {
+            setIsLoggingOut(false);
+        }
+    };
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-stone-100 bg-white/80 backdrop-blur-md">
@@ -110,8 +126,10 @@ export function Header() {
 
                     {user ? (
                         <button
-                            onClick={logout}
+                            onClick={handleLogout}
                             className="p-1 sm:p-2 transition-colors hover:text-red-500 group relative flex items-center justify-center"
+                            disabled={isLoggingOut}
+                            aria-busy={isLoggingOut}
                             title="Cerrar Sesión"
                         >
                             <LogOut size={20} className="text-primary group-hover:text-red-500 transition-colors" />

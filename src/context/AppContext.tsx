@@ -2,45 +2,8 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { Product, products as initialProducts } from '@/lib/products';
+import { sortAdminOrders } from '@/lib/admin-orders';
 import { supabase } from '@/lib/supabase';
-
-function parseOrderDate(dateStr: string) {
-    if (!dateStr) return 0;
-    const months: Record<string, number> = { 'ene': 0, 'feb': 1, 'mar': 2, 'abr': 3, 'may': 4, 'jun': 5, 'jul': 6, 'ago': 7, 'sep': 8, 'oct': 9, 'nov': 10, 'dic': 11 };
-    const parts = dateStr.toLowerCase().split(' ').filter(p => p !== 'de' && p !== 'del' && p !== '');
-    if (parts.length >= 3) {
-        const day = parseInt(parts[0], 10);
-        const monthStr = parts[1].replace('.', '').substring(0, 3);
-        const year = parseInt(parts[2], 10);
-        if (!isNaN(day) && !isNaN(year) && typeof months[monthStr] !== 'undefined') {
-            return new Date(year, months[monthStr], day).getTime();
-        }
-    }
-    const ts = Date.parse(dateStr);
-    return isNaN(ts) ? 0 : ts;
-}
-
-function sortAdminOrders(ordersList: Order[]) {
-    return [...ordersList].sort((a, b) => {
-        let timeA = 0; let timeB = 0;
-        if (a.created_at) timeA = new Date(a.created_at).getTime();
-        if (b.created_at) timeB = new Date(b.created_at).getTime();
-        if (timeA === 0 && a.id && a.id.startsWith('ORD-') && a.id.length > 10) {
-            const ts = parseInt(a.id.replace('ORD-', ''), 10);
-            if (!isNaN(ts) && ts > 1000000000) timeA = ts;
-        }
-        if (timeB === 0 && b.id && b.id.startsWith('ORD-') && b.id.length > 10) {
-            const ts = parseInt(b.id.replace('ORD-', ''), 10);
-            if (!isNaN(ts) && ts > 1000000000) timeB = ts;
-        }
-        if (timeA === timeB) {
-            timeA = parseOrderDate(a.date);
-            timeB = parseOrderDate(b.date);
-        }
-        if (timeA === timeB) return b.id.localeCompare(a.id);
-        return timeB - timeA;
-    });
-}
 
 export interface Order {
     id: string;
