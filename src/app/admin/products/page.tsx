@@ -250,6 +250,24 @@ export default function AdminProductsPage() {
         setFormData({ ...formData, variants: newVariants });
     };
 
+    const getCategoryLabel = (category: Product['category']) => {
+        switch (category) {
+            case 'pendant': return 'Colgante';
+            case 'table': return 'Mesa';
+            case 'floor': return 'Pie';
+            case 'wall': return 'Aplique';
+            default: return category;
+        }
+    };
+
+    const getMaterialLabel = (material: Product['material']) => {
+        switch (material) {
+            case 'roble': return 'Roble';
+            case 'guayubira': return 'Guayubira';
+            default: return material;
+        }
+    };
+
     return (
         <div className="space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -291,113 +309,136 @@ export default function AdminProductsPage() {
                 </select>
             </div>
 
-            {/* Products Table (Desktop) */}
-            <div className="hidden lg:block bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead className="bg-stone-50 text-stone-500 text-xs uppercase tracking-wider">
-                            <tr>
-                                <th className="px-6 py-4 font-medium">Producto</th>
-                                <th className="px-6 py-4 font-medium">Categoria</th>
-                                <th className="px-6 py-4 font-medium text-center">Precio</th>
-                                <th className="px-6 py-4 font-medium text-center">Stock (U)</th>
-                                <th className="px-6 py-4 font-medium text-center min-w-[140px]">Estado</th>
-                                <th className="px-6 py-4 font-medium text-center">Visibilidad</th>
-                                <th className="px-6 py-4 font-medium text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-stone-100 text-sm">
-                            {filteredProducts.map((product) => (
-                                <tr key={product.id} className="hover:bg-stone-50 transition-colors group">
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-4">
-                                            <div className="relative h-12 w-12 rounded-lg overflow-hidden flex-shrink-0 bg-stone-100">
-                                                <Image
-                                                    src={product.images[0] || 'https://via.placeholder.com/150'}
-                                                    alt={product.name}
-                                                    fill
-                                                    className="object-cover"
-                                                />
-                                            </div>
-                                            <div>
-                                                <p className="font-medium text-stone-900">{product.name}</p>
-                                                <p className="text-xs text-stone-500 truncate max-w-[200px]">{product.description.substring(0, 50)}...</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="capitalize text-stone-600">{product.category}</span>
-                                    </td>
-                                    <td className="px-6 py-4 font-medium text-stone-900">
-                                        ${product.price.toLocaleString()}
-                                    </td>
-                                    <td className="px-6 py-4 text-center font-medium text-stone-600">
-                                        {product.stockCount ?? 0}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex flex-col items-center gap-1.5 min-w-[140px]">
-                                            <button
-                                                onClick={() => updateProduct(product.id, { inStock: !product.inStock })}
-                                                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors ${product.inStock
-                                                    ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                                                    : 'bg-red-100 text-red-700 hover:bg-red-200'
-                                                    }`}
-                                            >
-                                                <span className={`h-1.5 w-1.5 rounded-full ${product.inStock ? 'bg-green-600' : 'bg-red-600'
-                                                    }`}></span>
-                                                {product.inStock ? 'En Stock' : 'Sin Stock'}
-                                            </button>
-                                            
-                                            <button
-                                                onClick={() => updateProduct(product.id, { isComingSoon: !product.isComingSoon })}
-                                                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors ${product.isComingSoon
-                                                    ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-                                                    : 'bg-stone-50 text-stone-400 hover:bg-stone-100'
-                                                    }`}
-                                            >
-                                                <Clock size={10} className={product.isComingSoon ? 'text-yellow-600' : 'text-stone-300'} />
-                                                {product.isComingSoon ? 'Proximamente' : 'Lanzado'}
-                                            </button>
-                                        </div>
-                                    </td>
+            {/* Products Grid (Desktop) */}
+            {filteredProducts.length > 0 ? (
+                <div className="hidden lg:grid lg:grid-cols-2 2xl:grid-cols-3 gap-6">
+                    {filteredProducts.map((product) => {
+                        const totalVariantStock = (product.variants || []).reduce((sum, variant) => sum + Number(variant.stock || 0), 0);
+                        const usesVariants = !!product.variants?.length;
+                        const stockValue = usesVariants ? totalVariantStock : (product.stockCount ?? 0);
 
-                                    <td className="px-6 py-4 text-center">
+                        return (
+                            <article
+                                key={product.id}
+                                className="overflow-hidden rounded-[30px] border border-stone-200 bg-[linear-gradient(180deg,#ffffff_0%,#fbf8f3_100%)] shadow-[0_20px_50px_-34px_rgba(120,92,54,0.45)] transition-all hover:-translate-y-0.5 hover:shadow-[0_28px_65px_-34px_rgba(120,92,54,0.55)]"
+                            >
+                                <div className="relative aspect-[4/3] bg-stone-100">
+                                    <Image
+                                        src={product.images[0] || 'https://via.placeholder.com/150'}
+                                        alt={product.name}
+                                        fill
+                                        className="object-cover"
+                                        sizes="(min-width: 1536px) 28vw, (min-width: 1024px) 42vw, 100vw"
+                                    />
+                                    <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4">
+                                        <span className="rounded-full bg-white/92 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-stone-700 shadow-sm backdrop-blur">
+                                            {getCategoryLabel(product.category)}
+                                        </span>
                                         <button
                                             onClick={() => updateProduct(product.id, { isVisible: !(product.isVisible ?? true) })}
-                                            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors ${product.isVisible !== false
-                                                ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                                                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-                                                }`}
+                                            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm backdrop-blur transition-colors ${
+                                                product.isVisible !== false
+                                                    ? 'bg-blue-100/95 text-blue-700 hover:bg-blue-200'
+                                                    : 'bg-stone-100/95 text-stone-600 hover:bg-stone-200'
+                                            }`}
                                         >
                                             {product.isVisible !== false ? <Eye size={12} /> : <EyeOff size={12} />}
                                             {product.isVisible !== false ? 'Visible' : 'Oculto'}
                                         </button>
-                                    </td>
+                                    </div>
+                                </div>
 
-                                    <td className="px-6 py-4 text-right">
-                                        <div className="flex items-center justify-end gap-2">
-                                            <button
-                                                onClick={() => openEditModal(product)}
-                                                className="p-1.5 text-stone-400 hover:text-stone-900 transition-colors"
-                                                title="Editar"
-                                            >
-                                                <Edit size={18} />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(product.id, product.name)}
-                                                className="p-1.5 text-stone-400 hover:text-red-500 transition-colors"
-                                                title="Eliminar"
-                                            >
-                                                <Trash2 size={18} />
-                                            </button>
+                                <div className="space-y-5 p-5">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="min-w-0">
+                                            <h3 className="truncate text-lg font-semibold text-stone-900">{product.name}</h3>
+                                            <p className="mt-1 line-clamp-2 text-sm text-stone-500">{product.description}</p>
                                         </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                        <div className="rounded-2xl bg-stone-900 px-3 py-2 text-right text-white shadow-sm">
+                                            <p className="text-[10px] uppercase tracking-[0.18em] text-white/60">Precio</p>
+                                            <p className="mt-1 text-base font-semibold">${product.price.toLocaleString()}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-3 gap-3">
+                                        <div className="rounded-2xl border border-stone-100 bg-white p-3">
+                                            <p className="text-[11px] uppercase tracking-[0.18em] text-stone-400">Stock</p>
+                                            <p className="mt-2 text-lg font-semibold text-stone-900">{stockValue}</p>
+                                            <p className="mt-1 text-[11px] text-stone-500">
+                                                {usesVariants ? 'Por variantes' : 'Global'}
+                                            </p>
+                                        </div>
+                                        <div className="rounded-2xl border border-stone-100 bg-white p-3">
+                                            <p className="text-[11px] uppercase tracking-[0.18em] text-stone-400">Material</p>
+                                            <p className="mt-2 text-sm font-semibold text-stone-900">{getMaterialLabel(product.material)}</p>
+                                        </div>
+                                        <div className="rounded-2xl border border-stone-100 bg-white p-3">
+                                            <p className="text-[11px] uppercase tracking-[0.18em] text-stone-400">Imagenes</p>
+                                            <p className="mt-2 text-lg font-semibold text-stone-900">{product.images.length}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <button
+                                            onClick={() => updateProduct(product.id, { inStock: !product.inStock })}
+                                            className={`flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors ${
+                                                product.inStock
+                                                    ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                                                    : 'bg-red-100 text-red-700 hover:bg-red-200'
+                                            }`}
+                                        >
+                                            <span className={`h-2 w-2 rounded-full ${product.inStock ? 'bg-green-600' : 'bg-red-600'}`}></span>
+                                            {product.inStock ? 'En stock' : 'Sin stock'}
+                                        </button>
+
+                                        <button
+                                            onClick={() => updateProduct(product.id, { isComingSoon: !product.isComingSoon })}
+                                            className={`flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors ${
+                                                product.isComingSoon
+                                                    ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                                                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                                            }`}
+                                        >
+                                            <Clock size={14} className={product.isComingSoon ? 'text-yellow-700' : 'text-stone-500'} />
+                                            {product.isComingSoon ? 'Proximamente' : 'Lanzado'}
+                                        </button>
+                                    </div>
+
+                                    <div className="flex items-center gap-3 border-t border-stone-100 pt-4">
+                                        <Button
+                                            variant="outline"
+                                            className="flex-1 rounded-2xl border-stone-200 bg-white"
+                                            onClick={() => openEditModal(product)}
+                                        >
+                                            <Edit size={16} />
+                                            Editar
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            className="rounded-2xl border-red-100 bg-red-50 px-4 text-red-600 hover:bg-red-100 hover:text-red-700"
+                                            onClick={() => handleDelete(product.id, product.name)}
+                                        >
+                                            <Trash2 size={16} />
+                                        </Button>
+                                    </div>
+                                </div>
+                            </article>
+                        );
+                    })}
                 </div>
-            </div>
+            ) : (
+                <div className="hidden lg:flex min-h-[260px] items-center justify-center rounded-[28px] border border-dashed border-stone-200 bg-white/70 px-6 text-center">
+                    <div className="max-w-sm">
+                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-stone-100 text-stone-400">
+                            <Search size={24} />
+                        </div>
+                        <h3 className="mt-4 text-lg font-semibold text-stone-900">No hay productos para mostrar</h3>
+                        <p className="mt-2 text-sm text-stone-500">
+                            Ajustá la búsqueda o el filtro para encontrar otro producto del catálogo.
+                        </p>
+                    </div>
+                </div>
+            )}
 
             {/* Products List (Mobile) */}
             <div className="lg:hidden space-y-4">
