@@ -389,20 +389,20 @@ export default function AdminProductsPage() {
                                     </div>
 
                                     <div className="grid grid-cols-3 gap-1.5">
-                                        <div className="rounded-xl border border-stone-100 bg-white p-2">
-                                            <p className="text-[11px] uppercase tracking-[0.18em] text-stone-400">Stock</p>
-                                            <p className="mt-1 text-sm font-semibold text-stone-900">{stockValue}</p>
-                                            <p className="mt-0.5 text-[10px] text-stone-500">
-                                                {usesVariants ? 'Por variantes' : 'Global'}
-                                            </p>
+                                        <div className="rounded-lg border border-stone-100 bg-white px-2 py-1.5">
+                                            <p className="text-[10px] uppercase tracking-[0.14em] text-stone-400">Stock</p>
+                                            <div className="mt-0.5 flex items-baseline gap-1">
+                                                <span className="text-[13px] font-semibold text-stone-900">{stockValue}</span>
+                                                <span className="text-[10px] text-stone-500">{usesVariants ? 'variantes' : 'global'}</span>
+                                            </div>
                                         </div>
-                                        <div className="rounded-xl border border-stone-100 bg-white p-2">
-                                            <p className="text-[11px] uppercase tracking-[0.18em] text-stone-400">Material</p>
-                                            <p className="mt-1 text-[11px] font-semibold text-stone-900">{getMaterialLabel(product.material)}</p>
+                                        <div className="rounded-lg border border-stone-100 bg-white px-2 py-1.5">
+                                            <p className="text-[10px] uppercase tracking-[0.14em] text-stone-400">Material</p>
+                                            <p className="mt-0.5 truncate text-[11px] font-semibold text-stone-900">{getMaterialLabel(product.material)}</p>
                                         </div>
-                                        <div className="rounded-xl border border-stone-100 bg-white p-2">
-                                            <p className="text-[11px] uppercase tracking-[0.18em] text-stone-400">Imagenes</p>
-                                            <p className="mt-1 text-sm font-semibold text-stone-900">{product.images.length}</p>
+                                        <div className="rounded-lg border border-stone-100 bg-white px-2 py-1.5">
+                                            <p className="text-[10px] uppercase tracking-[0.14em] text-stone-400">Imagenes</p>
+                                            <p className="mt-0.5 text-[13px] font-semibold text-stone-900">{product.images.length}</p>
                                         </div>
                                     </div>
 
@@ -530,8 +530,8 @@ export default function AdminProductsPage() {
             {/* Modal for Add/Edit */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                        <div className="flex items-center justify-between p-6 border-b border-stone-100">
+                    <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fcfaf7_100%)] rounded-[28px] shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto border border-stone-200">
+                        <div className="flex items-center justify-between px-6 py-5 border-b border-stone-100 bg-white/80 backdrop-blur-sm">
                             <h2 className="text-xl font-bold text-stone-900">
                                 {editingProduct ? 'Editar Producto' : 'Nuevo Producto'}
                             </h2>
@@ -540,14 +540,18 @@ export default function AdminProductsPage() {
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+                            <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+                                <div className="mb-4">
+                                    <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Datos Base</h3>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-stone-700">Nombre del Producto</label>
                                     <input
                                         type="text"
                                         required
-                                        className="w-full px-4 py-2 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary"
+                                        className="w-full rounded-xl border border-stone-200 bg-stone-50/60 px-4 py-3 focus:ring-primary focus:border-primary"
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                     />
@@ -555,7 +559,7 @@ export default function AdminProductsPage() {
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-stone-700">Categoria</label>
                                     <select
-                                        className="w-full px-4 py-2 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary"
+                                        className="w-full rounded-xl border border-stone-200 bg-stone-50/60 px-4 py-3 focus:ring-primary focus:border-primary"
                                         value={formData.category}
                                         onChange={(e) => setFormData({ ...formData, category: e.target.value as Product['category'] })}
                                     >
@@ -570,29 +574,29 @@ export default function AdminProductsPage() {
                                     <input
                                         type="number"
                                         required
-                                        className="w-full px-4 py-2 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary"
+                                        className="w-full rounded-xl border border-stone-200 bg-stone-50/60 px-4 py-3 focus:ring-primary focus:border-primary"
                                         value={formData.price}
                                         onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
                                     />
                                 </div>
-                                {/* Material Principal removed as per request to focus on variations */}
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-stone-700">Stock Global (Unidades)</label>
                                     <input
                                         type="number"
                                         required
                                         min="0"
-                                        className="w-full px-4 py-2 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary disabled:bg-stone-100 disabled:text-stone-400"
+                                        className="w-full rounded-xl border border-stone-200 bg-stone-50/60 px-4 py-3 focus:ring-primary focus:border-primary disabled:bg-stone-100 disabled:text-stone-400"
                                         value={formData.stockCount}
                                         onChange={(e) => setFormData({ ...formData, stockCount: Number(e.target.value) })}
                                         disabled={showVariants}
                                     />
                                     {showVariants && <p className="text-xs text-stone-500">Gestionado por variantes</p>}
                                 </div>
-                            </div>
+                                </div>
+                            </section>
 
                             {/* Variants Section */}
-                            <div className="space-y-4 border-t border-stone-100 pt-4">
+                            <section className="space-y-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                         <input
@@ -616,14 +620,14 @@ export default function AdminProductsPage() {
                                         </label>
                                     </div>
                                     {showVariants && (
-                                        <Button type="button" size="sm" variant="outline" onClick={addVariant} className="gap-2">
+                                        <Button type="button" size="sm" variant="outline" onClick={addVariant} className="gap-2 rounded-xl">
                                             <PlusCircle size={16} /> Agregar Combinacion
                                         </Button>
                                     )}
                                 </div>
 
                                 {showVariants && (
-                                    <div className="bg-stone-50 rounded-xl p-4 space-y-3">
+                                    <div className="bg-stone-50 rounded-xl p-4 space-y-3 border border-stone-100">
                                         {(formData.variants || []).length === 0 ? (
                                             <p className="text-sm text-stone-500 text-center py-2">No hay variantes definidas.</p>
                                         ) : (
@@ -638,7 +642,7 @@ export default function AdminProductsPage() {
                                                     <div key={index} className="grid grid-cols-12 gap-2 items-center">
                                                         <div className="col-span-4">
                                                             <select
-                                                                className="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg focus:ring-primary focus:border-primary"
+                                                                className="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg bg-white focus:ring-primary focus:border-primary"
                                                                 value={variant.material}
                                                                 onChange={(e) => updateVariant(index, 'material', e.target.value)}
                                                             >
@@ -651,7 +655,7 @@ export default function AdminProductsPage() {
                                                                 <input
                                                                     type="text"
                                                                     placeholder="Ej: 1m"
-                                                                    className="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg focus:ring-primary focus:border-primary"
+                                                                    className="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg bg-white focus:ring-primary focus:border-primary"
                                                                     value={variant.size || ''}
                                                                     onChange={(e) => updateVariant(index, 'size', e.target.value)}
                                                                 />
@@ -661,7 +665,7 @@ export default function AdminProductsPage() {
                                                             <input
                                                                 type="number"
                                                                 min="0"
-                                                                className="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg focus:ring-primary focus:border-primary"
+                                                                className="w-full px-3 py-2 text-sm border border-stone-200 rounded-lg bg-white focus:ring-primary focus:border-primary"
                                                                 value={variant.stock}
                                                                 onChange={(e) => updateVariant(index, 'stock', Number(e.target.value))}
                                                             />
@@ -681,20 +685,20 @@ export default function AdminProductsPage() {
                                         )}
                                     </div>
                                 )}
-                            </div>
+                            </section>
 
-                            <div className="space-y-2">
+                            <section className="space-y-2 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
                                 <label className="text-sm font-medium text-stone-700">Descripcion</label>
                                 <textarea
                                     required
                                     rows={4}
-                                    className="w-full px-4 py-2 border border-stone-200 rounded-xl focus:ring-primary focus:border-primary"
+                                    className="w-full rounded-xl border border-stone-200 bg-stone-50/60 px-4 py-3 focus:ring-primary focus:border-primary"
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 ></textarea>
-                            </div>
+                            </section>
 
-                            <div className="space-y-2">
+                            <section className="space-y-3 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
                                 <label className="text-sm font-medium text-stone-700">Galeria de Imagenes</label>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                                     {visibleImages.map((img, idx) => (
@@ -760,25 +764,25 @@ export default function AdminProductsPage() {
                                         </p>
                                     </div>
                                 </div>
-                            </div>
+                            </section>
 
-                            <div className="flex gap-4 pt-4">
+                            <div className="flex gap-4 pt-2">
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    className="flex-1"
+                                    className="flex-1 rounded-xl"
                                     onClick={() => setIsModalOpen(false)}
                                 >
                                     Cancelar
                                 </Button>
-                                <Button type="submit" className="flex-1" disabled={isSaving || isUploadingImages}>
+                                <Button type="submit" className="flex-1 rounded-xl" disabled={isSaving || isUploadingImages}>
                                     {isUploadingImages
                                         ? 'Subiendo imagenes...'
                                         : isSaving
                                             ? 'Guardando...'
                                             : editingProduct
                                                 ? 'Guardar Cambios'
-                                                : 'Crear Producto'}
+                                            : 'Crear Producto'}
                                 </Button>
                             </div>
                         </form>
