@@ -7,7 +7,8 @@ import {
     Trash2,
     Send,
     X,
-    Calendar
+    Calendar,
+    Check
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { toast } from 'sonner';
@@ -248,13 +249,15 @@ export default function AdminSubscribersPage() {
                                                             : 'border-transparent bg-white/70 hover:border-stone-200 hover:bg-white'
                                                     }`}
                                                 >
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={selectedEmails.includes(sub.email)}
-                                                        readOnly
-                                                        tabIndex={-1}
-                                                        className="pointer-events-none rounded text-primary focus:ring-primary"
-                                                    />
+                                                    <span
+                                                        className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md border transition-colors ${
+                                                            selectedEmails.includes(sub.email)
+                                                                ? 'border-primary bg-primary text-white'
+                                                                : 'border-stone-300 bg-white text-transparent'
+                                                        }`}
+                                                    >
+                                                        <Check size={13} />
+                                                    </span>
                                                     <span className="text-sm text-stone-700">{sub.email}</span>
                                                 </button>
                                             ))}
