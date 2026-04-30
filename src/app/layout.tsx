@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Playfair_Display } from "next/font/google";
 import { CartProvider } from '@/context/CartContext';
@@ -53,7 +54,11 @@ export default function RootLayout({
       <body
         className={`${playfair.variable} antialiased bg-stone-50 text-stone-900 flex flex-col min-h-screen`}
       >
-        {metaPixelId ? <MetaPixel pixelId={metaPixelId} /> : null}
+        {metaPixelId ? (
+          <Suspense fallback={null}>
+            <MetaPixel pixelId={metaPixelId} />
+          </Suspense>
+        ) : null}
         {metaPixelId ? (
           <noscript>
             {/* Meta Pixel requiere este fallback con img para navegadores sin JavaScript. */}
