@@ -97,6 +97,8 @@ export default function ProductPage() {
             content_type: 'product',
             value: product.price,
             currency: 'ARS',
+        }, {
+            eventID: `add_to_cart_${product.id}_${Date.now()}`,
         });
     };
 

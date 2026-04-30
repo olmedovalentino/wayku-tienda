@@ -12,7 +12,7 @@ export function CartDrawer() {
     const checkoutTrackingKey = `meta_initiate_checkout_${items
         .map((item) => `${item.id}:${item.quantity}`)
         .sort()
-        .join('|')}_${subtotal}`;
+        .join('|')}`;
 
     // Prevent scrolling when cart is open
     useEffect(() => {
@@ -148,6 +148,8 @@ export function CartDrawer() {
                                         trackMetaEventOnce(checkoutTrackingKey, 'InitiateCheckout', {
                                             value: subtotal,
                                             currency: 'ARS',
+                                        }, {
+                                            eventID: `initiate_checkout_${Date.now()}`,
                                         });
                                         closeCart();
                                         window.location.href = '/finalizar-compra';

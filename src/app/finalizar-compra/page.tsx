@@ -99,8 +99,8 @@ export default function CheckoutPage() {
         () => `meta_initiate_checkout_${items
             .map((item) => `${item.id}:${item.quantity}`)
             .sort()
-            .join('|')}_${total}`,
-        [items, total]
+            .join('|')}`,
+        [items]
     );
 
     useEffect(() => {
@@ -111,6 +111,8 @@ export default function CheckoutPage() {
         trackMetaEventOnce(checkoutTrackingKey, 'InitiateCheckout', {
             value: total,
             currency: 'ARS',
+        }, {
+            eventID: `initiate_checkout_${Date.now()}`,
         });
     }, [checkoutTrackingKey, isInitialized, items.length, total]);
 

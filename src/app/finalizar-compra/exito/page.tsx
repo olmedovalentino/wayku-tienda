@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, Suspense } from 'react';
 import { useCart } from '@/context/CartContext';
-import { trackMetaEventOnce } from '@/lib/meta-pixel';
+import { trackMetaCustomEventOnce, trackMetaEventOnce } from '@/lib/meta-pixel';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { CheckCircle, MessageCircle } from 'lucide-react';
@@ -11,7 +11,7 @@ import Link from 'next/link';
 function SuccessContent() {
     const { clearCart } = useCart();
     const isProcessedRef = useRef(false);
-    const isPurchaseTrackedRef = useRef(false);
+    const isCompletionTrackedRef = useRef(false);
     const searchParams = useSearchParams();
 
     const method = searchParams.get('method');
@@ -29,23 +29,49 @@ function SuccessContent() {
     }, [status, method, externalReference, orderIdParam, clearCart]);
 
     useEffect(() => {
-        if (isPurchaseTrackedRef.current || (status !== 'approved' && method !== 'transfer')) {
+        if (isCompletionTrackedRef.current) {
             return;
         }
 
         const parsedTotal = Number(total);
-        const purchaseTrackingKey = orderIdParam
-            ? `meta_purchase_${orderIdParam}`
-            : `meta_purchase_${method}_${status}_${parsedTotal}`;
+        const numericTotal = Number.isFinite(parsedTotal) ? parsedTotal : 0;
 
-        const didTrackPurchase = trackMetaEventOnce(purchaseTrackingKey, 'Purchase', {
-            currency: 'ARS',
-            value: Number.isFinite(parsedTotal) ? parsedTotal : 0,
-            order_id: orderIdParam || undefined,
-        });
+        if (status === 'approved') {
+            const purchaseTrackingKey = orderIdParam
+                ? `meta_purchase_tracked_${orderIdParam}`
+                : `meta_purchase_tracked_${status}_${numericTotal}`;
 
-        if (didTrackPurchase) {
-            isPurchaseTrackedRef.current = true;
+            const didTrackPurchase = trackMetaEventOnce(purchaseTrackingKey, 'Purchase', {
+                currency: 'ARS',
+                value: numericTotal,
+                order_id: orderIdParam || undefined,
+            }, {
+                eventID: orderIdParam ? `purchase_${orderIdParam}` : `purchase_${status}_${numericTotal}`,
+            });
+
+            if (didTrackPurchase) {
+                isCompletionTrackedRef.current = true;
+            }
+            return;
+        }
+
+        if (method === 'transfer') {
+            // Una transferencia todavia no representa una venta confirmada, por eso no usamos Purchase.
+            const transferTrackingKey = orderIdParam
+                ? `meta_transfer_order_created_${orderIdParam}`
+                : `meta_transfer_order_created_${numericTotal}`;
+
+            const didTrackTransferOrder = trackMetaCustomEventOnce(transferTrackingKey, 'TransferOrderCreated', {
+                currency: 'ARS',
+                value: numericTotal,
+                order_id: orderIdParam || undefined,
+            }, {
+                eventID: orderIdParam ? `transfer_order_${orderIdParam}` : `transfer_order_${numericTotal}`,
+            });
+
+            if (didTrackTransferOrder) {
+                isCompletionTrackedRef.current = true;
+            }
         }
     }, [method, orderIdParam, status, total]);
 
