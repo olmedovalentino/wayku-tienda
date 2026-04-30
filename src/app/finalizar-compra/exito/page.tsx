@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, Suspense } from 'react';
 import { useCart } from '@/context/CartContext';
+import { trackMetaEvent } from '@/lib/meta-pixel';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { CheckCircle, MessageCircle } from 'lucide-react';
@@ -10,6 +11,7 @@ import Link from 'next/link';
 function SuccessContent() {
     const { clearCart } = useCart();
     const isProcessedRef = useRef(false);
+    const isPurchaseTrackedRef = useRef(false);
     const searchParams = useSearchParams();
 
     const method = searchParams.get('method');
@@ -25,6 +27,21 @@ function SuccessContent() {
             isProcessedRef.current = true;
         }
     }, [status, method, externalReference, orderIdParam, clearCart]);
+
+    useEffect(() => {
+        if (isPurchaseTrackedRef.current || (status !== 'approved' && method !== 'transfer')) {
+            return;
+        }
+
+        const parsedTotal = Number(total);
+
+        trackMetaEvent('Purchase', {
+            currency: 'ARS',
+            value: Number.isFinite(parsedTotal) ? parsedTotal : 0,
+        });
+
+        isPurchaseTrackedRef.current = true;
+    }, [method, status, total]);
 
     return (
         <div className="flex min-h-[80vh] flex-col items-center justify-center px-4 py-12 text-center max-w-4xl mx-auto">
