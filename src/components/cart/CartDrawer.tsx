@@ -5,9 +5,14 @@ import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/ui/Button';
 import Image from 'next/image';
 import { useEffect } from 'react';
+import { trackMetaEventOnce } from '@/lib/meta-pixel';
 
 export function CartDrawer() {
     const { items, isOpen, closeCart, removeItem, updateItemQuantity, subtotal } = useCart();
+    const checkoutTrackingKey = `meta_initiate_checkout_${items
+        .map((item) => `${item.id}:${item.quantity}`)
+        .sort()
+        .join('|')}_${subtotal}`;
 
     // Prevent scrolling when cart is open
     useEffect(() => {
@@ -140,6 +145,10 @@ export function CartDrawer() {
                                     className="w-full"
                                     size="lg"
                                     onClick={() => {
+                                        trackMetaEventOnce(checkoutTrackingKey, 'InitiateCheckout', {
+                                            value: subtotal,
+                                            currency: 'ARS',
+                                        });
                                         closeCart();
                                         window.location.href = '/finalizar-compra';
                                     }}

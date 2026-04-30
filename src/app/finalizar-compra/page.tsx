@@ -4,6 +4,7 @@ import { useCart } from '@/context/CartContext';
 import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Button';
+import { trackMetaEventOnce } from '@/lib/meta-pixel';
 import { useRouter } from 'next/navigation';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import Image from 'next/image';
@@ -94,6 +95,24 @@ export default function CheckoutPage() {
     }, [subtotal, appliedDiscount]);
 
     const total = subtotal - discountAmount + (shippingCost || 0);
+    const checkoutTrackingKey = useMemo(
+        () => `meta_initiate_checkout_${items
+            .map((item) => `${item.id}:${item.quantity}`)
+            .sort()
+            .join('|')}_${total}`,
+        [items, total]
+    );
+
+    useEffect(() => {
+        if (!isInitialized || items.length === 0) {
+            return;
+        }
+
+        trackMetaEventOnce(checkoutTrackingKey, 'InitiateCheckout', {
+            value: total,
+            currency: 'ARS',
+        });
+    }, [checkoutTrackingKey, isInitialized, items.length, total]);
 
     if (!isInitialized) {
         return (

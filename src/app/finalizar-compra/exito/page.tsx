@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, Suspense } from 'react';
 import { useCart } from '@/context/CartContext';
-import { trackMetaEvent } from '@/lib/meta-pixel';
+import { trackMetaEventOnce } from '@/lib/meta-pixel';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { CheckCircle, MessageCircle } from 'lucide-react';
@@ -34,14 +34,20 @@ function SuccessContent() {
         }
 
         const parsedTotal = Number(total);
+        const purchaseTrackingKey = orderIdParam
+            ? `meta_purchase_${orderIdParam}`
+            : `meta_purchase_${method}_${status}_${parsedTotal}`;
 
-        trackMetaEvent('Purchase', {
+        const didTrackPurchase = trackMetaEventOnce(purchaseTrackingKey, 'Purchase', {
             currency: 'ARS',
             value: Number.isFinite(parsedTotal) ? parsedTotal : 0,
+            order_id: orderIdParam || undefined,
         });
 
-        isPurchaseTrackedRef.current = true;
-    }, [method, status, total]);
+        if (didTrackPurchase) {
+            isPurchaseTrackedRef.current = true;
+        }
+    }, [method, orderIdParam, status, total]);
 
     return (
         <div className="flex min-h-[80vh] flex-col items-center justify-center px-4 py-12 text-center max-w-4xl mx-auto">

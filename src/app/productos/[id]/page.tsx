@@ -11,6 +11,7 @@ import { useFavorites } from '@/context/FavoritesContext';
 import { useAuth } from '@/context/AuthContext';
 import { useState, useEffect, useMemo } from 'react';
 import { slugify, findBySlug } from '@/lib/products';
+import { trackMetaEvent } from '@/lib/meta-pixel';
 
 export default function ProductPage() {
     const params = useParams();
@@ -62,6 +63,18 @@ export default function ProductPage() {
         }
     }, [product, autoSelected]);
 
+    useEffect(() => {
+        if (!product) return;
+
+        trackMetaEvent('ViewContent', {
+            content_ids: [product.id],
+            content_name: product.name,
+            content_type: 'product',
+            value: product.price,
+            currency: 'ARS',
+        });
+    }, [product]);
+
 
 
     const handleAddToCart = () => {
@@ -77,6 +90,14 @@ export default function ProductPage() {
             (product.category === 'table' || isUnifiedCableCanopy) ? cableColor : undefined,
             product.category === 'pendant' ? (isUnifiedCableCanopy ? cableColor : canopyColor) : product.category === 'wall' ? canopyColor : undefined
         );
+
+        trackMetaEvent('AddToCart', {
+            content_ids: [product.id],
+            content_name: product.name,
+            content_type: 'product',
+            value: product.price,
+            currency: 'ARS',
+        });
     };
 
     const handleAddReview = (e: React.FormEvent) => {
